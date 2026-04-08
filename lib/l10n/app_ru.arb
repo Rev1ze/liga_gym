@@ -4,21 +4,22 @@
   "commonRetry": "Повторить",
   "commonEmail": "Email",
   "commonPassword": "Пароль",
-  "commonConfirmPassword": "Подтверждение пароля",
+  "commonConfirmPassword": "Подтвердите пароль",
   "commonName": "Имя",
   "commonGender": "Пол",
   "commonBirthDate": "Дата рождения",
   "commonSave": "Сохранить",
   "commonCancel": "Отмена",
+  "commonContinue": "Продолжить",
   "splashTitle": "Liga Gym",
   "splashSubtitle": "Подготавливаем пространство для тренировок и проверяем ваш аккаунт.",
   "splashErrorMessage": "Не удалось проверить сессию. Попробуйте ещё раз.",
   "loginTitle": "С возвращением",
-  "loginSubtitle": "Войдите, чтобы продолжить тренировки.",
+  "loginSubtitle": "Войдите, чтобы продолжить путь к тренировкам.",
   "loginButton": "Войти",
-  "googleSignInButton": "Войти через Google",
-  "goToRegisterButton": "Перейти к регистрации",
-  "registerTitle": "Создание аккаунта",
+  "googleSignInButton": "Продолжить через Google",
+  "goToRegisterButton": "К регистрации",
+  "registerTitle": "Создать аккаунт",
   "registerSubtitle": "Зарегистрируйтесь, чтобы настроить профиль и начать тренировки.",
   "registerButton": "Зарегистрироваться",
   "goToLoginButton": "Назад ко входу",
@@ -27,8 +28,36 @@
   "profileSetupButton": "Сохранить профиль",
   "profileBirthDatePickerHelp": "Выберите дату рождения",
   "dashboardTitle": "Главная",
-  "dashboardHeadline": "Вход выполнен",
-  "dashboardSubtitle": "Аккаунт готов к следующей тренировке.",
+  "dashboardHeadline": "Вы вошли",
+  "dashboardSubtitle": "Ваш аккаунт готов к следующей тренировке.",
+  "dashboardStartWorkout": "Начать тренировку",
+  "dashboardWorkoutHistory": "История тренировок",
+  "dashboardNutritionDiary": "Дневник питания",
+  "dashboardNutritionTitle": "Питание за сегодня",
+  "dashboardNutritionCalories": "Калории: {value}",
+  "@dashboardNutritionCalories": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardNutritionProteins": "Белки: {value}",
+  "@dashboardNutritionProteins": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardNutritionFats": "Жиры: {value}",
+  "@dashboardNutritionFats": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardNutritionCarbs": "Углеводы: {value}",
+  "@dashboardNutritionCarbs": {
+    "placeholders": {
+      "value": {}
+    }
+  },
   "dashboardSignOut": "Выйти",
   "dashboardSignedInAs": "Вы вошли как {email}",
   "@dashboardSignedInAs": {
@@ -39,6 +68,90 @@
   "genderMale": "Мужской",
   "genderFemale": "Женский",
   "genderOther": "Другой",
+  "workoutTypeRunning": "Бег",
+  "workoutTypeCycling": "Велосипед",
+  "workoutTypeWalking": "Ходьба",
+  "workoutTypeStrength": "Силовая",
+  "workoutTypeCardio": "Кардио",
+  "workoutListTitle": "Тренировки",
+  "workoutListEmpty": "Тренировок пока нет. Начните первую тренировку с главного экрана.",
+  "workoutFilterDate": "Выбрать дату",
+  "workoutFilterType": "Тип",
+  "workoutFilterAllTypes": "Все типы",
+  "workoutFilterClear": "Сбросить фильтры",
+  "workoutStartTitle": "Старт тренировки",
+  "workoutStartSubtitle": "Выберите тип тренировки и начните отслеживание сессии.",
+  "workoutStartButton": "Старт",
+  "workoutTypeLabel": "Тип тренировки",
+  "workoutActiveTitle": "Активная тренировка",
+  "workoutActivePause": "Пауза",
+  "workoutActiveResume": "Продолжить",
+  "workoutActiveStop": "Остановить",
+  "workoutMetricDuration": "Длительность",
+  "workoutMetricCalories": "Калории",
+  "workoutMetricDistance": "Дистанция",
+  "workoutGpsUnavailable": "GPS недоступен. Длительность и калории будут считаться, но маршрут и дистанция могут быть неполными.",
+  "workoutNoActiveSession": "Нет активной тренировки. Запустите новую с главного экрана.",
+  "workoutResultTitle": "Результат тренировки",
+  "workoutResultSubtitle": "Проверьте результат и сохраните тренировку в историю.",
+  "workoutResultSave": "Сохранить тренировку",
+  "workoutNoResult": "Нет данных о результате тренировки.",
+  "workoutSavedSynced": "Тренировка сохранена локально и синхронизирована с Firestore.",
+  "workoutSavedLocalOnly": "Тренировка сохранена локально. Синхронизация с Firestore выполнится позже.",
+  "mealTypeBreakfast": "Завтрак",
+  "mealTypeLunch": "Обед",
+  "mealTypeDinner": "Ужин",
+  "mealTypeSnack": "Перекус",
+  "foodDiaryTitle": "Дневник питания",
+  "foodDiaryPickDate": "Выберите дату дневника",
+  "foodDiaryAddFood": "Добавить еду",
+  "foodDiaryMealType": "Приём пищи",
+  "foodDiaryEmptySection": "Для этого приёма пищи записей пока нет.",
+  "foodDiaryEntrySubtitle": "{grams} г • {calories} ккал",
+  "@foodDiaryEntrySubtitle": {
+    "placeholders": {
+      "grams": {},
+      "calories": {}
+    }
+  },
+  "foodDiaryInlineMacros": "Б {proteins} • Ж {fats} • У {carbs}",
+  "@foodDiaryInlineMacros": {
+    "placeholders": {
+      "proteins": {},
+      "fats": {},
+      "carbs": {}
+    }
+  },
+  "addFoodTitle": "Добавление еды",
+  "addFoodManual": "Вручную",
+  "addFoodBarcode": "Штрихкод",
+  "addFoodName": "Название продукта",
+  "addFoodBarcodeLabel": "Штрихкод",
+  "addFoodGrams": "Порция, г",
+  "productDetailsTitle": "Информация о продукте",
+  "productDetailsMeal": "Приём пищи: {meal}",
+  "@productDetailsMeal": {
+    "placeholders": {
+      "meal": {}
+    }
+  },
+  "productDetailsPortion": "Порция: {grams} г",
+  "@productDetailsPortion": {
+    "placeholders": {
+      "grams": {}
+    }
+  },
+  "productDetailsPer100": "На 100 г",
+  "productDetailsPortionMacros": "Для выбранной порции",
+  "productDetailsSave": "Сохранить запись",
+  "foodCalories": "Калории",
+  "foodProteins": "Белки",
+  "foodFats": "Жиры",
+  "foodCarbs": "Углеводы",
+  "foodCaloriesPer100": "Калории на 100 г",
+  "foodProteinsPer100": "Белки на 100 г",
+  "foodFatsPer100": "Жиры на 100 г",
+  "foodCarbsPer100": "Углеводы на 100 г",
   "validationEmptyEmail": "Введите email.",
   "validationInvalidEmail": "Введите корректный email.",
   "validationEmptyPassword": "Введите пароль.",
@@ -48,18 +161,29 @@
   "validationEmptyName": "Введите имя.",
   "validationEmptyGender": "Выберите пол.",
   "validationEmptyBirthDate": "Выберите дату рождения.",
+  "validationEmptyFoodName": "Введите название продукта.",
+  "validationEmptyBarcode": "Введите штрихкод.",
+  "validationInvalidFoodWeight": "Введите корректный вес порции в граммах.",
+  "validationInvalidCalories": "Введите корректные калории на 100 г.",
+  "validationInvalidProteins": "Введите корректные белки на 100 г.",
+  "validationInvalidFats": "Введите корректные жиры на 100 г.",
+  "validationInvalidCarbs": "Введите корректные углеводы на 100 г.",
   "errorUserNotFound": "Пользователь с таким email не найден.",
   "errorWrongPassword": "Введён неверный пароль.",
   "errorInvalidCredential": "Неверный email или пароль.",
   "errorEmailAlreadyInUse": "Аккаунт с таким email уже существует.",
   "errorNetworkRequestFailed": "Сетевая ошибка. Проверьте соединение и попробуйте снова.",
-  "errorTooManyRequests": "Слишком много попыток. Повторите позже.",
+  "errorTooManyRequests": "Слишком много попыток. Попробуйте позже.",
   "errorGoogleSignInCancelled": "Вход через Google был отменён.",
   "errorGoogleSignInNotSupported": "Вход через Google не поддерживается на этой платформе.",
   "errorGoogleSignInConfiguration": "Вход через Google настроен некорректно.",
   "errorGoogleSignInFailed": "Не удалось выполнить вход через Google. Попробуйте снова.",
   "errorUnauthorized": "Пожалуйста, войдите снова.",
   "errorProfileSaveFailed": "Не удалось сохранить профиль.",
+  "errorWorkoutSaveFailed": "Не удалось сохранить тренировку.",
+  "errorNutritionDiaryLoadFailed": "Не удалось загрузить дневник питания.",
+  "errorNutritionEntrySaveFailed": "Не удалось сохранить запись о еде.",
+  "errorFoodProductNotFound": "Продукт с таким штрихкодом не найден.",
   "errorFirebaseConfigurationMissing": "Конфигурация Firebase отсутствует или настроена не полностью.",
   "errorUnknown": "Что-то пошло не так. Попробуйте ещё раз."
 }

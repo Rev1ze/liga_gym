@@ -8,6 +8,13 @@ enum AppErrorCode {
   emptyName,
   emptyGender,
   emptyBirthDate,
+  emptyFoodName,
+  emptyBarcode,
+  invalidFoodWeight,
+  invalidCalories,
+  invalidProteins,
+  invalidFats,
+  invalidCarbs,
   userNotFound,
   wrongPassword,
   invalidCredential,
@@ -20,6 +27,10 @@ enum AppErrorCode {
   googleSignInFailed,
   unauthorized,
   profileSaveFailed,
+  workoutSaveFailed,
+  nutritionDiaryLoadFailed,
+  nutritionEntrySaveFailed,
+  foodProductNotFound,
   firebaseConfigurationMissing,
   unknown,
 }
@@ -40,4 +51,12 @@ final class AuthException extends AppException {
 
 final class ProfileException extends AppException {
   const ProfileException(super.code);
+}
+
+final class WorkoutException extends AppException {
+  const WorkoutException(super.code);
+}
+
+final class NutritionException extends AppException {
+  const NutritionException(super.code);
 }

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../core/firebase/firebase_bootstrap.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
 import '../../data/datasources/profile_remote_data_source.dart';
 import '../../data/repositories/auth_repository_impl.dart';
@@ -33,6 +34,12 @@ GoogleSignIn googleSignIn(Ref ref) {
 
 @Riverpod(keepAlive: true)
 AuthRemoteDataSource authRemoteDataSource(Ref ref) {
+  final firebaseBootstrap = ref.watch(firebaseBootstrapProvider);
+
+  if (!firebaseBootstrap.isConfigured) {
+    return const UnavailableAuthRemoteDataSource();
+  }
+
   return FirebaseAuthRemoteDataSource(
     firebaseAuth: ref.watch(firebaseAuthProvider),
     googleSignIn: ref.watch(googleSignInProvider),
@@ -41,6 +48,12 @@ AuthRemoteDataSource authRemoteDataSource(Ref ref) {
 
 @Riverpod(keepAlive: true)
 ProfileRemoteDataSource profileRemoteDataSource(Ref ref) {
+  final firebaseBootstrap = ref.watch(firebaseBootstrapProvider);
+
+  if (!firebaseBootstrap.isConfigured) {
+    return const UnavailableProfileRemoteDataSource();
+  }
+
   return FirestoreProfileRemoteDataSource(
     firestore: ref.watch(firebaseFirestoreProvider),
   );

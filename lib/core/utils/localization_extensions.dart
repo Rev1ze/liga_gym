@@ -1,4 +1,5 @@
 import '../../features/auth/domain/entities/gender.dart';
+import '../../features/nutrition/domain/entities/meal_type.dart';
 import '../../l10n/app_localizations.dart';
 import '../errors/app_exception.dart';
 
@@ -14,6 +15,13 @@ extension AppErrorCodeLocalization on AppErrorCode {
       AppErrorCode.emptyName => l10n.validationEmptyName,
       AppErrorCode.emptyGender => l10n.validationEmptyGender,
       AppErrorCode.emptyBirthDate => l10n.validationEmptyBirthDate,
+      AppErrorCode.emptyFoodName => l10n.validationEmptyFoodName,
+      AppErrorCode.emptyBarcode => l10n.validationEmptyBarcode,
+      AppErrorCode.invalidFoodWeight => l10n.validationInvalidFoodWeight,
+      AppErrorCode.invalidCalories => l10n.validationInvalidCalories,
+      AppErrorCode.invalidProteins => l10n.validationInvalidProteins,
+      AppErrorCode.invalidFats => l10n.validationInvalidFats,
+      AppErrorCode.invalidCarbs => l10n.validationInvalidCarbs,
       AppErrorCode.userNotFound => l10n.errorUserNotFound,
       AppErrorCode.wrongPassword => l10n.errorWrongPassword,
       AppErrorCode.invalidCredential => l10n.errorInvalidCredential,
@@ -28,9 +36,26 @@ extension AppErrorCodeLocalization on AppErrorCode {
       AppErrorCode.googleSignInFailed => l10n.errorGoogleSignInFailed,
       AppErrorCode.unauthorized => l10n.errorUnauthorized,
       AppErrorCode.profileSaveFailed => l10n.errorProfileSaveFailed,
+      AppErrorCode.workoutSaveFailed => l10n.errorWorkoutSaveFailed,
+      AppErrorCode.nutritionDiaryLoadFailed =>
+        l10n.errorNutritionDiaryLoadFailed,
+      AppErrorCode.nutritionEntrySaveFailed =>
+        l10n.errorNutritionEntrySaveFailed,
+      AppErrorCode.foodProductNotFound => l10n.errorFoodProductNotFound,
       AppErrorCode.firebaseConfigurationMissing =>
         l10n.errorFirebaseConfigurationMissing,
       AppErrorCode.unknown => l10n.errorUnknown,
+    };
+  }
+}
+
+extension MealTypeLocalization on MealType {
+  String localize(AppLocalizations l10n) {
+    return switch (this) {
+      MealType.breakfast => l10n.mealTypeBreakfast,
+      MealType.lunch => l10n.mealTypeLunch,
+      MealType.dinner => l10n.mealTypeDinner,
+      MealType.snack => l10n.mealTypeSnack,
     };
   }
 }

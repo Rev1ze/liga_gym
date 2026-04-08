@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -24,6 +26,38 @@ abstract interface class AuthRemoteDataSource {
   Future<void> signOut();
 }
 
+class UnavailableAuthRemoteDataSource implements AuthRemoteDataSource {
+  const UnavailableAuthRemoteDataSource();
+
+  @override
+  Stream<AuthUserModel?> watchAuthState() => Stream.value(null);
+
+  @override
+  Future<AuthUserModel?> getCurrentUser() => _throwConfigurationMissing();
+
+  @override
+  Future<AuthUserModel> loginWithEmail({
+    required String email,
+    required String password,
+  }) => _throwConfigurationMissing();
+
+  @override
+  Future<AuthUserModel> registerUser({
+    required String email,
+    required String password,
+  }) => _throwConfigurationMissing();
+
+  @override
+  Future<AuthUserModel> signInWithGoogle() => _throwConfigurationMissing();
+
+  @override
+  Future<void> signOut() => _throwConfigurationMissing();
+
+  Future<T> _throwConfigurationMissing<T>() async {
+    throw const AuthException(AppErrorCode.firebaseConfigurationMissing);
+  }
+}
+
 class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
   FirebaseAuthRemoteDataSource({
     required FirebaseAuth firebaseAuth,
@@ -33,6 +67,7 @@ class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
 
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  static const Duration _requestTimeout = Duration(seconds: 15);
 
   Future<void>? _googleInitializationFuture;
 
@@ -54,10 +89,9 @@ class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
     required String password,
   }) async {
     try {
-      final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final userCredential = await _firebaseAuth
+          .signInWithEmailAndPassword(email: email, password: password)
+          .timeout(_requestTimeout);
       final user = userCredential.user;
 
       if (user == null) {
@@ -70,6 +104,8 @@ class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
       throw AuthException(_mapFirebaseAuthError(error.code));
     } on FirebaseException catch (error) {
       throw AuthException(_mapFirebaseCoreError(error.code));
+    } on TimeoutException {
+      throw const AuthException(AppErrorCode.networkRequestFailed);
     }
   }
 
@@ -79,10 +115,9 @@ class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
     required String password,
   }) async {
     try {
-      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final userCredential = await _firebaseAuth
+          .createUserWithEmailAndPassword(email: email, password: password)
+          .timeout(_requestTimeout);
       final user = userCredential.user;
 
       if (user == null) {
@@ -94,19 +129,23 @@ class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
       throw AuthException(_mapFirebaseAuthError(error.code));
     } on FirebaseException catch (error) {
       throw AuthException(_mapFirebaseCoreError(error.code));
+    } on TimeoutException {
+      throw const AuthException(AppErrorCode.networkRequestFailed);
     }
   }
 
   @override
   Future<AuthUserModel> signInWithGoogle() async {
     try {
-      await _ensureGoogleInitialized();
+      await _ensureGoogleInitialized().timeout(_requestTimeout);
 
       if (!_googleSignIn.supportsAuthenticate()) {
         throw const AuthException(AppErrorCode.googleSignInNotSupported);
       }
 
-      final googleAccount = await _googleSignIn.authenticate();
+      final googleAccount = await _googleSignIn.authenticate().timeout(
+        _requestTimeout,
+      );
       final idToken = googleAccount.authentication.idToken;
 
       if (idToken == null || idToken.isEmpty) {
@@ -114,9 +153,9 @@ class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
       }
 
       final credential = GoogleAuthProvider.credential(idToken: idToken);
-      final userCredential = await _firebaseAuth.signInWithCredential(
-        credential,
-      );
+      final userCredential = await _firebaseAuth
+          .signInWithCredential(credential)
+          .timeout(_requestTimeout);
       final user = userCredential.user;
 
       if (user == null) {
@@ -131,6 +170,8 @@ class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
       throw AuthException(_mapFirebaseAuthError(error.code));
     } on FirebaseException catch (error) {
       throw AuthException(_mapFirebaseCoreError(error.code));
+    } on TimeoutException {
+      throw const AuthException(AppErrorCode.networkRequestFailed);
     }
   }
 
@@ -140,11 +181,13 @@ class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
       await Future.wait<void>([
         _firebaseAuth.signOut(),
         _signOutGoogleSafely(),
-      ]);
+      ]).timeout(_requestTimeout);
     } on FirebaseAuthException catch (error) {
       throw AuthException(_mapFirebaseAuthError(error.code));
     } on FirebaseException catch (error) {
       throw AuthException(_mapFirebaseCoreError(error.code));
+    } on TimeoutException {
+      throw const AuthException(AppErrorCode.networkRequestFailed);
     }
   }
 
@@ -166,6 +209,7 @@ class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
       'user-not-found' => AppErrorCode.userNotFound,
       'wrong-password' => AppErrorCode.wrongPassword,
       'invalid-credential' => AppErrorCode.invalidCredential,
+      'operation-not-allowed' => AppErrorCode.firebaseConfigurationMissing,
       'email-already-in-use' => AppErrorCode.emailAlreadyInUse,
       'network-request-failed' => AppErrorCode.networkRequestFailed,
       'too-many-requests' => AppErrorCode.tooManyRequests,

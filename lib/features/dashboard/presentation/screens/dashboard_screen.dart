@@ -8,9 +8,15 @@ import '../../../../core/utils/localization_extensions.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/controllers/auth_action_controller.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../nutrition/presentation/providers/nutrition_providers.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
+
+  Future<void> _openFoodDiary(BuildContext context, WidgetRef ref) async {
+    await Navigator.of(context).pushNamed(AppRoutes.foodDiary);
+    ref.invalidate(todayNutritionDiaryProvider);
+  }
 
   Future<void> _handleSignOut(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
@@ -61,26 +67,111 @@ class DashboardScreen extends ConsumerWidget {
               data: (authUser) {
                 return ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 480),
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            l10n.dashboardHeadline,
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(l10n.dashboardSubtitle),
-                          const SizedBox(height: 16),
-                          Text(
-                            l10n.dashboardSignedInAs(authUser?.email ?? '-'),
-                          ),
-                        ],
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      FilledButton.icon(
+                        key: AppKeys.dashboardStartWorkoutButton,
+                        onPressed: () => Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.startWorkout),
+                        icon: const Icon(Icons.play_arrow),
+                        label: Text(l10n.dashboardStartWorkout),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        key: AppKeys.dashboardWorkoutHistoryButton,
+                        onPressed: () => Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.workoutList),
+                        icon: const Icon(Icons.history),
+                        label: Text(l10n.dashboardWorkoutHistory),
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        key: AppKeys.dashboardNutritionDiaryButton,
+                        onPressed: () => _openFoodDiary(context, ref),
+                        icon: const Icon(Icons.restaurant_menu),
+                        label: Text(l10n.dashboardNutritionDiary),
+                      ),
+                      const SizedBox(height: 16),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                l10n.dashboardHeadline,
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineMedium,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(l10n.dashboardSubtitle),
+                              const SizedBox(height: 16),
+                              Text(
+                                l10n.dashboardSignedInAs(
+                                  authUser?.email ?? '-',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: ref
+                              .watch(todayNutritionDiaryProvider)
+                              .when(
+                                data: (diary) {
+                                  final macros = diary.totalMacros();
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Text(
+                                        l10n.dashboardNutritionTitle,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleLarge,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        l10n.dashboardNutritionCalories(
+                                          macros.calories.toStringAsFixed(0),
+                                        ),
+                                      ),
+                                      Text(
+                                        l10n.dashboardNutritionProteins(
+                                          macros.proteins.toStringAsFixed(1),
+                                        ),
+                                      ),
+                                      Text(
+                                        l10n.dashboardNutritionFats(
+                                          macros.fats.toStringAsFixed(1),
+                                        ),
+                                      ),
+                                      Text(
+                                        l10n.dashboardNutritionCarbs(
+                                          macros.carbs.toStringAsFixed(1),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                                error: (_, _) => Text(l10n.errorUnknown),
+                                loading: () => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },

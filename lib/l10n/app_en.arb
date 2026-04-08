@@ -10,6 +10,7 @@
   "commonBirthDate": "Birth date",
   "commonSave": "Save",
   "commonCancel": "Cancel",
+  "commonContinue": "Continue",
   "splashTitle": "Liga Gym",
   "splashSubtitle": "Preparing your training space and checking your account.",
   "splashErrorMessage": "We couldn't check your session. You can try again.",
@@ -29,6 +30,34 @@
   "dashboardTitle": "Dashboard",
   "dashboardHeadline": "You're in",
   "dashboardSubtitle": "Your account is ready for the next workout.",
+  "dashboardStartWorkout": "Start workout",
+  "dashboardWorkoutHistory": "Workout history",
+  "dashboardNutritionDiary": "Food diary",
+  "dashboardNutritionTitle": "Today's nutrition",
+  "dashboardNutritionCalories": "Calories: {value}",
+  "@dashboardNutritionCalories": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardNutritionProteins": "Proteins: {value}",
+  "@dashboardNutritionProteins": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardNutritionFats": "Fats: {value}",
+  "@dashboardNutritionFats": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardNutritionCarbs": "Carbs: {value}",
+  "@dashboardNutritionCarbs": {
+    "placeholders": {
+      "value": {}
+    }
+  },
   "dashboardSignOut": "Sign out",
   "dashboardSignedInAs": "Signed in as {email}",
   "@dashboardSignedInAs": {
@@ -39,6 +68,90 @@
   "genderMale": "Male",
   "genderFemale": "Female",
   "genderOther": "Other",
+  "workoutTypeRunning": "Running",
+  "workoutTypeCycling": "Cycling",
+  "workoutTypeWalking": "Walking",
+  "workoutTypeStrength": "Strength",
+  "workoutTypeCardio": "Cardio",
+  "workoutListTitle": "Workouts",
+  "workoutListEmpty": "No workouts yet. Start your first workout from the dashboard.",
+  "workoutFilterDate": "Select date",
+  "workoutFilterType": "Type",
+  "workoutFilterAllTypes": "All types",
+  "workoutFilterClear": "Clear filters",
+  "workoutStartTitle": "Start workout",
+  "workoutStartSubtitle": "Choose a workout type and start tracking your session.",
+  "workoutStartButton": "Start",
+  "workoutTypeLabel": "Workout type",
+  "workoutActiveTitle": "Active workout",
+  "workoutActivePause": "Pause",
+  "workoutActiveResume": "Resume",
+  "workoutActiveStop": "Stop",
+  "workoutMetricDuration": "Duration",
+  "workoutMetricCalories": "Calories",
+  "workoutMetricDistance": "Distance",
+  "workoutGpsUnavailable": "GPS is unavailable. Duration and calories will continue, but route and distance may be incomplete.",
+  "workoutNoActiveSession": "No active workout. Start a new one from the dashboard.",
+  "workoutResultTitle": "Workout result",
+  "workoutResultSubtitle": "Review your workout and save it to history.",
+  "workoutResultSave": "Save workout",
+  "workoutNoResult": "No workout result available.",
+  "workoutSavedSynced": "Workout saved locally and synced to Firestore.",
+  "workoutSavedLocalOnly": "Workout saved locally. Firestore sync will complete later.",
+  "mealTypeBreakfast": "Breakfast",
+  "mealTypeLunch": "Lunch",
+  "mealTypeDinner": "Dinner",
+  "mealTypeSnack": "Snack",
+  "foodDiaryTitle": "Food diary",
+  "foodDiaryPickDate": "Select diary date",
+  "foodDiaryAddFood": "Add food",
+  "foodDiaryMealType": "Meal",
+  "foodDiaryEmptySection": "No entries for this meal yet.",
+  "foodDiaryEntrySubtitle": "{grams} g • {calories} kcal",
+  "@foodDiaryEntrySubtitle": {
+    "placeholders": {
+      "grams": {},
+      "calories": {}
+    }
+  },
+  "foodDiaryInlineMacros": "P {proteins} • F {fats} • C {carbs}",
+  "@foodDiaryInlineMacros": {
+    "placeholders": {
+      "proteins": {},
+      "fats": {},
+      "carbs": {}
+    }
+  },
+  "addFoodTitle": "Add food",
+  "addFoodManual": "Manual",
+  "addFoodBarcode": "Barcode",
+  "addFoodName": "Product name",
+  "addFoodBarcodeLabel": "Barcode",
+  "addFoodGrams": "Portion, g",
+  "productDetailsTitle": "Product details",
+  "productDetailsMeal": "Meal: {meal}",
+  "@productDetailsMeal": {
+    "placeholders": {
+      "meal": {}
+    }
+  },
+  "productDetailsPortion": "Portion: {grams} g",
+  "@productDetailsPortion": {
+    "placeholders": {
+      "grams": {}
+    }
+  },
+  "productDetailsPer100": "Per 100 g",
+  "productDetailsPortionMacros": "For selected portion",
+  "productDetailsSave": "Save entry",
+  "foodCalories": "Calories",
+  "foodProteins": "Proteins",
+  "foodFats": "Fats",
+  "foodCarbs": "Carbs",
+  "foodCaloriesPer100": "Calories per 100 g",
+  "foodProteinsPer100": "Proteins per 100 g",
+  "foodFatsPer100": "Fats per 100 g",
+  "foodCarbsPer100": "Carbs per 100 g",
   "validationEmptyEmail": "Enter your email.",
   "validationInvalidEmail": "Enter a valid email.",
   "validationEmptyPassword": "Enter your password.",
@@ -48,6 +161,13 @@
   "validationEmptyName": "Enter your name.",
   "validationEmptyGender": "Select your gender.",
   "validationEmptyBirthDate": "Select your birth date.",
+  "validationEmptyFoodName": "Enter the product name.",
+  "validationEmptyBarcode": "Enter a barcode.",
+  "validationInvalidFoodWeight": "Enter a valid portion in grams.",
+  "validationInvalidCalories": "Enter valid calories per 100 g.",
+  "validationInvalidProteins": "Enter valid proteins per 100 g.",
+  "validationInvalidFats": "Enter valid fats per 100 g.",
+  "validationInvalidCarbs": "Enter valid carbs per 100 g.",
   "errorUserNotFound": "User with this email was not found.",
   "errorWrongPassword": "The password is incorrect.",
   "errorInvalidCredential": "The email or password is invalid.",
@@ -60,6 +180,10 @@
   "errorGoogleSignInFailed": "Google sign-in failed. Please try again.",
   "errorUnauthorized": "Please log in again.",
   "errorProfileSaveFailed": "Profile could not be saved.",
+  "errorWorkoutSaveFailed": "Workout could not be saved.",
+  "errorNutritionDiaryLoadFailed": "Food diary could not be loaded.",
+  "errorNutritionEntrySaveFailed": "Food entry could not be saved.",
+  "errorFoodProductNotFound": "Product with this barcode was not found.",
   "errorFirebaseConfigurationMissing": "Firebase configuration is missing or incomplete.",
   "errorUnknown": "Something went wrong. Please try again."
 }

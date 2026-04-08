@@ -158,6 +158,12 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get commonCancel;
 
+  /// No description provided for @commonContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get commonContinue;
+
   /// No description provided for @splashTitle.
   ///
   /// In en, this message translates to:
@@ -272,6 +278,54 @@ abstract class AppLocalizations {
   /// **'Your account is ready for the next workout.'**
   String get dashboardSubtitle;
 
+  /// No description provided for @dashboardStartWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Start workout'**
+  String get dashboardStartWorkout;
+
+  /// No description provided for @dashboardWorkoutHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout history'**
+  String get dashboardWorkoutHistory;
+
+  /// No description provided for @dashboardNutritionDiary.
+  ///
+  /// In en, this message translates to:
+  /// **'Food diary'**
+  String get dashboardNutritionDiary;
+
+  /// No description provided for @dashboardNutritionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s nutrition'**
+  String get dashboardNutritionTitle;
+
+  /// No description provided for @dashboardNutritionCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories: {value}'**
+  String dashboardNutritionCalories(Object value);
+
+  /// No description provided for @dashboardNutritionProteins.
+  ///
+  /// In en, this message translates to:
+  /// **'Proteins: {value}'**
+  String dashboardNutritionProteins(Object value);
+
+  /// No description provided for @dashboardNutritionFats.
+  ///
+  /// In en, this message translates to:
+  /// **'Fats: {value}'**
+  String dashboardNutritionFats(Object value);
+
+  /// No description provided for @dashboardNutritionCarbs.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs: {value}'**
+  String dashboardNutritionCarbs(Object value);
+
   /// No description provided for @dashboardSignOut.
   ///
   /// In en, this message translates to:
@@ -301,6 +355,372 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other'**
   String get genderOther;
+
+  /// No description provided for @workoutTypeRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get workoutTypeRunning;
+
+  /// No description provided for @workoutTypeCycling.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycling'**
+  String get workoutTypeCycling;
+
+  /// No description provided for @workoutTypeWalking.
+  ///
+  /// In en, this message translates to:
+  /// **'Walking'**
+  String get workoutTypeWalking;
+
+  /// No description provided for @workoutTypeStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Strength'**
+  String get workoutTypeStrength;
+
+  /// No description provided for @workoutTypeCardio.
+  ///
+  /// In en, this message translates to:
+  /// **'Cardio'**
+  String get workoutTypeCardio;
+
+  /// No description provided for @workoutListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts'**
+  String get workoutListTitle;
+
+  /// No description provided for @workoutListEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No workouts yet. Start your first workout from the dashboard.'**
+  String get workoutListEmpty;
+
+  /// No description provided for @workoutFilterDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get workoutFilterDate;
+
+  /// No description provided for @workoutFilterType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get workoutFilterType;
+
+  /// No description provided for @workoutFilterAllTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'All types'**
+  String get workoutFilterAllTypes;
+
+  /// No description provided for @workoutFilterClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get workoutFilterClear;
+
+  /// No description provided for @workoutStartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start workout'**
+  String get workoutStartTitle;
+
+  /// No description provided for @workoutStartSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a workout type and start tracking your session.'**
+  String get workoutStartSubtitle;
+
+  /// No description provided for @workoutStartButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get workoutStartButton;
+
+  /// No description provided for @workoutTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout type'**
+  String get workoutTypeLabel;
+
+  /// No description provided for @workoutActiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Active workout'**
+  String get workoutActiveTitle;
+
+  /// No description provided for @workoutActivePause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get workoutActivePause;
+
+  /// No description provided for @workoutActiveResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get workoutActiveResume;
+
+  /// No description provided for @workoutActiveStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get workoutActiveStop;
+
+  /// No description provided for @workoutMetricDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get workoutMetricDuration;
+
+  /// No description provided for @workoutMetricCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get workoutMetricCalories;
+
+  /// No description provided for @workoutMetricDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get workoutMetricDistance;
+
+  /// No description provided for @workoutGpsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS is unavailable. Duration and calories will continue, but route and distance may be incomplete.'**
+  String get workoutGpsUnavailable;
+
+  /// No description provided for @workoutNoActiveSession.
+  ///
+  /// In en, this message translates to:
+  /// **'No active workout. Start a new one from the dashboard.'**
+  String get workoutNoActiveSession;
+
+  /// No description provided for @workoutResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout result'**
+  String get workoutResultTitle;
+
+  /// No description provided for @workoutResultSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review your workout and save it to history.'**
+  String get workoutResultSubtitle;
+
+  /// No description provided for @workoutResultSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save workout'**
+  String get workoutResultSave;
+
+  /// No description provided for @workoutNoResult.
+  ///
+  /// In en, this message translates to:
+  /// **'No workout result available.'**
+  String get workoutNoResult;
+
+  /// No description provided for @workoutSavedSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout saved locally and synced to Firestore.'**
+  String get workoutSavedSynced;
+
+  /// No description provided for @workoutSavedLocalOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout saved locally. Firestore sync will complete later.'**
+  String get workoutSavedLocalOnly;
+
+  /// No description provided for @mealTypeBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast'**
+  String get mealTypeBreakfast;
+
+  /// No description provided for @mealTypeLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch'**
+  String get mealTypeLunch;
+
+  /// No description provided for @mealTypeDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Dinner'**
+  String get mealTypeDinner;
+
+  /// No description provided for @mealTypeSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Snack'**
+  String get mealTypeSnack;
+
+  /// No description provided for @foodDiaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Food diary'**
+  String get foodDiaryTitle;
+
+  /// No description provided for @foodDiaryPickDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select diary date'**
+  String get foodDiaryPickDate;
+
+  /// No description provided for @foodDiaryAddFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Add food'**
+  String get foodDiaryAddFood;
+
+  /// No description provided for @foodDiaryMealType.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal'**
+  String get foodDiaryMealType;
+
+  /// No description provided for @foodDiaryEmptySection.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries for this meal yet.'**
+  String get foodDiaryEmptySection;
+
+  /// No description provided for @foodDiaryEntrySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g • {calories} kcal'**
+  String foodDiaryEntrySubtitle(Object grams, Object calories);
+
+  /// No description provided for @foodDiaryInlineMacros.
+  ///
+  /// In en, this message translates to:
+  /// **'P {proteins} • F {fats} • C {carbs}'**
+  String foodDiaryInlineMacros(Object proteins, Object fats, Object carbs);
+
+  /// No description provided for @addFoodTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add food'**
+  String get addFoodTitle;
+
+  /// No description provided for @addFoodManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get addFoodManual;
+
+  /// No description provided for @addFoodBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get addFoodBarcode;
+
+  /// No description provided for @addFoodName.
+  ///
+  /// In en, this message translates to:
+  /// **'Product name'**
+  String get addFoodName;
+
+  /// No description provided for @addFoodBarcodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get addFoodBarcodeLabel;
+
+  /// No description provided for @addFoodGrams.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion, g'**
+  String get addFoodGrams;
+
+  /// No description provided for @productDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Product details'**
+  String get productDetailsTitle;
+
+  /// No description provided for @productDetailsMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal: {meal}'**
+  String productDetailsMeal(Object meal);
+
+  /// No description provided for @productDetailsPortion.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion: {grams} g'**
+  String productDetailsPortion(Object grams);
+
+  /// No description provided for @productDetailsPer100.
+  ///
+  /// In en, this message translates to:
+  /// **'Per 100 g'**
+  String get productDetailsPer100;
+
+  /// No description provided for @productDetailsPortionMacros.
+  ///
+  /// In en, this message translates to:
+  /// **'For selected portion'**
+  String get productDetailsPortionMacros;
+
+  /// No description provided for @productDetailsSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save entry'**
+  String get productDetailsSave;
+
+  /// No description provided for @foodCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get foodCalories;
+
+  /// No description provided for @foodProteins.
+  ///
+  /// In en, this message translates to:
+  /// **'Proteins'**
+  String get foodProteins;
+
+  /// No description provided for @foodFats.
+  ///
+  /// In en, this message translates to:
+  /// **'Fats'**
+  String get foodFats;
+
+  /// No description provided for @foodCarbs.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs'**
+  String get foodCarbs;
+
+  /// No description provided for @foodCaloriesPer100.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories per 100 g'**
+  String get foodCaloriesPer100;
+
+  /// No description provided for @foodProteinsPer100.
+  ///
+  /// In en, this message translates to:
+  /// **'Proteins per 100 g'**
+  String get foodProteinsPer100;
+
+  /// No description provided for @foodFatsPer100.
+  ///
+  /// In en, this message translates to:
+  /// **'Fats per 100 g'**
+  String get foodFatsPer100;
+
+  /// No description provided for @foodCarbsPer100.
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs per 100 g'**
+  String get foodCarbsPer100;
 
   /// No description provided for @validationEmptyEmail.
   ///
@@ -355,6 +775,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select your birth date.'**
   String get validationEmptyBirthDate;
+
+  /// No description provided for @validationEmptyFoodName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the product name.'**
+  String get validationEmptyFoodName;
+
+  /// No description provided for @validationEmptyBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a barcode.'**
+  String get validationEmptyBarcode;
+
+  /// No description provided for @validationInvalidFoodWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid portion in grams.'**
+  String get validationInvalidFoodWeight;
+
+  /// No description provided for @validationInvalidCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter valid calories per 100 g.'**
+  String get validationInvalidCalories;
+
+  /// No description provided for @validationInvalidProteins.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter valid proteins per 100 g.'**
+  String get validationInvalidProteins;
+
+  /// No description provided for @validationInvalidFats.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter valid fats per 100 g.'**
+  String get validationInvalidFats;
+
+  /// No description provided for @validationInvalidCarbs.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter valid carbs per 100 g.'**
+  String get validationInvalidCarbs;
 
   /// No description provided for @errorUserNotFound.
   ///
@@ -427,6 +889,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Profile could not be saved.'**
   String get errorProfileSaveFailed;
+
+  /// No description provided for @errorWorkoutSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout could not be saved.'**
+  String get errorWorkoutSaveFailed;
+
+  /// No description provided for @errorNutritionDiaryLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Food diary could not be loaded.'**
+  String get errorNutritionDiaryLoadFailed;
+
+  /// No description provided for @errorNutritionEntrySaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Food entry could not be saved.'**
+  String get errorNutritionEntrySaveFailed;
+
+  /// No description provided for @errorFoodProductNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Product with this barcode was not found.'**
+  String get errorFoodProductNotFound;
 
   /// No description provided for @errorFirebaseConfigurationMissing.
   ///

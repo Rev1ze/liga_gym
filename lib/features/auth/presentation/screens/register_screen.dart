@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_keys.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/firebase/firebase_bootstrap.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/utils/input_validators.dart';
 import '../../../../core/utils/localization_extensions.dart';
@@ -69,6 +70,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isLoading = ref.watch(authActionControllerProvider).isLoading;
+    final firebaseBootstrap = ref.watch(firebaseBootstrapProvider);
+    final isFirebaseConfigured = firebaseBootstrap.isConfigured;
+    final isRegistrationEnabled = isFirebaseConfigured && !isLoading;
 
     return AuthPageScaffold(
       title: l10n.registerTitle,
@@ -145,9 +149,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               },
             ),
             const SizedBox(height: 24),
+            if (firebaseBootstrap.usesEmulator) ...[
+              Text(
+                'Локальный Firebase включён. Перед регистрацией запусти '
+                '`firebase emulators:start --project demo-liga-gym`.',
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+            ] else if (!isFirebaseConfigured) ...[
+              Text(
+                l10n.errorFirebaseConfigurationMissing,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+            ],
             FilledButton(
               key: AppKeys.registerButton,
-              onPressed: isLoading ? null : _handleRegister,
+              onPressed: isRegistrationEnabled ? _handleRegister : null,
               child: Text(l10n.registerButton),
             ),
             const SizedBox(height: 12),
