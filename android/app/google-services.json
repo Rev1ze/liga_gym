@@ -12,7 +12,20 @@
           "package_name": "com.example.liga_gym_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "434770627395-d07vfq06t0m3ts43mjo0sc48u3mmsnd6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.liga_gym_app",
+            "certificate_hash": "5e0955e68eb2a990fa778652ac805dc8f1a29e48"
+          }
+        },
+        {
+          "client_id": "434770627395-qda0tfjam7ap3kmq1v9j0tc7ucb20cla.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAyf7tP_-UQw9sCsnmp58ajL4VOfKNdOMg"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "434770627395-qda0tfjam7ap3kmq1v9j0tc7ucb20cla.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

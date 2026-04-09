@@ -209,7 +209,7 @@ abstract class AppLocalizations {
   /// No description provided for @goToRegisterButton.
   ///
   /// In en, this message translates to:
-  /// **'Go to Register'**
+  /// **'No account? Sign up'**
   String get goToRegisterButton;
 
   /// No description provided for @registerTitle.
@@ -325,6 +325,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Carbs: {value}'**
   String dashboardNutritionCarbs(Object value);
+
+  /// No description provided for @dashboardAnalyticsOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s overview'**
+  String get dashboardAnalyticsOverview;
+
+  /// No description provided for @dashboardAnalyticsSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get dashboardAnalyticsSteps;
+
+  /// No description provided for @dashboardAnalyticsCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get dashboardAnalyticsCalories;
+
+  /// No description provided for @dashboardAnalyticsProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get dashboardAnalyticsProgress;
+
+  /// No description provided for @dashboardAnalyticsStepGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} step goal'**
+  String dashboardAnalyticsStepGoal(Object value);
+
+  /// No description provided for @dashboardAnalyticsCalorieGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} kcal goal'**
+  String dashboardAnalyticsCalorieGoal(Object value);
+
+  /// No description provided for @dashboardAnalyticsOverallGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily balance'**
+  String get dashboardAnalyticsOverallGoal;
+
+  /// No description provided for @dashboardAnalyticsWeeklyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly analytics'**
+  String get dashboardAnalyticsWeeklyTitle;
+
+  /// No description provided for @dashboardAnalyticsWeeklySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get dashboardAnalyticsWeeklySubtitle;
+
+  /// No description provided for @dashboardAnalyticsStepsLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get dashboardAnalyticsStepsLegend;
+
+  /// No description provided for @dashboardAnalyticsCaloriesLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get dashboardAnalyticsCaloriesLegend;
+
+  /// No description provided for @dashboardAnalyticsWeeklySteps.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} steps this week'**
+  String dashboardAnalyticsWeeklySteps(Object value);
+
+  /// No description provided for @dashboardAnalyticsWeeklyCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} kcal this week'**
+  String dashboardAnalyticsWeeklyCalories(Object value);
 
   /// No description provided for @dashboardSignOut.
   ///

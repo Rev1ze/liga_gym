@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "ru",
   "appTitle": "Liga Gym",
   "commonRetry": "Повторить",
@@ -18,7 +18,7 @@
   "loginSubtitle": "Войдите, чтобы продолжить путь к тренировкам.",
   "loginButton": "Войти",
   "googleSignInButton": "Продолжить через Google",
-  "goToRegisterButton": "К регистрации",
+  "goToRegisterButton": "Нет аккаунта? Зарегистрируйтесь",
   "registerTitle": "Создать аккаунт",
   "registerSubtitle": "Зарегистрируйтесь, чтобы настроить профиль и начать тренировки.",
   "registerButton": "Зарегистрироваться",
@@ -58,7 +58,39 @@
       "value": {}
     }
   },
-  "dashboardSignOut": "Выйти",
+  "dashboardAnalyticsOverview": "\u041e\u0431\u0437\u043e\u0440 \u0437\u0430 \u0441\u0435\u0433\u043e\u0434\u043d\u044f",
+  "dashboardAnalyticsSteps": "\u0428\u0430\u0433\u0438",
+  "dashboardAnalyticsCalories": "\u041a\u0430\u043b\u043e\u0440\u0438\u0438",
+  "dashboardAnalyticsProgress": "\u041f\u0440\u043e\u0433\u0440\u0435\u0441\u0441",
+  "dashboardAnalyticsStepGoal": "\u0426\u0435\u043b\u044c {value} \u0448\u0430\u0433\u043e\u0432",
+  "@dashboardAnalyticsStepGoal": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsCalorieGoal": "\u0426\u0435\u043b\u044c {value} \u043a\u043a\u0430\u043b",
+  "@dashboardAnalyticsCalorieGoal": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsOverallGoal": "\u0414\u043d\u0435\u0432\u043d\u043e\u0439 \u0431\u0430\u043b\u0430\u043d\u0441",
+  "dashboardAnalyticsWeeklyTitle": "\u0410\u043d\u0430\u043b\u0438\u0442\u0438\u043a\u0430 \u0437\u0430 \u043d\u0435\u0434\u0435\u043b\u044e",
+  "dashboardAnalyticsWeeklySubtitle": "\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0435 7 \u0434\u043d\u0435\u0439",
+  "dashboardAnalyticsStepsLegend": "\u0428\u0430\u0433\u0438",
+  "dashboardAnalyticsCaloriesLegend": "\u041a\u0430\u043b\u043e\u0440\u0438\u0438",
+  "dashboardAnalyticsWeeklySteps": "\u0417\u0430 \u043d\u0435\u0434\u0435\u043b\u044e {value} \u0448\u0430\u0433\u043e\u0432",
+  "@dashboardAnalyticsWeeklySteps": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsWeeklyCalories": "\u0417\u0430 \u043d\u0435\u0434\u0435\u043b\u044e {value} \u043a\u043a\u0430\u043b",
+  "@dashboardAnalyticsWeeklyCalories": {
+    "placeholders": {
+      "value": {}
+    }
+  },  "dashboardSignOut": "Выйти",
   "dashboardSignedInAs": "Вы вошли как {email}",
   "@dashboardSignedInAs": {
     "placeholders": {
@@ -187,3 +219,4 @@
   "errorFirebaseConfigurationMissing": "Конфигурация Firebase отсутствует или настроена не полностью.",
   "errorUnknown": "Что-то пошло не так. Попробуйте ещё раз."
 }
+

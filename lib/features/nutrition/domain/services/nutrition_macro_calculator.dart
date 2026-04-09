@@ -16,3 +16,7 @@ class NutritionMacroCalculator {
     );
   }
 }
+// 4607002010012 -> Greek Yogurt
+// 4820001234567 -> Protein Bar
+// 4601234567890 -> Oatmeal
+// 4601111111111 -> Chicken Breast

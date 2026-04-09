@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "en",
   "appTitle": "Liga Gym",
   "commonRetry": "Retry",
@@ -18,7 +18,7 @@
   "loginSubtitle": "Sign in to continue your training journey.",
   "loginButton": "Log in",
   "googleSignInButton": "Continue with Google",
-  "goToRegisterButton": "Go to Register",
+  "goToRegisterButton": "No account? Sign up",
   "registerTitle": "Create account",
   "registerSubtitle": "Register to start building your profile and workouts.",
   "registerButton": "Register",
@@ -58,7 +58,39 @@
       "value": {}
     }
   },
-  "dashboardSignOut": "Sign out",
+  "dashboardAnalyticsOverview": "Today's overview",
+  "dashboardAnalyticsSteps": "Steps",
+  "dashboardAnalyticsCalories": "Calories",
+  "dashboardAnalyticsProgress": "Progress",
+  "dashboardAnalyticsStepGoal": "{value} step goal",
+  "@dashboardAnalyticsStepGoal": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsCalorieGoal": "{value} kcal goal",
+  "@dashboardAnalyticsCalorieGoal": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsOverallGoal": "Daily balance",
+  "dashboardAnalyticsWeeklyTitle": "Weekly analytics",
+  "dashboardAnalyticsWeeklySubtitle": "Last 7 days",
+  "dashboardAnalyticsStepsLegend": "Steps",
+  "dashboardAnalyticsCaloriesLegend": "Calories",
+  "dashboardAnalyticsWeeklySteps": "{value} steps this week",
+  "@dashboardAnalyticsWeeklySteps": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsWeeklyCalories": "{value} kcal this week",
+  "@dashboardAnalyticsWeeklyCalories": {
+    "placeholders": {
+      "value": {}
+    }
+  },  "dashboardSignOut": "Sign out",
   "dashboardSignedInAs": "Signed in as {email}",
   "@dashboardSignedInAs": {
     "placeholders": {
@@ -187,3 +219,5 @@
   "errorFirebaseConfigurationMissing": "Firebase configuration is missing or incomplete.",
   "errorUnknown": "Something went wrong. Please try again."
 }
+
+

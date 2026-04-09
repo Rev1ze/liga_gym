@@ -5,6 +5,7 @@ import '../../../../core/constants/app_keys.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/localization_extensions.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/food_entry_draft.dart';
 import '../../domain/entities/food_macros.dart';
 import '../providers/nutrition_providers.dart';
@@ -30,6 +31,7 @@ class ProductDetailsScreen extends ConsumerWidget {
               inputMethod: arguments.inputMethod,
             ),
           );
+      ref.invalidate(dashboardAnalyticsProvider);
 
       if (!context.mounted) {
         return;
