@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_keys.dart';
-import '../../../../core/errors/app_exception.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/localization_extensions.dart';
@@ -48,13 +47,9 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
       return;
     }
 
-    try {
-      await ref
-          .read(foodDiaryControllerProvider.notifier)
-          .loadDailyFoodEntries(date);
-    } on AppException catch (error) {
-      _showError(error);
-    }
+    await ref
+        .read(foodDiaryControllerProvider.notifier)
+        .loadDailyFoodEntries(date);
   }
 
   Future<void> _openAddFood([MealType mealType = MealType.breakfast]) async {
@@ -73,13 +68,6 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
           .loadDailyFoodEntries(selectedDate);
       ref.invalidate(todayNutritionDiaryProvider);
     }
-  }
-
-  void _showError(AppException error) {
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(error.code.localize(l10n))));
   }
 
   @override
@@ -133,6 +121,21 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
                   ),
                 ),
               ),
+              if (state.errorCode != null) ...[
+                const SizedBox(height: 16),
+                Card(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      state.errorCode!.localize(l10n),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onErrorContainer,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               if (state.isLoading)
                 const Padding(

@@ -65,7 +65,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get googleSignInButton => 'Продолжить через Google';
 
   @override
-  String get goToRegisterButton => 'К регистрации';
+  String get goToRegisterButton => 'Нет аккаунта? Зарегистрируйтесь';
 
   @override
   String get registerTitle => 'Создать аккаунт';
@@ -132,6 +132,53 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String dashboardNutritionCarbs(Object value) {
     return 'Углеводы: $value';
+  }
+
+  @override
+  String get dashboardAnalyticsOverview => 'Обзор за сегодня';
+
+  @override
+  String get dashboardAnalyticsSteps => 'Шаги';
+
+  @override
+  String get dashboardAnalyticsCalories => 'Калории';
+
+  @override
+  String get dashboardAnalyticsProgress => 'Прогресс';
+
+  @override
+  String dashboardAnalyticsStepGoal(Object value) {
+    return 'Цель $value шагов';
+  }
+
+  @override
+  String dashboardAnalyticsCalorieGoal(Object value) {
+    return 'Цель $value ккал';
+  }
+
+  @override
+  String get dashboardAnalyticsOverallGoal => 'Дневной баланс';
+
+  @override
+  String get dashboardAnalyticsWeeklyTitle => 'Аналитика за неделю';
+
+  @override
+  String get dashboardAnalyticsWeeklySubtitle => 'Последние 7 дней';
+
+  @override
+  String get dashboardAnalyticsStepsLegend => 'Шаги';
+
+  @override
+  String get dashboardAnalyticsCaloriesLegend => 'Калории';
+
+  @override
+  String dashboardAnalyticsWeeklySteps(Object value) {
+    return 'За неделю $value шагов';
+  }
+
+  @override
+  String dashboardAnalyticsWeeklyCalories(Object value) {
+    return 'За неделю $value ккал';
   }
 
   @override

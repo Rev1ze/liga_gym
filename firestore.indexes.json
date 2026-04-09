@@ -1,4 +1,19 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "food_entries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "date_key",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "logged_at",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }

@@ -6,6 +6,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/utils/localization_extensions.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/workout_save_status.dart';
 import '../controllers/workout_session_controller.dart';
 import '../providers/workout_providers.dart';
@@ -36,6 +37,7 @@ class WorkoutResultScreen extends ConsumerWidget {
         ),
       );
 
+      ref.invalidate(dashboardAnalyticsProvider);
       ref.read(workoutListControllerProvider.notifier).loadUserWorkouts();
       ref.read(workoutSessionControllerProvider.notifier).reset();
       Navigator.of(

@@ -174,12 +174,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               label: Text(l10n.googleSignInButton),
             ),
             const SizedBox(height: 12),
-            TextButton(
-              key: AppKeys.goToRegisterButton,
-              onPressed: isLoading
-                  ? null
-                  : () => Navigator.of(context).pushNamed(AppRoutes.register),
-              child: Text(l10n.goToRegisterButton),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                key: AppKeys.goToRegisterButton,
+                onPressed: isLoading
+                    ? null
+                    : () => Navigator.of(context).pushNamed(AppRoutes.register),
+                child: Text(l10n.goToRegisterButton),
+              ),
             ),
           ],
         ),
