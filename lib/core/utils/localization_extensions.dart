@@ -1,4 +1,5 @@
 import '../../features/auth/domain/entities/gender.dart';
+import '../../features/auth/domain/entities/user_goal.dart';
 import '../../features/nutrition/domain/entities/meal_type.dart';
 import '../../l10n/app_localizations.dart';
 import '../errors/app_exception.dart';
@@ -70,6 +71,16 @@ extension GenderLocalization on Gender {
       Gender.male => l10n.genderMale,
       Gender.female => l10n.genderFemale,
       Gender.other => l10n.genderOther,
+    };
+  }
+}
+
+extension UserGoalLocalization on UserGoalType {
+  String localize(AppLocalizations l10n) {
+    return switch (this) {
+      UserGoalType.loseWeight => l10n.goalLoseWeight,
+      UserGoalType.maintainWeight => l10n.goalMaintainWeight,
+      UserGoalType.gainWeight => l10n.goalGainWeight,
     };
   }
 }

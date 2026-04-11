@@ -8,6 +8,7 @@
   "commonName": "Имя",
   "commonGender": "Пол",
   "commonBirthDate": "Дата рождения",
+  "commonDate": "Дата",
   "commonSave": "Сохранить",
   "commonCancel": "Отмена",
   "commonContinue": "Продолжить",
@@ -28,8 +29,20 @@
   "profileSetupButton": "Сохранить профиль",
   "profileBirthDatePickerHelp": "Выберите дату рождения",
   "dashboardTitle": "Главная",
+  "dashboardProfile": "Профиль и цели",
   "dashboardHeadline": "Вы вошли",
   "dashboardSubtitle": "Ваш аккаунт готов к следующей тренировке.",
+  "dashboardGoalsTitle": "Цели",
+  "dashboardGoalsSubtitle": "Настройте дневные цели и целевой вес, чтобы персонализировать дашборд.",
+  "dashboardGoalsSummary": "{goal} • {steps} шагов • {calories} ккал",
+  "@dashboardGoalsSummary": {
+    "placeholders": {
+      "goal": {},
+      "steps": {},
+      "calories": {}
+    }
+  },
+  "dashboardGoalsAction": "Настроить цели",
   "dashboardCommunityTitle": "Сообщество",
   "dashboardCommunitySubtitle": "Общайтесь в реальном времени и смотрите, кто лидирует на этой неделе.",
   "dashboardCommunityChat": "Чат",
@@ -82,6 +95,54 @@
   "dashboardAnalyticsOverallGoal": "\u0414\u043d\u0435\u0432\u043d\u043e\u0439 \u0431\u0430\u043b\u0430\u043d\u0441",
   "dashboardAnalyticsWeeklyTitle": "\u0410\u043d\u0430\u043b\u0438\u0442\u0438\u043a\u0430 \u0437\u0430 \u043d\u0435\u0434\u0435\u043b\u044e",
   "dashboardAnalyticsWeeklySubtitle": "\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0435 7 \u0434\u043d\u0435\u0439",
+  "dashboardAnalyticsOpenDetails": "\u041f\u043e\u0434\u0440\u043e\u0431\u043d\u044b\u0439 \u043e\u0442\u0447\u0451\u0442",
+  "dashboardAnalyticsRangeTitle": "\u0410\u043d\u0430\u043b\u0438\u0442\u0438\u043a\u0430 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u043e\u0432",
+  "dashboardAnalyticsRangeSubtitle": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u043b\u044e\u0431\u043e\u0439 \u043f\u0435\u0440\u0438\u043e\u0434 \u0434\u043e 31 \u0434\u043d\u044f \u0438 \u043f\u043e\u0441\u043c\u043e\u0442\u0440\u0438\u0442\u0435 \u0441\u0432\u043e\u0438 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b.",
+  "dashboardAnalyticsFrom": "\u0421",
+  "dashboardAnalyticsTo": "\u041f\u043e",
+  "dashboardAnalyticsMaxRangeHint": "\u0412\u044b\u0431\u0440\u0430\u043d\u043d\u044b\u0439 \u043f\u0435\u0440\u0438\u043e\u0434 \u043d\u0435 \u0434\u043e\u043b\u0436\u0435\u043d \u043f\u0440\u0435\u0432\u044b\u0448\u0430\u0442\u044c 31 \u0434\u0435\u043d\u044c.",
+  "dashboardAnalyticsAverageSteps": "\u0412 \u0441\u0440\u0435\u0434\u043d\u0435\u043c {value} \u0448\u0430\u0433\u043e\u0432 \u0432 \u0434\u0435\u043d\u044c",
+  "@dashboardAnalyticsAverageSteps": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsAverageCalories": "\u0412 \u0441\u0440\u0435\u0434\u043d\u0435\u043c {value} \u043a\u043a\u0430\u043b \u0432 \u0434\u0435\u043d\u044c",
+  "@dashboardAnalyticsAverageCalories": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsWorkoutCalories": "\u041d\u0430 \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043a\u0430\u0445 \u0441\u043e\u0436\u0436\u0435\u043d\u043e {value} \u043a\u043a\u0430\u043b",
+  "@dashboardAnalyticsWorkoutCalories": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsWorkoutsCount": "\u0412\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u043e \u0442\u0440\u0435\u043d\u0438\u0440\u043e\u0432\u043e\u043a: {value}",
+  "@dashboardAnalyticsWorkoutsCount": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsResultsByDay": "\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b \u043f\u043e \u0434\u043d\u044f\u043c",
+  "dashboardAnalyticsNoWeightData": "\u0417\u0430 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u044b\u0439 \u043f\u0435\u0440\u0438\u043e\u0434 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445 \u043e \u0432\u0435\u0441\u0435.",
+  "dashboardAnalyticsWeightChange": "\u041f\u0440\u043e\u0433\u0440\u0435\u0441\u0441 \u043f\u043e \u0432\u0435\u0441\u0443 {value} \u043a\u0433",
+  "@dashboardAnalyticsWeightChange": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsExportPdf": "\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u0432 PDF",
+  "dashboardAnalyticsPdfTitle": "Liga Gym \u2014 \u043e\u0442\u0447\u0451\u0442 \u043f\u043e \u0430\u043d\u0430\u043b\u0438\u0442\u0438\u043a\u0435",
+  "dashboardAnalyticsPdfRangeLabel": "\u041f\u0435\u0440\u0438\u043e\u0434",
+  "dashboardAnalyticsPdfSummaryTitle": "\u0421\u0432\u043e\u0434\u043a\u0430",
+  "dashboardAnalyticsPdfSaved": "PDF \u0441\u043e\u0445\u0440\u0430\u043d\u0451\u043d: {path}",
+  "@dashboardAnalyticsPdfSaved": {
+    "placeholders": {
+      "path": {}
+    }
+  },
   "dashboardAnalyticsStepsLegend": "\u0428\u0430\u0433\u0438",
   "dashboardAnalyticsCaloriesLegend": "\u041a\u0430\u043b\u043e\u0440\u0438\u0438",
   "dashboardAnalyticsWeeklySteps": "\u0417\u0430 \u043d\u0435\u0434\u0435\u043b\u044e {value} \u0448\u0430\u0433\u043e\u0432",
@@ -95,7 +156,8 @@
     "placeholders": {
       "value": {}
     }
-  },  "dashboardSignOut": "Выйти",
+  },
+  "dashboardSignOut": "Выйти",
   "dashboardSignedInAs": "Вы вошли как {email}",
   "@dashboardSignedInAs": {
     "placeholders": {
@@ -105,6 +167,66 @@
   "genderMale": "Мужской",
   "genderFemale": "Женский",
   "genderOther": "Другой",
+  "goalLoseWeight": "Снизить вес",
+  "goalMaintainWeight": "Удерживать вес",
+  "goalGainWeight": "Набрать вес",
+  "profileScreenTitle": "Профиль и цели",
+  "profileScreenSubtitle": "Управляйте профилем, личными данными и параметрами тела.",
+  "profilePersonalSection": "Личные данные",
+  "profileBodySection": "Параметры тела",
+  "profileGoalsSection": "Настройка целей",
+  "profileHeight": "Рост, см",
+  "profileCurrentWeight": "Текущий вес, кг",
+  "profileTargetWeight": "Целевой вес, кг",
+  "profileGoalType": "Основная цель",
+  "profileDailyStepGoal": "Дневная цель по шагам",
+  "profileDailyCalorieGoal": "Дневная цель по калориям, ккал",
+  "profileSaveButton": "Сохранить изменения",
+  "profileSavedMessage": "Профиль обновлён.",
+  "profileHeightShort": "Рост",
+  "profileCurrentWeightShort": "Текущий",
+  "profileTargetWeightShort": "Цель",
+  "profileKgUnit": "кг",
+  "profileCmUnit": "см",
+  "profileCaloriesUnit": "ккал",
+  "dashboardWeightTitle": "Аналитика снижения веса",
+  "dashboardWeightSubtitle": "Текущая динамика по сохранённой истории веса.",
+  "dashboardWeightCurrent": "Текущий вес {value} кг",
+  "@dashboardWeightCurrent": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardWeightTarget": "Цель {value} кг",
+  "@dashboardWeightTarget": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardWeightLost": "Прогресс {value} кг",
+  "@dashboardWeightLost": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardWeightWeekly": "За выбранную неделю {value} кг",
+  "@dashboardWeightWeekly": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardWeightRemaining": "Осталось {value} кг",
+  "@dashboardWeightRemaining": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardWeightEmptyTitle": "Добавьте текущий и целевой вес",
+  "dashboardWeightEmptySubtitle": "Тогда дашборд начнёт показывать аналитику снижения веса.",
+  "goalSettingsTitle": "Настройка целей",
+  "goalSettingsStepsSubtitle": "Измените дневную цель по шагам прямо из карточки «Обзор за сегодня».",
+  "goalSettingsCaloriesSubtitle": "Измените дневную цель по калориям прямо из карточки «Обзор за сегодня».",
+  "goalSettingsProgressSubtitle": "Настройте основную цель и целевые значения веса для отслеживания прогресса.",
   "workoutTypeRunning": "Бег",
   "workoutTypeCycling": "Велосипед",
   "workoutTypeWalking": "Ходьба",
@@ -266,6 +388,11 @@
   "validationEmptyName": "Введите имя.",
   "validationEmptyGender": "Выберите пол.",
   "validationEmptyBirthDate": "Выберите дату рождения.",
+  "validationInvalidHeight": "Введите корректный рост.",
+  "validationInvalidCurrentWeight": "Введите корректный текущий вес.",
+  "validationInvalidTargetWeight": "Введите корректный целевой вес.",
+  "validationInvalidStepGoal": "Введите корректную дневную цель по шагам.",
+  "validationInvalidCalorieGoal": "Введите корректную дневную цель по калориям.",
   "validationEmptyChatMessage": "Введите сообщение.",
   "validationEmptyFoodName": "Введите название продукта.",
   "validationEmptyBarcode": "Введите штрихкод.",

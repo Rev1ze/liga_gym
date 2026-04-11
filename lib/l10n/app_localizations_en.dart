@@ -33,6 +33,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonBirthDate => 'Birth date';
 
   @override
+  String get commonDate => 'Date';
+
+  @override
   String get commonSave => 'Save';
 
   @override
@@ -97,10 +100,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardTitle => 'Dashboard';
 
   @override
+  String get dashboardProfile => 'Profile & goals';
+
+  @override
   String get dashboardHeadline => 'You\'re in';
 
   @override
   String get dashboardSubtitle => 'Your account is ready for the next workout.';
+
+  @override
+  String get dashboardGoalsTitle => 'Goals';
+
+  @override
+  String get dashboardGoalsSubtitle =>
+      'Set your daily targets and target weight to personalize the dashboard.';
+
+  @override
+  String dashboardGoalsSummary(Object goal, Object steps, Object calories) {
+    return '$goal • $steps steps • $calories kcal';
+  }
+
+  @override
+  String get dashboardGoalsAction => 'Edit goals';
 
   @override
   String get dashboardCommunityTitle => 'Community';
@@ -182,6 +203,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardAnalyticsWeeklySubtitle => 'Last 7 days';
 
   @override
+  String get dashboardAnalyticsOpenDetails => 'Detailed report';
+
+  @override
+  String get dashboardAnalyticsRangeTitle => 'Results analytics';
+
+  @override
+  String get dashboardAnalyticsRangeSubtitle =>
+      'Choose any period up to 31 days and review your results.';
+
+  @override
+  String get dashboardAnalyticsFrom => 'From';
+
+  @override
+  String get dashboardAnalyticsTo => 'To';
+
+  @override
+  String get dashboardAnalyticsMaxRangeHint =>
+      'The selected range cannot be longer than 31 days.';
+
+  @override
+  String dashboardAnalyticsAverageSteps(Object value) {
+    return 'Average $value steps per day';
+  }
+
+  @override
+  String dashboardAnalyticsAverageCalories(Object value) {
+    return 'Average $value kcal per day';
+  }
+
+  @override
+  String dashboardAnalyticsWorkoutCalories(Object value) {
+    return '$value kcal burned in workouts';
+  }
+
+  @override
+  String dashboardAnalyticsWorkoutsCount(Object value) {
+    return '$value workouts completed';
+  }
+
+  @override
+  String get dashboardAnalyticsResultsByDay => 'Daily results';
+
+  @override
+  String get dashboardAnalyticsNoWeightData =>
+      'No weight data for the selected period yet.';
+
+  @override
+  String dashboardAnalyticsWeightChange(Object value) {
+    return 'Weight progress $value kg';
+  }
+
+  @override
+  String get dashboardAnalyticsExportPdf => 'Save as PDF';
+
+  @override
+  String get dashboardAnalyticsPdfTitle => 'Liga Gym analytics report';
+
+  @override
+  String get dashboardAnalyticsPdfRangeLabel => 'Period';
+
+  @override
+  String get dashboardAnalyticsPdfSummaryTitle => 'Summary';
+
+  @override
+  String dashboardAnalyticsPdfSaved(Object path) {
+    return 'PDF saved to: $path';
+  }
+
+  @override
   String get dashboardAnalyticsStepsLegend => 'Steps';
 
   @override
@@ -213,6 +303,127 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get genderOther => 'Other';
+
+  @override
+  String get goalLoseWeight => 'Lose weight';
+
+  @override
+  String get goalMaintainWeight => 'Maintain weight';
+
+  @override
+  String get goalGainWeight => 'Gain weight';
+
+  @override
+  String get profileScreenTitle => 'Profile & goals';
+
+  @override
+  String get profileScreenSubtitle =>
+      'Manage your profile, personal data, and body metrics.';
+
+  @override
+  String get profilePersonalSection => 'Personal data';
+
+  @override
+  String get profileBodySection => 'Body metrics';
+
+  @override
+  String get profileGoalsSection => 'Goal settings';
+
+  @override
+  String get profileHeight => 'Height, cm';
+
+  @override
+  String get profileCurrentWeight => 'Current weight, kg';
+
+  @override
+  String get profileTargetWeight => 'Target weight, kg';
+
+  @override
+  String get profileGoalType => 'Main goal';
+
+  @override
+  String get profileDailyStepGoal => 'Daily step goal';
+
+  @override
+  String get profileDailyCalorieGoal => 'Daily calorie goal, kcal';
+
+  @override
+  String get profileSaveButton => 'Save changes';
+
+  @override
+  String get profileSavedMessage => 'Profile updated.';
+
+  @override
+  String get profileHeightShort => 'Height';
+
+  @override
+  String get profileCurrentWeightShort => 'Current';
+
+  @override
+  String get profileTargetWeightShort => 'Target';
+
+  @override
+  String get profileKgUnit => 'kg';
+
+  @override
+  String get profileCmUnit => 'cm';
+
+  @override
+  String get profileCaloriesUnit => 'kcal';
+
+  @override
+  String get dashboardWeightTitle => 'Weight loss analytics';
+
+  @override
+  String get dashboardWeightSubtitle =>
+      'Your current dynamics based on the saved weight history.';
+
+  @override
+  String dashboardWeightCurrent(Object value) {
+    return 'Current weight $value kg';
+  }
+
+  @override
+  String dashboardWeightTarget(Object value) {
+    return 'Target $value kg';
+  }
+
+  @override
+  String dashboardWeightLost(Object value) {
+    return 'Progress $value kg';
+  }
+
+  @override
+  String dashboardWeightWeekly(Object value) {
+    return 'For the selected week $value kg';
+  }
+
+  @override
+  String dashboardWeightRemaining(Object value) {
+    return 'Remaining $value kg';
+  }
+
+  @override
+  String get dashboardWeightEmptyTitle => 'Add your current and target weight';
+
+  @override
+  String get dashboardWeightEmptySubtitle =>
+      'Once you do that, the dashboard will show weight-loss analytics.';
+
+  @override
+  String get goalSettingsTitle => 'Goal settings';
+
+  @override
+  String get goalSettingsStepsSubtitle =>
+      'Adjust the daily step goal from the Today\'s Overview card.';
+
+  @override
+  String get goalSettingsCaloriesSubtitle =>
+      'Adjust the daily calorie goal from the Today\'s Overview card.';
+
+  @override
+  String get goalSettingsProgressSubtitle =>
+      'Set your main goal and weight targets for progress tracking.';
 
   @override
   String get workoutTypeRunning => 'Running';
@@ -601,6 +812,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get validationEmptyBirthDate => 'Select your birth date.';
+
+  @override
+  String get validationInvalidHeight => 'Enter a valid height.';
+
+  @override
+  String get validationInvalidCurrentWeight => 'Enter a valid current weight.';
+
+  @override
+  String get validationInvalidTargetWeight => 'Enter a valid target weight.';
+
+  @override
+  String get validationInvalidStepGoal => 'Enter a valid daily step goal.';
+
+  @override
+  String get validationInvalidCalorieGoal =>
+      'Enter a valid daily calorie goal.';
 
   @override
   String get validationEmptyChatMessage => 'Enter a message.';

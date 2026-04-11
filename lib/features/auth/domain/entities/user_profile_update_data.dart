@@ -1,29 +1,23 @@
 import 'gender.dart';
 import 'user_goal.dart';
 
-class UserProfile {
-  const UserProfile({
-    required this.userId,
-    required this.email,
+class UserProfileUpdateData {
+  const UserProfileUpdateData({
     required this.name,
     required this.gender,
     required this.birthDate,
+    required this.goalType,
+    required this.dailyStepGoal,
+    required this.dailyCalorieGoal,
     this.heightCm,
-    this.startWeightKg,
     this.currentWeightKg,
     this.targetWeightKg,
-    this.goalType = UserGoalType.maintainWeight,
-    this.dailyStepGoal = 10000,
-    this.dailyCalorieGoal = 2200,
   });
 
-  final String userId;
-  final String email;
   final String name;
   final Gender gender;
   final DateTime birthDate;
   final double? heightCm;
-  final double? startWeightKg;
   final double? currentWeightKg;
   final double? targetWeightKg;
   final UserGoalType goalType;

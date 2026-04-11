@@ -146,6 +146,12 @@ abstract class AppLocalizations {
   /// **'Birth date'**
   String get commonBirthDate;
 
+  /// No description provided for @commonDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get commonDate;
+
   /// No description provided for @commonSave.
   ///
   /// In en, this message translates to:
@@ -266,6 +272,12 @@ abstract class AppLocalizations {
   /// **'Dashboard'**
   String get dashboardTitle;
 
+  /// No description provided for @dashboardProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile & goals'**
+  String get dashboardProfile;
+
   /// No description provided for @dashboardHeadline.
   ///
   /// In en, this message translates to:
@@ -277,6 +289,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your account is ready for the next workout.'**
   String get dashboardSubtitle;
+
+  /// No description provided for @dashboardGoalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals'**
+  String get dashboardGoalsTitle;
+
+  /// No description provided for @dashboardGoalsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your daily targets and target weight to personalize the dashboard.'**
+  String get dashboardGoalsSubtitle;
+
+  /// No description provided for @dashboardGoalsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{goal} • {steps} steps • {calories} kcal'**
+  String dashboardGoalsSummary(Object goal, Object steps, Object calories);
+
+  /// No description provided for @dashboardGoalsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit goals'**
+  String get dashboardGoalsAction;
 
   /// No description provided for @dashboardCommunityTitle.
   ///
@@ -410,6 +446,114 @@ abstract class AppLocalizations {
   /// **'Last 7 days'**
   String get dashboardAnalyticsWeeklySubtitle;
 
+  /// No description provided for @dashboardAnalyticsOpenDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed report'**
+  String get dashboardAnalyticsOpenDetails;
+
+  /// No description provided for @dashboardAnalyticsRangeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Results analytics'**
+  String get dashboardAnalyticsRangeTitle;
+
+  /// No description provided for @dashboardAnalyticsRangeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose any period up to 31 days and review your results.'**
+  String get dashboardAnalyticsRangeSubtitle;
+
+  /// No description provided for @dashboardAnalyticsFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get dashboardAnalyticsFrom;
+
+  /// No description provided for @dashboardAnalyticsTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get dashboardAnalyticsTo;
+
+  /// No description provided for @dashboardAnalyticsMaxRangeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected range cannot be longer than 31 days.'**
+  String get dashboardAnalyticsMaxRangeHint;
+
+  /// No description provided for @dashboardAnalyticsAverageSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Average {value} steps per day'**
+  String dashboardAnalyticsAverageSteps(Object value);
+
+  /// No description provided for @dashboardAnalyticsAverageCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Average {value} kcal per day'**
+  String dashboardAnalyticsAverageCalories(Object value);
+
+  /// No description provided for @dashboardAnalyticsWorkoutCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} kcal burned in workouts'**
+  String dashboardAnalyticsWorkoutCalories(Object value);
+
+  /// No description provided for @dashboardAnalyticsWorkoutsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} workouts completed'**
+  String dashboardAnalyticsWorkoutsCount(Object value);
+
+  /// No description provided for @dashboardAnalyticsResultsByDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily results'**
+  String get dashboardAnalyticsResultsByDay;
+
+  /// No description provided for @dashboardAnalyticsNoWeightData.
+  ///
+  /// In en, this message translates to:
+  /// **'No weight data for the selected period yet.'**
+  String get dashboardAnalyticsNoWeightData;
+
+  /// No description provided for @dashboardAnalyticsWeightChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight progress {value} kg'**
+  String dashboardAnalyticsWeightChange(Object value);
+
+  /// No description provided for @dashboardAnalyticsExportPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as PDF'**
+  String get dashboardAnalyticsExportPdf;
+
+  /// No description provided for @dashboardAnalyticsPdfTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Liga Gym analytics report'**
+  String get dashboardAnalyticsPdfTitle;
+
+  /// No description provided for @dashboardAnalyticsPdfRangeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Period'**
+  String get dashboardAnalyticsPdfRangeLabel;
+
+  /// No description provided for @dashboardAnalyticsPdfSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get dashboardAnalyticsPdfSummaryTitle;
+
+  /// No description provided for @dashboardAnalyticsPdfSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF saved to: {path}'**
+  String dashboardAnalyticsPdfSaved(Object path);
+
   /// No description provided for @dashboardAnalyticsStepsLegend.
   ///
   /// In en, this message translates to:
@@ -463,6 +607,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other'**
   String get genderOther;
+
+  /// No description provided for @goalLoseWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Lose weight'**
+  String get goalLoseWeight;
+
+  /// No description provided for @goalMaintainWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintain weight'**
+  String get goalMaintainWeight;
+
+  /// No description provided for @goalGainWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Gain weight'**
+  String get goalGainWeight;
+
+  /// No description provided for @profileScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile & goals'**
+  String get profileScreenTitle;
+
+  /// No description provided for @profileScreenSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your profile, personal data, and body metrics.'**
+  String get profileScreenSubtitle;
+
+  /// No description provided for @profilePersonalSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal data'**
+  String get profilePersonalSection;
+
+  /// No description provided for @profileBodySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Body metrics'**
+  String get profileBodySection;
+
+  /// No description provided for @profileGoalsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal settings'**
+  String get profileGoalsSection;
+
+  /// No description provided for @profileHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Height, cm'**
+  String get profileHeight;
+
+  /// No description provided for @profileCurrentWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Current weight, kg'**
+  String get profileCurrentWeight;
+
+  /// No description provided for @profileTargetWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Target weight, kg'**
+  String get profileTargetWeight;
+
+  /// No description provided for @profileGoalType.
+  ///
+  /// In en, this message translates to:
+  /// **'Main goal'**
+  String get profileGoalType;
+
+  /// No description provided for @profileDailyStepGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily step goal'**
+  String get profileDailyStepGoal;
+
+  /// No description provided for @profileDailyCalorieGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily calorie goal, kcal'**
+  String get profileDailyCalorieGoal;
+
+  /// No description provided for @profileSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get profileSaveButton;
+
+  /// No description provided for @profileSavedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated.'**
+  String get profileSavedMessage;
+
+  /// No description provided for @profileHeightShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get profileHeightShort;
+
+  /// No description provided for @profileCurrentWeightShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get profileCurrentWeightShort;
+
+  /// No description provided for @profileTargetWeightShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Target'**
+  String get profileTargetWeightShort;
+
+  /// No description provided for @profileKgUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'kg'**
+  String get profileKgUnit;
+
+  /// No description provided for @profileCmUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'cm'**
+  String get profileCmUnit;
+
+  /// No description provided for @profileCaloriesUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal'**
+  String get profileCaloriesUnit;
+
+  /// No description provided for @dashboardWeightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight loss analytics'**
+  String get dashboardWeightTitle;
+
+  /// No description provided for @dashboardWeightSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current dynamics based on the saved weight history.'**
+  String get dashboardWeightSubtitle;
+
+  /// No description provided for @dashboardWeightCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current weight {value} kg'**
+  String dashboardWeightCurrent(Object value);
+
+  /// No description provided for @dashboardWeightTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Target {value} kg'**
+  String dashboardWeightTarget(Object value);
+
+  /// No description provided for @dashboardWeightLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress {value} kg'**
+  String dashboardWeightLost(Object value);
+
+  /// No description provided for @dashboardWeightWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'For the selected week {value} kg'**
+  String dashboardWeightWeekly(Object value);
+
+  /// No description provided for @dashboardWeightRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining {value} kg'**
+  String dashboardWeightRemaining(Object value);
+
+  /// No description provided for @dashboardWeightEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your current and target weight'**
+  String get dashboardWeightEmptyTitle;
+
+  /// No description provided for @dashboardWeightEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Once you do that, the dashboard will show weight-loss analytics.'**
+  String get dashboardWeightEmptySubtitle;
+
+  /// No description provided for @goalSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal settings'**
+  String get goalSettingsTitle;
+
+  /// No description provided for @goalSettingsStepsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust the daily step goal from the Today\'s Overview card.'**
+  String get goalSettingsStepsSubtitle;
+
+  /// No description provided for @goalSettingsCaloriesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust the daily calorie goal from the Today\'s Overview card.'**
+  String get goalSettingsCaloriesSubtitle;
+
+  /// No description provided for @goalSettingsProgressSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your main goal and weight targets for progress tracking.'**
+  String get goalSettingsProgressSubtitle;
 
   /// No description provided for @workoutTypeRunning.
   ///
@@ -1171,6 +1525,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select your birth date.'**
   String get validationEmptyBirthDate;
+
+  /// No description provided for @validationInvalidHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid height.'**
+  String get validationInvalidHeight;
+
+  /// No description provided for @validationInvalidCurrentWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid current weight.'**
+  String get validationInvalidCurrentWeight;
+
+  /// No description provided for @validationInvalidTargetWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid target weight.'**
+  String get validationInvalidTargetWeight;
+
+  /// No description provided for @validationInvalidStepGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid daily step goal.'**
+  String get validationInvalidStepGoal;
+
+  /// No description provided for @validationInvalidCalorieGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid daily calorie goal.'**
+  String get validationInvalidCalorieGoal;
 
   /// No description provided for @validationEmptyChatMessage.
   ///

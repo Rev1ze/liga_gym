@@ -8,6 +8,7 @@
   "commonName": "Name",
   "commonGender": "Gender",
   "commonBirthDate": "Birth date",
+  "commonDate": "Date",
   "commonSave": "Save",
   "commonCancel": "Cancel",
   "commonContinue": "Continue",
@@ -28,8 +29,20 @@
   "profileSetupButton": "Save profile",
   "profileBirthDatePickerHelp": "Select birth date",
   "dashboardTitle": "Dashboard",
+  "dashboardProfile": "Profile & goals",
   "dashboardHeadline": "You're in",
   "dashboardSubtitle": "Your account is ready for the next workout.",
+  "dashboardGoalsTitle": "Goals",
+  "dashboardGoalsSubtitle": "Set your daily targets and target weight to personalize the dashboard.",
+  "dashboardGoalsSummary": "{goal} • {steps} steps • {calories} kcal",
+  "@dashboardGoalsSummary": {
+    "placeholders": {
+      "goal": {},
+      "steps": {},
+      "calories": {}
+    }
+  },
+  "dashboardGoalsAction": "Edit goals",
   "dashboardCommunityTitle": "Community",
   "dashboardCommunitySubtitle": "Jump into the live chat and see who is leading this week.",
   "dashboardCommunityChat": "Chat",
@@ -82,6 +95,54 @@
   "dashboardAnalyticsOverallGoal": "Daily balance",
   "dashboardAnalyticsWeeklyTitle": "Weekly analytics",
   "dashboardAnalyticsWeeklySubtitle": "Last 7 days",
+  "dashboardAnalyticsOpenDetails": "Detailed report",
+  "dashboardAnalyticsRangeTitle": "Results analytics",
+  "dashboardAnalyticsRangeSubtitle": "Choose any period up to 31 days and review your results.",
+  "dashboardAnalyticsFrom": "From",
+  "dashboardAnalyticsTo": "To",
+  "dashboardAnalyticsMaxRangeHint": "The selected range cannot be longer than 31 days.",
+  "dashboardAnalyticsAverageSteps": "Average {value} steps per day",
+  "@dashboardAnalyticsAverageSteps": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsAverageCalories": "Average {value} kcal per day",
+  "@dashboardAnalyticsAverageCalories": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsWorkoutCalories": "{value} kcal burned in workouts",
+  "@dashboardAnalyticsWorkoutCalories": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsWorkoutsCount": "{value} workouts completed",
+  "@dashboardAnalyticsWorkoutsCount": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsResultsByDay": "Daily results",
+  "dashboardAnalyticsNoWeightData": "No weight data for the selected period yet.",
+  "dashboardAnalyticsWeightChange": "Weight progress {value} kg",
+  "@dashboardAnalyticsWeightChange": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardAnalyticsExportPdf": "Save as PDF",
+  "dashboardAnalyticsPdfTitle": "Liga Gym analytics report",
+  "dashboardAnalyticsPdfRangeLabel": "Period",
+  "dashboardAnalyticsPdfSummaryTitle": "Summary",
+  "dashboardAnalyticsPdfSaved": "PDF saved to: {path}",
+  "@dashboardAnalyticsPdfSaved": {
+    "placeholders": {
+      "path": {}
+    }
+  },
   "dashboardAnalyticsStepsLegend": "Steps",
   "dashboardAnalyticsCaloriesLegend": "Calories",
   "dashboardAnalyticsWeeklySteps": "{value} steps this week",
@@ -95,7 +156,8 @@
     "placeholders": {
       "value": {}
     }
-  },  "dashboardSignOut": "Sign out",
+  },
+  "dashboardSignOut": "Sign out",
   "dashboardSignedInAs": "Signed in as {email}",
   "@dashboardSignedInAs": {
     "placeholders": {
@@ -105,6 +167,66 @@
   "genderMale": "Male",
   "genderFemale": "Female",
   "genderOther": "Other",
+  "goalLoseWeight": "Lose weight",
+  "goalMaintainWeight": "Maintain weight",
+  "goalGainWeight": "Gain weight",
+  "profileScreenTitle": "Profile & goals",
+  "profileScreenSubtitle": "Manage your profile, personal data, and body metrics.",
+  "profilePersonalSection": "Personal data",
+  "profileBodySection": "Body metrics",
+  "profileGoalsSection": "Goal settings",
+  "profileHeight": "Height, cm",
+  "profileCurrentWeight": "Current weight, kg",
+  "profileTargetWeight": "Target weight, kg",
+  "profileGoalType": "Main goal",
+  "profileDailyStepGoal": "Daily step goal",
+  "profileDailyCalorieGoal": "Daily calorie goal, kcal",
+  "profileSaveButton": "Save changes",
+  "profileSavedMessage": "Profile updated.",
+  "profileHeightShort": "Height",
+  "profileCurrentWeightShort": "Current",
+  "profileTargetWeightShort": "Target",
+  "profileKgUnit": "kg",
+  "profileCmUnit": "cm",
+  "profileCaloriesUnit": "kcal",
+  "dashboardWeightTitle": "Weight loss analytics",
+  "dashboardWeightSubtitle": "Your current dynamics based on the saved weight history.",
+  "dashboardWeightCurrent": "Current weight {value} kg",
+  "@dashboardWeightCurrent": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardWeightTarget": "Target {value} kg",
+  "@dashboardWeightTarget": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardWeightLost": "Progress {value} kg",
+  "@dashboardWeightLost": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardWeightWeekly": "For the selected week {value} kg",
+  "@dashboardWeightWeekly": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardWeightRemaining": "Remaining {value} kg",
+  "@dashboardWeightRemaining": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardWeightEmptyTitle": "Add your current and target weight",
+  "dashboardWeightEmptySubtitle": "Once you do that, the dashboard will show weight-loss analytics.",
+  "goalSettingsTitle": "Goal settings",
+  "goalSettingsStepsSubtitle": "Adjust the daily step goal from the Today's Overview card.",
+  "goalSettingsCaloriesSubtitle": "Adjust the daily calorie goal from the Today's Overview card.",
+  "goalSettingsProgressSubtitle": "Set your main goal and weight targets for progress tracking.",
   "workoutTypeRunning": "Running",
   "workoutTypeCycling": "Cycling",
   "workoutTypeWalking": "Walking",
@@ -266,6 +388,11 @@
   "validationEmptyName": "Enter your name.",
   "validationEmptyGender": "Select your gender.",
   "validationEmptyBirthDate": "Select your birth date.",
+  "validationInvalidHeight": "Enter a valid height.",
+  "validationInvalidCurrentWeight": "Enter a valid current weight.",
+  "validationInvalidTargetWeight": "Enter a valid target weight.",
+  "validationInvalidStepGoal": "Enter a valid daily step goal.",
+  "validationInvalidCalorieGoal": "Enter a valid daily calorie goal.",
   "validationEmptyChatMessage": "Enter a message.",
   "validationEmptyFoodName": "Enter the product name.",
   "validationEmptyBarcode": "Enter a barcode.",

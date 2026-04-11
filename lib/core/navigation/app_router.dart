@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/profile_screen.dart';
 import '../../features/auth/presentation/screens/profile_setup_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/dashboard/presentation/screens/dashboard_analytics_details_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../features/dashboard/presentation/screens/goal_settings_screen.dart';
+import '../../features/dashboard/presentation/utils/goal_settings_route_arguments.dart';
 import '../../features/nutrition/presentation/screens/add_food_screen.dart';
 import '../../features/nutrition/presentation/screens/food_diary_screen.dart';
 import '../../features/nutrition/presentation/screens/product_details_screen.dart';
@@ -29,8 +33,19 @@ abstract final class AppRouter {
         return _buildRoute(const RegisterScreen(), settings);
       case AppRoutes.profileSetup:
         return _buildRoute(const ProfileSetupScreen(), settings);
+      case AppRoutes.profile:
+        return _buildRoute(const ProfileScreen(), settings);
       case AppRoutes.dashboard:
         return _buildRoute(const DashboardScreen(), settings);
+      case AppRoutes.goalSettings:
+        final arguments =
+            settings.arguments as GoalSettingsRouteArguments? ??
+            const GoalSettingsRouteArguments(
+              section: GoalSettingsSection.progress,
+            );
+        return _buildRoute(GoalSettingsScreen(arguments: arguments), settings);
+      case AppRoutes.dashboardAnalyticsDetails:
+        return _buildRoute(const DashboardAnalyticsDetailsScreen(), settings);
       case AppRoutes.chat:
         return _buildRoute(const ChatScreen(), settings);
       case AppRoutes.leaderboard:

@@ -12,8 +12,8 @@ import 'package:liga_gym_app/features/workout/domain/entities/workout_type.dart'
 void main() {
   group('DashboardAnalyticsCalculator', () {
     const calculator = DashboardAnalyticsCalculator(
-      dailyStepGoal: 10000,
-      dailyCalorieGoal: 2200,
+      defaultDailyStepGoal: 10000,
+      defaultDailyCalorieGoal: 2200,
       metersPerStep: 0.8,
     );
 
@@ -119,6 +119,8 @@ void main() {
       final progress = calculator.calculateProgress(
         steps: 15000,
         calories: 2700,
+        stepGoal: 10000,
+        calorieGoal: 2200,
       );
 
       expect(progress.steps, 1);

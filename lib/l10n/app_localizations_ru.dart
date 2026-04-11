@@ -33,6 +33,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get commonBirthDate => 'Дата рождения';
 
   @override
+  String get commonDate => 'Дата';
+
+  @override
   String get commonSave => 'Сохранить';
 
   @override
@@ -97,10 +100,28 @@ class AppLocalizationsRu extends AppLocalizations {
   String get dashboardTitle => 'Главная';
 
   @override
+  String get dashboardProfile => 'Профиль и цели';
+
+  @override
   String get dashboardHeadline => 'Вы вошли';
 
   @override
   String get dashboardSubtitle => 'Ваш аккаунт готов к следующей тренировке.';
+
+  @override
+  String get dashboardGoalsTitle => 'Цели';
+
+  @override
+  String get dashboardGoalsSubtitle =>
+      'Настройте дневные цели и целевой вес, чтобы персонализировать дашборд.';
+
+  @override
+  String dashboardGoalsSummary(Object goal, Object steps, Object calories) {
+    return '$goal • $steps шагов • $calories ккал';
+  }
+
+  @override
+  String get dashboardGoalsAction => 'Настроить цели';
 
   @override
   String get dashboardCommunityTitle => 'Сообщество';
@@ -182,6 +203,75 @@ class AppLocalizationsRu extends AppLocalizations {
   String get dashboardAnalyticsWeeklySubtitle => 'Последние 7 дней';
 
   @override
+  String get dashboardAnalyticsOpenDetails => 'Подробный отчёт';
+
+  @override
+  String get dashboardAnalyticsRangeTitle => 'Аналитика результатов';
+
+  @override
+  String get dashboardAnalyticsRangeSubtitle =>
+      'Выберите любой период до 31 дня и посмотрите свои результаты.';
+
+  @override
+  String get dashboardAnalyticsFrom => 'С';
+
+  @override
+  String get dashboardAnalyticsTo => 'По';
+
+  @override
+  String get dashboardAnalyticsMaxRangeHint =>
+      'Выбранный период не должен превышать 31 день.';
+
+  @override
+  String dashboardAnalyticsAverageSteps(Object value) {
+    return 'В среднем $value шагов в день';
+  }
+
+  @override
+  String dashboardAnalyticsAverageCalories(Object value) {
+    return 'В среднем $value ккал в день';
+  }
+
+  @override
+  String dashboardAnalyticsWorkoutCalories(Object value) {
+    return 'На тренировках сожжено $value ккал';
+  }
+
+  @override
+  String dashboardAnalyticsWorkoutsCount(Object value) {
+    return 'Выполнено тренировок: $value';
+  }
+
+  @override
+  String get dashboardAnalyticsResultsByDay => 'Результаты по дням';
+
+  @override
+  String get dashboardAnalyticsNoWeightData =>
+      'За выбранный период пока нет данных о весе.';
+
+  @override
+  String dashboardAnalyticsWeightChange(Object value) {
+    return 'Прогресс по весу $value кг';
+  }
+
+  @override
+  String get dashboardAnalyticsExportPdf => 'Сохранить в PDF';
+
+  @override
+  String get dashboardAnalyticsPdfTitle => 'Liga Gym — отчёт по аналитике';
+
+  @override
+  String get dashboardAnalyticsPdfRangeLabel => 'Период';
+
+  @override
+  String get dashboardAnalyticsPdfSummaryTitle => 'Сводка';
+
+  @override
+  String dashboardAnalyticsPdfSaved(Object path) {
+    return 'PDF сохранён: $path';
+  }
+
+  @override
   String get dashboardAnalyticsStepsLegend => 'Шаги';
 
   @override
@@ -213,6 +303,127 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get genderOther => 'Другой';
+
+  @override
+  String get goalLoseWeight => 'Снизить вес';
+
+  @override
+  String get goalMaintainWeight => 'Удерживать вес';
+
+  @override
+  String get goalGainWeight => 'Набрать вес';
+
+  @override
+  String get profileScreenTitle => 'Профиль и цели';
+
+  @override
+  String get profileScreenSubtitle =>
+      'Управляйте профилем, личными данными и параметрами тела.';
+
+  @override
+  String get profilePersonalSection => 'Личные данные';
+
+  @override
+  String get profileBodySection => 'Параметры тела';
+
+  @override
+  String get profileGoalsSection => 'Настройка целей';
+
+  @override
+  String get profileHeight => 'Рост, см';
+
+  @override
+  String get profileCurrentWeight => 'Текущий вес, кг';
+
+  @override
+  String get profileTargetWeight => 'Целевой вес, кг';
+
+  @override
+  String get profileGoalType => 'Основная цель';
+
+  @override
+  String get profileDailyStepGoal => 'Дневная цель по шагам';
+
+  @override
+  String get profileDailyCalorieGoal => 'Дневная цель по калориям, ккал';
+
+  @override
+  String get profileSaveButton => 'Сохранить изменения';
+
+  @override
+  String get profileSavedMessage => 'Профиль обновлён.';
+
+  @override
+  String get profileHeightShort => 'Рост';
+
+  @override
+  String get profileCurrentWeightShort => 'Текущий';
+
+  @override
+  String get profileTargetWeightShort => 'Цель';
+
+  @override
+  String get profileKgUnit => 'кг';
+
+  @override
+  String get profileCmUnit => 'см';
+
+  @override
+  String get profileCaloriesUnit => 'ккал';
+
+  @override
+  String get dashboardWeightTitle => 'Аналитика снижения веса';
+
+  @override
+  String get dashboardWeightSubtitle =>
+      'Текущая динамика по сохранённой истории веса.';
+
+  @override
+  String dashboardWeightCurrent(Object value) {
+    return 'Текущий вес $value кг';
+  }
+
+  @override
+  String dashboardWeightTarget(Object value) {
+    return 'Цель $value кг';
+  }
+
+  @override
+  String dashboardWeightLost(Object value) {
+    return 'Прогресс $value кг';
+  }
+
+  @override
+  String dashboardWeightWeekly(Object value) {
+    return 'За выбранную неделю $value кг';
+  }
+
+  @override
+  String dashboardWeightRemaining(Object value) {
+    return 'Осталось $value кг';
+  }
+
+  @override
+  String get dashboardWeightEmptyTitle => 'Добавьте текущий и целевой вес';
+
+  @override
+  String get dashboardWeightEmptySubtitle =>
+      'Тогда дашборд начнёт показывать аналитику снижения веса.';
+
+  @override
+  String get goalSettingsTitle => 'Настройка целей';
+
+  @override
+  String get goalSettingsStepsSubtitle =>
+      'Измените дневную цель по шагам прямо из карточки «Обзор за сегодня».';
+
+  @override
+  String get goalSettingsCaloriesSubtitle =>
+      'Измените дневную цель по калориям прямо из карточки «Обзор за сегодня».';
+
+  @override
+  String get goalSettingsProgressSubtitle =>
+      'Настройте основную цель и целевые значения веса для отслеживания прогресса.';
 
   @override
   String get workoutTypeRunning => 'Бег';
@@ -603,6 +814,24 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get validationEmptyBirthDate => 'Выберите дату рождения.';
+
+  @override
+  String get validationInvalidHeight => 'Введите корректный рост.';
+
+  @override
+  String get validationInvalidCurrentWeight =>
+      'Введите корректный текущий вес.';
+
+  @override
+  String get validationInvalidTargetWeight => 'Введите корректный целевой вес.';
+
+  @override
+  String get validationInvalidStepGoal =>
+      'Введите корректную дневную цель по шагам.';
+
+  @override
+  String get validationInvalidCalorieGoal =>
+      'Введите корректную дневную цель по калориям.';
 
   @override
   String get validationEmptyChatMessage => 'Введите сообщение.';

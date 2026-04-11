@@ -11,11 +11,39 @@ import '../../../../core/utils/localization_extensions.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/dashboard_analytics.dart';
 import '../providers/dashboard_providers.dart';
+import '../utils/goal_settings_route_arguments.dart';
 import '../../../auth/presentation/controllers/auth_action_controller.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
+
+  Future<void> _openProfile(BuildContext context, WidgetRef ref) async {
+    await Navigator.of(context).pushNamed(AppRoutes.profile);
+    ref.invalidate(dashboardAnalyticsProvider);
+    ref.invalidate(currentUserProfileProvider);
+  }
+
+  Future<void> _openAnalyticsDetails(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    await Navigator.of(context).pushNamed(AppRoutes.dashboardAnalyticsDetails);
+    ref.invalidate(dashboardAnalyticsProvider);
+  }
+
+  Future<void> _openGoalSettings(
+    BuildContext context,
+    WidgetRef ref,
+    GoalSettingsSection section,
+  ) async {
+    await Navigator.of(context).pushNamed(
+      AppRoutes.goalSettings,
+      arguments: GoalSettingsRouteArguments(section: section),
+    );
+    ref.invalidate(dashboardAnalyticsProvider);
+    ref.invalidate(currentUserProfileProvider);
+  }
 
   Future<void> _openFoodDiary(BuildContext context, WidgetRef ref) async {
     await Navigator.of(context).pushNamed(AppRoutes.foodDiary);
@@ -62,6 +90,11 @@ class DashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.dashboardTitle),
         actions: [
+          IconButton(
+            tooltip: l10n.dashboardProfile,
+            onPressed: () => _openProfile(context, ref),
+            icon: const Icon(Icons.tune_rounded),
+          ),
           TextButton(
             key: AppKeys.signOutButton,
             onPressed: isLoading ? null : () => _handleSignOut(context, ref),
@@ -93,8 +126,14 @@ class DashboardScreen extends ConsumerWidget {
                     _CommunityCard(l10n: l10n),
                     const SizedBox(height: 20),
                     analyticsState.when(
-                      data: (analytics) =>
-                          _AnalyticsContent(analytics: analytics, l10n: l10n),
+                      data: (analytics) => _AnalyticsContent(
+                        analytics: analytics,
+                        l10n: l10n,
+                        onOpenGoalSettings: (section) =>
+                            _openGoalSettings(context, ref, section),
+                        onOpenAnalyticsDetails: () =>
+                            _openAnalyticsDetails(context, ref),
+                      ),
                       error: (error, _) => _DashboardErrorCard(
                         message: _dashboardErrorMessage(context, error),
                         retryLabel: l10n.commonRetry,
@@ -294,7 +333,8 @@ class _DashboardBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCompact = MediaQuery.sizeOf(context).width < 430;
+    final size = MediaQuery.sizeOf(context);
+    final isCompact = size.width < 430 || size.height < 760;
 
     return BottomAppBar(
       elevation: 8,
@@ -395,10 +435,17 @@ class _BottomBarAction extends StatelessWidget {
 }
 
 class _AnalyticsContent extends StatelessWidget {
-  const _AnalyticsContent({required this.analytics, required this.l10n});
+  const _AnalyticsContent({
+    required this.analytics,
+    required this.l10n,
+    required this.onOpenGoalSettings,
+    required this.onOpenAnalyticsDetails,
+  });
 
   final DashboardAnalytics analytics;
   final AppLocalizations l10n;
+  final ValueChanged<GoalSettingsSection> onOpenGoalSettings;
+  final VoidCallback onOpenAnalyticsDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -419,18 +466,24 @@ class _AnalyticsContent extends StatelessWidget {
             _MetricCard(
               title: l10n.dashboardAnalyticsSteps,
               value: NumberFormat.decimalPattern().format(today.steps),
-              subtitle: l10n.dashboardAnalyticsStepGoal('10,000'),
+              subtitle: l10n.dashboardAnalyticsStepGoal(
+                NumberFormat.decimalPattern().format(analytics.goals.stepGoal),
+              ),
               color: const Color(0xFF2563EB),
               progress: analytics.progress.steps,
               icon: Icons.directions_walk,
+              onTap: () => onOpenGoalSettings(GoalSettingsSection.steps),
             ),
             _MetricCard(
               title: l10n.dashboardAnalyticsCalories,
               value: today.calories.toStringAsFixed(0),
-              subtitle: l10n.dashboardAnalyticsCalorieGoal('2200'),
+              subtitle: l10n.dashboardAnalyticsCalorieGoal(
+                analytics.goals.calorieGoal.toStringAsFixed(0),
+              ),
               color: const Color(0xFFF97316),
               progress: analytics.progress.calories,
               icon: Icons.local_fire_department,
+              onTap: () => onOpenGoalSettings(GoalSettingsSection.calories),
             ),
             _MetricCard(
               title: l10n.dashboardAnalyticsProgress,
@@ -439,64 +492,94 @@ class _AnalyticsContent extends StatelessWidget {
               color: const Color(0xFF0F766E),
               progress: analytics.progress.overall,
               icon: Icons.track_changes,
+              onTap: () => onOpenGoalSettings(GoalSettingsSection.progress),
             ),
           ],
         ),
         const SizedBox(height: 20),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.dashboardAnalyticsWeeklyTitle,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.dashboardAnalyticsWeeklySubtitle,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).hintColor,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _WeeklyChart(days: analytics.weeklyStats.days),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  children: [
-                    _LegendPill(
-                      label: l10n.dashboardAnalyticsStepsLegend,
-                      color: const Color(0xFF2563EB),
-                    ),
-                    _LegendPill(
-                      label: l10n.dashboardAnalyticsCaloriesLegend,
-                      color: const Color(0xFFF97316),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    _WeeklySummaryPill(
-                      label: l10n.dashboardAnalyticsWeeklySteps(
-                        NumberFormat.decimalPattern().format(
-                          analytics.weeklyStats.totalSteps,
+        _WeightAnalyticsCard(
+          analytics: analytics,
+          l10n: l10n,
+          onOpenGoals: () => onOpenGoalSettings(GoalSettingsSection.progress),
+        ),
+        const SizedBox(height: 20),
+        InkWell(
+          borderRadius: BorderRadius.circular(28),
+          onTap: onOpenAnalyticsDetails,
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.dashboardAnalyticsWeeklyTitle,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              l10n.dashboardAnalyticsWeeklySubtitle,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: Theme.of(context).hintColor,
+                                  ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    _WeeklySummaryPill(
-                      label: l10n.dashboardAnalyticsWeeklyCalories(
-                        analytics.weeklyStats.totalCalories.toStringAsFixed(0),
+                      TextButton.icon(
+                        onPressed: onOpenAnalyticsDetails,
+                        icon: const Icon(Icons.open_in_new_rounded),
+                        label: Text(l10n.dashboardAnalyticsOpenDetails),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  _WeeklyChart(days: analytics.weeklyStats.days),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      _LegendPill(
+                        label: l10n.dashboardAnalyticsStepsLegend,
+                        color: const Color(0xFF2563EB),
+                      ),
+                      _LegendPill(
+                        label: l10n.dashboardAnalyticsCaloriesLegend,
+                        color: const Color(0xFFF97316),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      _WeeklySummaryPill(
+                        label: l10n.dashboardAnalyticsWeeklySteps(
+                          NumberFormat.decimalPattern().format(
+                            analytics.weeklyStats.totalSteps,
+                          ),
+                        ),
+                      ),
+                      _WeeklySummaryPill(
+                        label: l10n.dashboardAnalyticsWeeklyCalories(
+                          analytics.weeklyStats.totalCalories.toStringAsFixed(
+                            0,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -539,6 +622,99 @@ class _AnalyticsContent extends StatelessWidget {
   }
 }
 
+class _WeightAnalyticsCard extends StatelessWidget {
+  const _WeightAnalyticsCard({
+    required this.analytics,
+    required this.l10n,
+    required this.onOpenGoals,
+  });
+
+  final DashboardAnalytics analytics;
+  final AppLocalizations l10n;
+  final VoidCallback onOpenGoals;
+
+  @override
+  Widget build(BuildContext context) {
+    final weight = analytics.weightAnalytics;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.dashboardWeightTitle,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              weight.hasData
+                  ? l10n.dashboardWeightSubtitle
+                  : l10n.dashboardWeightEmptySubtitle,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).hintColor,
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (weight.hasData)
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  if (weight.currentWeightKg != null)
+                    _WeeklySummaryPill(
+                      label: l10n.dashboardWeightCurrent(
+                        weight.currentWeightKg!.toStringAsFixed(1),
+                      ),
+                    ),
+                  if (weight.targetWeightKg != null)
+                    _WeeklySummaryPill(
+                      label: l10n.dashboardWeightTarget(
+                        weight.targetWeightKg!.toStringAsFixed(1),
+                      ),
+                    ),
+                  if (weight.totalChangeKg != null)
+                    _WeeklySummaryPill(
+                      label: l10n.dashboardWeightLost(
+                        weight.totalChangeKg!.toStringAsFixed(1),
+                      ),
+                    ),
+                  if (weight.weeklyChangeKg != null)
+                    _WeeklySummaryPill(
+                      label: l10n.dashboardWeightWeekly(
+                        weight.weeklyChangeKg!.toStringAsFixed(1),
+                      ),
+                    ),
+                  if (weight.remainingToGoalKg != null)
+                    _WeeklySummaryPill(
+                      label: l10n.dashboardWeightRemaining(
+                        weight.remainingToGoalKg!.abs().toStringAsFixed(1),
+                      ),
+                    ),
+                ],
+              )
+            else
+              Text(
+                l10n.dashboardWeightEmptyTitle,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: onOpenGoals,
+                icon: const Icon(Icons.tune_rounded),
+                label: Text(l10n.dashboardGoalsAction),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _MetricCard extends StatelessWidget {
   const _MetricCard({
     required this.title,
@@ -547,6 +723,7 @@ class _MetricCard extends StatelessWidget {
     required this.color,
     required this.progress,
     required this.icon,
+    this.onTap,
   });
 
   final String title;
@@ -555,6 +732,7 @@ class _MetricCard extends StatelessWidget {
   final Color color;
   final double progress;
   final IconData icon;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -568,38 +746,52 @@ class _MetricCard extends StatelessWidget {
     return SizedBox(
       width: cardWidth,
       child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              _ProgressRing(
-                progress: progress,
-                color: color,
-                child: Icon(icon, color: color),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 6),
-                    Text(
-                      value,
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).hintColor,
-                      ),
-                    ),
-                  ],
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                _ProgressRing(
+                  progress: progress,
+                  color: color,
+                  child: Icon(icon, color: color),
                 ),
-              ),
-            ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        value,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        subtitle,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).hintColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (onTap != null) ...[
+                  const SizedBox(width: 12),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),

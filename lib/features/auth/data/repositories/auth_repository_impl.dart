@@ -2,6 +2,10 @@ import '../../../../core/errors/app_exception.dart';
 import '../../domain/entities/auth_status.dart';
 import '../../domain/entities/auth_user.dart';
 import '../../domain/entities/profile_setup_data.dart';
+import '../../domain/entities/user_goal.dart';
+import '../../domain/entities/user_profile.dart';
+import '../../domain/entities/user_profile_update_data.dart';
+import '../../domain/entities/weight_history_entry.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_data_source.dart';
 import '../datasources/profile_remote_data_source.dart';
@@ -80,10 +84,66 @@ class AuthRepositoryImpl implements AuthRepository {
         name: profile.name,
         gender: profile.gender,
         birthDate: profile.birthDate,
+        goalType: UserGoalType.maintainWeight,
       ),
     );
 
     return AuthStatus.authenticated;
+  }
+
+  @override
+  Future<UserProfile> getUserProfile(String userId) async {
+    final profile = await _profileRemoteDataSource.getUserProfile(userId);
+    if (profile == null) {
+      throw const ProfileException(AppErrorCode.profileSaveFailed);
+    }
+
+    return profile;
+  }
+
+  @override
+  Future<void> updateUserProfile(UserProfileUpdateData profile) async {
+    final currentUser = await _authRemoteDataSource.getCurrentUser();
+
+    if (currentUser == null) {
+      throw const AuthException(AppErrorCode.unauthorized);
+    }
+
+    final existingProfile = await _profileRemoteDataSource.getUserProfile(
+      currentUser.id,
+    );
+    final startWeightKg =
+        existingProfile?.startWeightKg ?? profile.currentWeightKg;
+
+    await _profileRemoteDataSource.saveUserProfile(
+      UserProfileModel(
+        userId: currentUser.id,
+        email: currentUser.email,
+        name: profile.name,
+        gender: profile.gender,
+        birthDate: profile.birthDate,
+        heightCm: profile.heightCm,
+        startWeightKg: startWeightKg,
+        currentWeightKg: profile.currentWeightKg,
+        targetWeightKg: profile.targetWeightKg,
+        goalType: profile.goalType,
+        dailyStepGoal: profile.dailyStepGoal,
+        dailyCalorieGoal: profile.dailyCalorieGoal,
+      ),
+    );
+  }
+
+  @override
+  Future<List<WeightHistoryEntry>> loadWeightHistory({
+    required String userId,
+    required DateTime from,
+    required DateTime to,
+  }) {
+    return _profileRemoteDataSource.loadWeightHistory(
+      userId: userId,
+      from: from,
+      to: to,
+    );
   }
 
   @override
