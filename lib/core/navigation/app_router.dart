@@ -11,6 +11,7 @@ import '../../features/nutrition/presentation/screens/product_details_screen.dar
 import '../../features/nutrition/presentation/utils/nutrition_route_arguments.dart';
 import '../../features/social/presentation/screens/chat_screen.dart';
 import '../../features/social/presentation/screens/leaderboard_screen.dart';
+import '../../features/steps/presentation/screens/step_counter_screen.dart';
 import '../../features/workout/presentation/screens/active_workout_screen.dart';
 import '../../features/workout/presentation/screens/start_workout_screen.dart';
 import '../../features/workout/presentation/screens/workout_list_screen.dart';
@@ -44,6 +45,8 @@ abstract final class AppRouter {
         return _buildRoute(const WorkoutResultScreen(), settings);
       case AppRoutes.foodDiary:
         return _buildRoute(const FoodDiaryScreen(), settings);
+      case AppRoutes.stepCounter:
+        return _buildRoute(const StepCounterScreen(), settings);
       case AppRoutes.addFood:
         final arguments =
             settings.arguments as AddFoodRouteArguments? ??

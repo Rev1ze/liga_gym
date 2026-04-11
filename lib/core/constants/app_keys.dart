@@ -29,6 +29,9 @@ abstract final class AppKeys {
   static const dashboardWorkoutHistoryButton = ValueKey<String>(
     'dashboardWorkoutHistoryButton',
   );
+  static const dashboardStepCounterButton = ValueKey<String>(
+    'dashboardStepCounterButton',
+  );
   static const workoutStartButton = ValueKey<String>('workoutStartButton');
   static const workoutPauseButton = ValueKey<String>('workoutPauseButton');
   static const workoutStopButton = ValueKey<String>('workoutStopButton');
@@ -48,6 +51,9 @@ abstract final class AppKeys {
   static const foodDiaryDateButton = ValueKey<String>('foodDiaryDateButton');
   static const addFoodManualTab = ValueKey<String>('addFoodManualTab');
   static const addFoodBarcodeTab = ValueKey<String>('addFoodBarcodeTab');
+  static const addFoodQuickAccessTab = ValueKey<String>(
+    'addFoodQuickAccessTab',
+  );
   static const addFoodMealTypeField = ValueKey<String>('addFoodMealTypeField');
   static const addFoodNameField = ValueKey<String>('addFoodNameField');
   static const addFoodBarcodeField = ValueKey<String>('addFoodBarcodeField');
@@ -61,5 +67,14 @@ abstract final class AppKeys {
   );
   static const productDetailsSaveButton = ValueKey<String>(
     'productDetailsSaveButton',
+  );
+  static const stepScreenEnableButton = ValueKey<String>(
+    'stepScreenEnableButton',
+  );
+  static const stepScreenOpenSettingsButton = ValueKey<String>(
+    'stepScreenOpenSettingsButton',
+  );
+  static const stepScreenRefreshButton = ValueKey<String>(
+    'stepScreenRefreshButton',
   );
 }

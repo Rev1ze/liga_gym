@@ -6,7 +6,11 @@ import '../models/workout_model.dart';
 abstract interface class WorkoutLocalDataSource {
   Future<List<WorkoutModel>> loadUserWorkouts(String userId);
 
+  Future<List<WorkoutModel>> loadPendingWorkouts(String userId);
+
   Future<void> saveWorkout(WorkoutModel workout);
+
+  Future<void> saveWorkouts(List<WorkoutModel> workouts);
 
   Future<void> markWorkoutSynced(String workoutId);
 }
@@ -65,6 +69,19 @@ class SqfliteWorkoutLocalDataSource implements WorkoutLocalDataSource {
   }
 
   @override
+  Future<List<WorkoutModel>> loadPendingWorkouts(String userId) async {
+    final database = await _db;
+    final maps = await database.query(
+      _tableName,
+      where: 'user_id = ? AND is_synced = 0',
+      whereArgs: [userId],
+      orderBy: 'started_at ASC',
+    );
+
+    return maps.map(WorkoutModel.fromLocalMap).toList(growable: false);
+  }
+
+  @override
   Future<void> saveWorkout(WorkoutModel workout) async {
     final database = await _db;
     await database.insert(
@@ -72,6 +89,26 @@ class SqfliteWorkoutLocalDataSource implements WorkoutLocalDataSource {
       workout.toLocalMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  @override
+  Future<void> saveWorkouts(List<WorkoutModel> workouts) async {
+    if (workouts.isEmpty) {
+      return;
+    }
+
+    final database = await _db;
+    final batch = database.batch();
+
+    for (final workout in workouts) {
+      batch.insert(
+        _tableName,
+        workout.toLocalMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    await batch.commit(noResult: true);
   }
 
   @override

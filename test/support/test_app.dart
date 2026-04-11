@@ -10,6 +10,7 @@ Widget buildTestApp({
   required AuthRepository repository,
   required Widget home,
   List overrides = const [],
+  RouteFactory? onGenerateRoute,
 }) {
   return ProviderScope(
     overrides: [
@@ -21,6 +22,7 @@ Widget buildTestApp({
     ],
     child: MaterialApp(
       locale: const Locale('en'),
+      onGenerateRoute: onGenerateRoute,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

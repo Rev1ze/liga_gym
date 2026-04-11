@@ -22,6 +22,11 @@ class DashboardScreen extends ConsumerWidget {
     ref.invalidate(dashboardAnalyticsProvider);
   }
 
+  Future<void> _openStepCounter(BuildContext context, WidgetRef ref) async {
+    await Navigator.of(context).pushNamed(AppRoutes.stepCounter);
+    ref.invalidate(dashboardAnalyticsProvider);
+  }
+
   Future<void> _handleSignOut(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
 
@@ -69,6 +74,7 @@ class DashboardScreen extends ConsumerWidget {
             Navigator.of(context).pushNamed(AppRoutes.startWorkout),
         onOpenWorkouts: () =>
             Navigator.of(context).pushNamed(AppRoutes.workoutList),
+        onOpenStepCounter: () => _openStepCounter(context, ref),
         onOpenNutrition: () => _openFoodDiary(context, ref),
         l10n: l10n,
       ),
@@ -275,12 +281,14 @@ class _DashboardBottomBar extends StatelessWidget {
   const _DashboardBottomBar({
     required this.onStartWorkout,
     required this.onOpenWorkouts,
+    required this.onOpenStepCounter,
     required this.onOpenNutrition,
     required this.l10n,
   });
 
   final VoidCallback onStartWorkout;
   final VoidCallback onOpenWorkouts;
+  final VoidCallback onOpenStepCounter;
   final VoidCallback onOpenNutrition;
   final AppLocalizations l10n;
 
@@ -308,6 +316,13 @@ class _DashboardBottomBar extends StatelessWidget {
               onTap: onOpenWorkouts,
               icon: Icons.history_rounded,
               label: l10n.dashboardWorkoutHistory,
+              isCompact: isCompact,
+            ),
+            _BottomBarAction(
+              key: AppKeys.dashboardStepCounterButton,
+              onTap: onOpenStepCounter,
+              icon: Icons.directions_walk_rounded,
+              label: l10n.dashboardStepCounter,
               isCompact: isCompact,
             ),
             _BottomBarAction(

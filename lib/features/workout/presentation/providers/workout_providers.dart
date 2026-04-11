@@ -6,6 +6,7 @@ import '../../data/datasources/workout_local_data_source.dart';
 import '../../data/datasources/workout_location_data_source.dart';
 import '../../data/datasources/workout_remote_data_source.dart';
 import '../../data/repositories/workout_repository_impl.dart';
+import '../../data/services/workout_offline_sync_service.dart';
 import '../../domain/usecases/load_user_workouts_use_case.dart';
 import '../../domain/usecases/save_workout_use_case.dart';
 import '../controllers/workout_list_controller.dart';
@@ -36,10 +37,20 @@ final workoutLocationDataSourceProvider = Provider<WorkoutLocationDataSource>(
   (ref) => const GeolocatorWorkoutLocationDataSource(),
 );
 
+final workoutOfflineSyncServiceProvider = Provider<WorkoutOfflineSyncService>((
+  ref,
+) {
+  return WorkoutOfflineSyncService(
+    workoutLocalDataSource: ref.watch(workoutLocalDataSourceProvider),
+    workoutRemoteDataSource: ref.watch(workoutRemoteDataSourceProvider),
+  );
+});
+
 final workoutRepositoryProvider = Provider(
   (ref) => WorkoutRepositoryImpl(
     workoutLocalDataSource: ref.watch(workoutLocalDataSourceProvider),
     workoutRemoteDataSource: ref.watch(workoutRemoteDataSourceProvider),
+    workoutOfflineSyncService: ref.watch(workoutOfflineSyncServiceProvider),
   ),
 );
 

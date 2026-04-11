@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../../../core/offline/offline_sync_record.dart';
 import '../../domain/entities/food_entry.dart';
 import '../../domain/entities/food_input_method.dart';
 import '../../domain/entities/food_macros.dart';
 import '../../domain/entities/food_product.dart';
 import '../../domain/entities/meal_type.dart';
 
-class FoodEntryModel extends FoodEntry {
+class FoodEntryModel extends FoodEntry implements OfflineSyncRecord {
   const FoodEntryModel({
     required super.id,
     required super.userId,
@@ -86,6 +87,9 @@ class FoodEntryModel extends FoodEntry {
       isSynced: true,
     );
   }
+
+  @override
+  DateTime get lastModifiedAt => loggedAt;
 
   Map<String, Object?> toLocalMap() {
     return <String, Object?>{

@@ -314,6 +314,12 @@ abstract class AppLocalizations {
   /// **'Workout history'**
   String get dashboardWorkoutHistory;
 
+  /// No description provided for @dashboardStepCounter.
+  ///
+  /// In en, this message translates to:
+  /// **'Step counter'**
+  String get dashboardStepCounter;
+
   /// No description provided for @dashboardNutritionDiary.
   ///
   /// In en, this message translates to:
@@ -794,6 +800,12 @@ abstract class AppLocalizations {
   /// **'Barcode'**
   String get addFoodBarcode;
 
+  /// No description provided for @addFoodQuickAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick access'**
+  String get addFoodQuickAccess;
+
   /// No description provided for @addFoodName.
   ///
   /// In en, this message translates to:
@@ -811,6 +823,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Portion, g'**
   String get addFoodGrams;
+
+  /// No description provided for @addFoodQuickAccessChooseProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a product from quick access first.'**
+  String get addFoodQuickAccessChooseProduct;
+
+  /// No description provided for @addFoodQuickAccessChooseProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one product from quick access.'**
+  String get addFoodQuickAccessChooseProducts;
+
+  /// No description provided for @addFoodQuickAccessEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no saved products yet. Add a new one manually or by barcode and it will appear here.'**
+  String get addFoodQuickAccessEmpty;
+
+  /// No description provided for @addFoodQuickAccessEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit product'**
+  String get addFoodQuickAccessEdit;
+
+  /// No description provided for @addFoodQuickAccessSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected products: {count}'**
+  String addFoodQuickAccessSelectedCount(Object count);
+
+  /// No description provided for @addFoodEditingProductTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Editing saved product'**
+  String get addFoodEditingProductTitle;
+
+  /// No description provided for @addFoodCreateNewProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new product'**
+  String get addFoodCreateNewProduct;
 
   /// No description provided for @productDetailsTitle.
   ///
@@ -842,11 +896,179 @@ abstract class AppLocalizations {
   /// **'For selected portion'**
   String get productDetailsPortionMacros;
 
+  /// No description provided for @productDetailsSelectedProductsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected products'**
+  String get productDetailsSelectedProductsTitle;
+
+  /// No description provided for @productDetailsSelectedProductsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected products: {count}'**
+  String productDetailsSelectedProductsCount(Object count);
+
+  /// No description provided for @productDetailsTotalMacros.
+  ///
+  /// In en, this message translates to:
+  /// **'Total for selected portions'**
+  String get productDetailsTotalMacros;
+
   /// No description provided for @productDetailsSave.
   ///
   /// In en, this message translates to:
   /// **'Save entry'**
   String get productDetailsSave;
+
+  /// No description provided for @stepCounterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Step counter'**
+  String get stepCounterTitle;
+
+  /// No description provided for @stepCounterToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s steps'**
+  String get stepCounterToday;
+
+  /// No description provided for @stepCounterTodayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The value is read from the local database and updates while the tracking service is running.'**
+  String get stepCounterTodayHint;
+
+  /// No description provided for @stepCounterStatusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get stepCounterStatusTitle;
+
+  /// No description provided for @stepCounterStatusPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get stepCounterStatusPlatform;
+
+  /// No description provided for @stepCounterStatusPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission'**
+  String get stepCounterStatusPermission;
+
+  /// No description provided for @stepCounterStatusService.
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get stepCounterStatusService;
+
+  /// No description provided for @stepCounterStatusAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get stepCounterStatusAccount;
+
+  /// No description provided for @stepCounterStatusSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Supported'**
+  String get stepCounterStatusSupported;
+
+  /// No description provided for @stepCounterStatusUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Not supported'**
+  String get stepCounterStatusUnsupported;
+
+  /// No description provided for @stepCounterStatusGranted.
+  ///
+  /// In en, this message translates to:
+  /// **'Granted'**
+  String get stepCounterStatusGranted;
+
+  /// No description provided for @stepCounterStatusDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Not granted'**
+  String get stepCounterStatusDenied;
+
+  /// No description provided for @stepCounterStatusPermanentlyDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Denied in settings'**
+  String get stepCounterStatusPermanentlyDenied;
+
+  /// No description provided for @stepCounterStatusRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get stepCounterStatusRunning;
+
+  /// No description provided for @stepCounterStatusStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped'**
+  String get stepCounterStatusStopped;
+
+  /// No description provided for @stepCounterStatusLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked to current account'**
+  String get stepCounterStatusLinked;
+
+  /// No description provided for @stepCounterStatusNotLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'Not linked'**
+  String get stepCounterStatusNotLinked;
+
+  /// No description provided for @stepCounterActionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get stepCounterActionsTitle;
+
+  /// No description provided for @stepCounterEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable step tracking'**
+  String get stepCounterEnable;
+
+  /// No description provided for @stepCounterOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open app settings'**
+  String get stepCounterOpenSettings;
+
+  /// No description provided for @stepCounterUnsupportedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Continuous step tracking is currently available only on Android devices with a step sensor.'**
+  String get stepCounterUnsupportedHint;
+
+  /// No description provided for @stepCounterPermissionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant Activity Recognition permission to start continuous step counting.'**
+  String get stepCounterPermissionHint;
+
+  /// No description provided for @stepCounterSettingsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Open app settings and allow Activity Recognition, then return here.'**
+  String get stepCounterSettingsHint;
+
+  /// No description provided for @stepCounterEnableHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracking is available, but the service is not fully active yet. Tap the enable button.'**
+  String get stepCounterEnableHint;
+
+  /// No description provided for @stepCounterRunningHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracking is active. Steps should continue updating while the app is minimized.'**
+  String get stepCounterRunningHint;
 
   /// No description provided for @foodCalories.
   ///

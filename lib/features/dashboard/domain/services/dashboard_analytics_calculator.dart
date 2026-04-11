@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../nutrition/domain/entities/daily_food_diary.dart';
+import '../../../steps/domain/entities/daily_step_count.dart';
 import '../../../workout/domain/entities/workout.dart';
 import '../../../workout/domain/entities/workout_type.dart';
 import '../entities/dashboard_analytics.dart';
@@ -19,12 +20,16 @@ class DashboardAnalyticsCalculator {
   DashboardWeeklyStats calculateWeeklyStats({
     required List<Workout> workouts,
     required List<DailyFoodDiary> diaries,
+    List<DailyStepCount> stepCounts = const <DailyStepCount>[],
     DateTime? now,
   }) {
     final today = DateUtils.dateOnly(now ?? DateTime.now());
     final startDate = today.subtract(const Duration(days: 6));
     final diaryByDay = <String, DailyFoodDiary>{
       for (final diary in diaries) _dateKey(diary.date): diary,
+    };
+    final stepsByDay = <String, DailyStepCount>{
+      for (final stepCount in stepCounts) _dateKey(stepCount.date): stepCount,
     };
     final workoutsByDay = <String, List<Workout>>{};
 
@@ -46,10 +51,13 @@ class DashboardAnalyticsCalculator {
       final dayWorkouts = workoutsByDay[_dateKey(date)] ?? const <Workout>[];
       final diary = diaryByDay[_dateKey(date)];
       final macros = diary?.totalMacros();
-      final steps = dayWorkouts.fold(
-        0,
-        (total, workout) => total + _estimateSteps(workout),
-      );
+      final recordedSteps = stepsByDay[_dateKey(date)]?.steps;
+      final steps =
+          recordedSteps ??
+          dayWorkouts.fold<int>(
+            0,
+            (total, workout) => total + _estimateSteps(workout),
+          );
       final calories = macros?.calories ?? 0;
 
       return DashboardDaySummary(
@@ -80,12 +88,14 @@ class DashboardAnalyticsCalculator {
   DashboardAnalytics buildAnalytics({
     required List<Workout> workouts,
     required List<DailyFoodDiary> diaries,
+    List<DailyStepCount> stepCounts = const <DailyStepCount>[],
     DateTime? now,
   }) {
     final targetDate = DateUtils.dateOnly(now ?? DateTime.now());
     final weeklyStats = calculateWeeklyStats(
       workouts: workouts,
       diaries: diaries,
+      stepCounts: stepCounts,
       now: now,
     );
     final todayDiary = diaries.cast<DailyFoodDiary?>().firstWhere(

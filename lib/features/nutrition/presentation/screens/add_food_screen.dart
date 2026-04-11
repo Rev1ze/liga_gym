@@ -31,6 +31,9 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
   final _fatsController = TextEditingController();
   final _carbsController = TextEditingController();
   final _gramsController = TextEditingController(text: '100');
+  final Set<String> _selectedQuickAccessProductIds = <String>{};
+  final Map<String, TextEditingController> _quickAccessGramControllers =
+      <String, TextEditingController>{};
 
   late MealType _selectedMealType;
 
@@ -49,6 +52,9 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
     _fatsController.dispose();
     _carbsController.dispose();
     _gramsController.dispose();
+    for (final controller in _quickAccessGramControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -57,48 +63,79 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
     final controller = ref.read(addFoodControllerProvider.notifier);
     final state = ref.read(addFoodControllerProvider);
 
+    if (state.inputMethod == FoodInputMethod.quickAccess &&
+        _selectedQuickAccessProductIds.isEmpty) {
+      _showSnackBar(l10n.addFoodQuickAccessChooseProducts);
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
     try {
-      late final FoodProduct product;
-      if (state.inputMethod == FoodInputMethod.barcode) {
-        product = await controller.findProductByBarcode(
-          _barcodeController.text.trim(),
-        );
-      } else {
-        product = _buildManualProduct();
+      late final ProductDetailsRouteArguments routeArguments;
+
+      switch (state.inputMethod) {
+        case FoodInputMethod.barcode:
+          final product = await controller.findProductByBarcode(
+            _barcodeController.text.trim(),
+          );
+          final grams = double.parse(_gramsController.text.trim());
+          controller.calculateMacros(product: product, grams: grams);
+          routeArguments = ProductDetailsRouteArguments.single(
+            product: product,
+            mealType: _selectedMealType,
+            grams: grams,
+            loggedAt: _buildLoggedAt(),
+            inputMethod: state.inputMethod,
+          );
+          break;
+        case FoodInputMethod.manual:
+          final product = _buildManualProduct(state.editingProduct);
+          final grams = double.parse(_gramsController.text.trim());
+          controller.calculateMacros(product: product, grams: grams);
+          routeArguments = ProductDetailsRouteArguments.single(
+            product: product,
+            mealType: _selectedMealType,
+            grams: grams,
+            loggedAt: _buildLoggedAt(),
+            inputMethod: state.inputMethod,
+          );
+          break;
+        case FoodInputMethod.quickAccess:
+          final savedProducts = await ref.read(
+            savedFoodProductsProvider.future,
+          );
+          final selectedItems = _buildSelectedQuickAccessItems(savedProducts);
+          if (selectedItems.isEmpty) {
+            _showSnackBar(l10n.addFoodQuickAccessChooseProducts);
+            return;
+          }
+
+          if (selectedItems.length == 1) {
+            controller.calculateMacros(
+              product: selectedItems.single.product,
+              grams: selectedItems.single.grams,
+            );
+          }
+
+          routeArguments = ProductDetailsRouteArguments(
+            items: selectedItems,
+            mealType: _selectedMealType,
+            loggedAt: _buildLoggedAt(),
+            inputMethod: state.inputMethod,
+          );
+          break;
       }
-
-      final grams = double.parse(_gramsController.text.trim());
-      final now = DateTime.now();
-      final loggedAt = DateTime(
-        widget.arguments.date.year,
-        widget.arguments.date.month,
-        widget.arguments.date.day,
-        now.hour,
-        now.minute,
-        now.second,
-      );
-
-      // Считаем макросы до перехода на экран деталей, чтобы пользователь сразу видел итог по порции.
-      controller.calculateMacros(product: product, grams: grams);
 
       if (!mounted) {
         return;
       }
 
-      final result = await Navigator.of(context).pushNamed(
-        AppRoutes.productDetails,
-        arguments: ProductDetailsRouteArguments(
-          product: product,
-          mealType: _selectedMealType,
-          grams: grams,
-          loggedAt: loggedAt,
-          inputMethod: state.inputMethod,
-        ),
-      );
+      final result = await Navigator.of(
+        context,
+      ).pushNamed(AppRoutes.productDetails, arguments: routeArguments);
 
       if (result == true && mounted) {
         Navigator.of(context).pop(true);
@@ -108,13 +145,23 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
         return;
       }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.code.localize(l10n))));
+      _showSnackBar(error.code.localize(l10n));
     }
   }
 
-  FoodProduct _buildManualProduct() {
+  DateTime _buildLoggedAt() {
+    final now = DateTime.now();
+    return DateTime(
+      widget.arguments.date.year,
+      widget.arguments.date.month,
+      widget.arguments.date.day,
+      now.hour,
+      now.minute,
+      now.second,
+    );
+  }
+
+  FoodProduct _buildManualProduct(FoodProduct? editingProduct) {
     final macros = FoodMacros(
       calories: double.parse(_caloriesController.text.trim()),
       proteins: double.parse(_proteinsController.text.trim()),
@@ -122,18 +169,85 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
       carbs: double.parse(_carbsController.text.trim()),
     );
 
+    final trimmedName = _nameController.text.trim();
     return FoodProduct(
-      id: 'manual_${DateTime.now().microsecondsSinceEpoch}',
-      nameEn: _nameController.text.trim(),
-      nameRu: _nameController.text.trim(),
+      id: editingProduct?.id ?? _buildManualProductId(trimmedName),
+      nameEn: trimmedName,
+      nameRu: trimmedName,
+      barcode: editingProduct?.barcode,
       macrosPer100Grams: macros,
     );
+  }
+
+  String _buildManualProductId(String name) {
+    final normalized = name
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-zA-Z0-9а-яА-Я]+'), '_')
+        .replaceAll(RegExp(r'_+'), '_')
+        .replaceAll(RegExp(r'^_|_$'), '');
+
+    if (normalized.isEmpty) {
+      return 'manual_${DateTime.now().microsecondsSinceEpoch}';
+    }
+
+    return 'manual_$normalized';
+  }
+
+  void _startEditingProduct(FoodProduct product) {
+    _nameController.text = product.localizedName(
+      Localizations.localeOf(context).languageCode,
+    );
+    _caloriesController.text = product.macrosPer100Grams.calories
+        .toStringAsFixed(0);
+    _proteinsController.text = product.macrosPer100Grams.proteins
+        .toStringAsFixed(1);
+    _fatsController.text = product.macrosPer100Grams.fats.toStringAsFixed(1);
+    _carbsController.text = product.macrosPer100Grams.carbs.toStringAsFixed(1);
+
+    ref.read(addFoodControllerProvider.notifier).startEditingProduct(product);
+  }
+
+  void _resetManualDraft() {
+    _nameController.clear();
+    _caloriesController.clear();
+    _proteinsController.clear();
+    _fatsController.clear();
+    _carbsController.clear();
+    ref.read(addFoodControllerProvider.notifier).clearEditingProduct();
+  }
+
+  void _showSnackBar(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  TextEditingController _quickAccessGramsController(FoodProduct product) {
+    return _quickAccessGramControllers.putIfAbsent(
+      product.id,
+      () => TextEditingController(text: '100'),
+    );
+  }
+
+  List<ProductDetailsItemArguments> _buildSelectedQuickAccessItems(
+    List<FoodProduct> products,
+  ) {
+    return [
+      for (final product in products)
+        if (_selectedQuickAccessProductIds.contains(product.id))
+          ProductDetailsItemArguments(
+            product: product,
+            grams: double.parse(
+              _quickAccessGramsController(product).text.trim(),
+            ),
+          ),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(addFoodControllerProvider);
+    final savedProductsAsync = ref.watch(savedFoodProductsProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.addFoodTitle)),
@@ -149,11 +263,24 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                   segments: <ButtonSegment<FoodInputMethod>>[
                     ButtonSegment(
                       value: FoodInputMethod.manual,
-                      label: Text(l10n.addFoodManual),
+                      label: Text(
+                        l10n.addFoodManual,
+                        key: AppKeys.addFoodManualTab,
+                      ),
                     ),
                     ButtonSegment(
                       value: FoodInputMethod.barcode,
-                      label: Text(l10n.addFoodBarcode),
+                      label: Text(
+                        l10n.addFoodBarcode,
+                        key: AppKeys.addFoodBarcodeTab,
+                      ),
+                    ),
+                    ButtonSegment(
+                      value: FoodInputMethod.quickAccess,
+                      label: Text(
+                        l10n.addFoodQuickAccess,
+                        key: AppKeys.addFoodQuickAccessTab,
+                      ),
                     ),
                   ],
                   selected: <FoodInputMethod>{state.inputMethod},
@@ -190,6 +317,34 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                 ),
                 const SizedBox(height: 16),
                 if (state.inputMethod == FoodInputMethod.manual) ...[
+                  if (state.editingProduct != null) ...[
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.addFoodEditingProductTitle,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              state.editingProduct!.localizedName(
+                                Localizations.localeOf(context).languageCode,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextButton(
+                              onPressed: _resetManualDraft,
+                              child: Text(l10n.addFoodCreateNewProduct),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   TextFormField(
                     key: AppKeys.addFoodNameField,
                     controller: _nameController,
@@ -228,7 +383,7 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                     errorCode: AppErrorCode.invalidCarbs,
                     allowZero: true,
                   ),
-                ] else ...[
+                ] else if (state.inputMethod == FoodInputMethod.barcode) ...[
                   TextFormField(
                     key: AppKeys.addFoodBarcodeField,
                     controller: _barcodeController,
@@ -238,14 +393,84 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                     ),
                     validator: (_) => _validateBarcode(context),
                   ),
+                ] else ...[
+                  savedProductsAsync.when(
+                    data: (products) {
+                      if (products.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Text(l10n.addFoodQuickAccessEmpty),
+                        );
+                      }
+
+                      return Column(
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              l10n.addFoodQuickAccessSelectedCount(
+                                _selectedQuickAccessProductIds.length,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          for (final product in products) ...[
+                            _QuickAccessProductTile(
+                              product: product,
+                              selected: _selectedQuickAccessProductIds.contains(
+                                product.id,
+                              ),
+                              gramsController: _quickAccessGramsController(
+                                product,
+                              ),
+                              onSelected: (selected) {
+                                setState(() {
+                                  if (selected) {
+                                    _selectedQuickAccessProductIds.add(
+                                      product.id,
+                                    );
+                                  } else {
+                                    _selectedQuickAccessProductIds.remove(
+                                      product.id,
+                                    );
+                                  }
+                                });
+                              },
+                              onEdit: () => _startEditingProduct(product),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                        ],
+                      );
+                    },
+                    loading: () => const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (_, _) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l10n.errorNutritionDiaryLoadFailed),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () {
+                            ref.invalidate(savedFoodProductsProvider);
+                          },
+                          child: Text(l10n.commonRetry),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
-                const SizedBox(height: 16),
-                _NutritionNumberField(
-                  fieldKey: AppKeys.addFoodGramsField,
-                  controller: _gramsController,
-                  label: l10n.addFoodGrams,
-                  errorCode: AppErrorCode.invalidFoodWeight,
-                ),
+                if (state.inputMethod != FoodInputMethod.quickAccess) ...[
+                  const SizedBox(height: 16),
+                  _NutritionNumberField(
+                    fieldKey: AppKeys.addFoodGramsField,
+                    controller: _gramsController,
+                    label: l10n.addFoodGrams,
+                    errorCode: AppErrorCode.invalidFoodWeight,
+                  ),
+                ],
                 const SizedBox(height: 24),
                 FilledButton(
                   key: AppKeys.addFoodContinueButton,
@@ -279,6 +504,84 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
   }
 }
 
+class _QuickAccessProductTile extends StatelessWidget {
+  const _QuickAccessProductTile({
+    required this.product,
+    required this.selected,
+    required this.gramsController,
+    required this.onSelected,
+    required this.onEdit,
+  });
+
+  final FoodProduct product;
+  final bool selected;
+  final TextEditingController gramsController;
+  final ValueChanged<bool> onSelected;
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final theme = Theme.of(context);
+
+    return Card(
+      color: selected ? theme.colorScheme.secondaryContainer : null,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Checkbox(
+                  value: selected,
+                  onChanged: (value) => onSelected(value ?? false),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => onSelected(!selected),
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(product.localizedName(languageCode)),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${l10n.foodCalories}: ${product.macrosPer100Grams.calories.toStringAsFixed(0)} • '
+                            '${l10n.foodProteins}: ${product.macrosPer100Grams.proteins.toStringAsFixed(1)} • '
+                            '${l10n.foodFats}: ${product.macrosPer100Grams.fats.toStringAsFixed(1)} • '
+                            '${l10n.foodCarbs}: ${product.macrosPer100Grams.carbs.toStringAsFixed(1)}',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: l10n.addFoodQuickAccessEdit,
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_outlined),
+                ),
+              ],
+            ),
+            if (selected) ...[
+              const SizedBox(height: 8),
+              _NutritionNumberField(
+                fieldKey: ValueKey<String>('quickAccessGrams_${product.id}'),
+                controller: gramsController,
+                label: l10n.addFoodGrams,
+                errorCode: AppErrorCode.invalidFoodWeight,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _NutritionNumberField extends StatelessWidget {
   const _NutritionNumberField({
     required this.fieldKey,
@@ -305,8 +608,6 @@ class _NutritionNumberField extends StatelessWidget {
       decoration: InputDecoration(labelText: label),
       validator: (_) {
         final parsed = double.tryParse(controller.text.trim());
-
-        // Для веса требуем число больше нуля, а для БЖУ допускаем нулевые значения.
         final isInvalid =
             parsed == null || (allowZero ? parsed < 0 : parsed <= 0);
         if (isInvalid) {

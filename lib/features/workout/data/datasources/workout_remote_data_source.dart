@@ -4,11 +4,31 @@ import '../../../../core/errors/app_exception.dart';
 import '../models/workout_model.dart';
 
 abstract interface class WorkoutRemoteDataSource {
+  Future<List<WorkoutModel>> loadUserWorkouts(String userId);
+
+  Future<WorkoutModel?> loadWorkoutById({
+    required String userId,
+    required String workoutId,
+  });
+
   Future<void> saveWorkout(WorkoutModel workout);
 }
 
 class UnavailableWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   const UnavailableWorkoutRemoteDataSource();
+
+  @override
+  Future<List<WorkoutModel>> loadUserWorkouts(String userId) async {
+    throw const WorkoutException(AppErrorCode.firebaseConfigurationMissing);
+  }
+
+  @override
+  Future<WorkoutModel?> loadWorkoutById({
+    required String userId,
+    required String workoutId,
+  }) async {
+    throw const WorkoutException(AppErrorCode.firebaseConfigurationMissing);
+  }
 
   @override
   Future<void> saveWorkout(WorkoutModel workout) async {
@@ -21,6 +41,46 @@ class FirestoreWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
     : _firestore = firestore;
 
   final FirebaseFirestore _firestore;
+
+  @override
+  Future<List<WorkoutModel>> loadUserWorkouts(String userId) async {
+    final querySnapshot = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('workouts')
+        .orderBy('startedAt', descending: true)
+        .get();
+
+    return querySnapshot.docs
+        .map(
+          (document) =>
+              WorkoutModel.fromFirestore(document.id, userId, document.data()),
+        )
+        .toList(growable: false);
+  }
+
+  @override
+  Future<WorkoutModel?> loadWorkoutById({
+    required String userId,
+    required String workoutId,
+  }) async {
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('workouts')
+        .doc(workoutId)
+        .get();
+
+    if (!snapshot.exists) {
+      return null;
+    }
+
+    return WorkoutModel.fromFirestore(
+      snapshot.id,
+      userId,
+      snapshot.data() ?? <String, Object?>{},
+    );
+  }
 
   @override
   Future<void> saveWorkout(WorkoutModel workout) async {

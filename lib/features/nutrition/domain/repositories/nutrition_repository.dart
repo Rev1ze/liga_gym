@@ -16,6 +16,13 @@ abstract interface class NutritionRepository {
 
   Future<FoodProduct> findProductByBarcode(String barcode);
 
+  Future<List<FoodProduct>> loadSavedProducts({required String userId});
+
+  Future<void> saveSavedProduct({
+    required String userId,
+    required FoodProduct product,
+  });
+
   FoodMacros calculateMacros({
     required FoodProduct product,
     required double grams,

@@ -122,6 +122,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get dashboardWorkoutHistory => 'История тренировок';
 
   @override
+  String get dashboardStepCounter => 'Шагомер';
+
+  @override
   String get dashboardNutritionDiary => 'Дневник питания';
 
   @override
@@ -397,6 +400,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get addFoodBarcode => 'Штрихкод';
 
   @override
+  String get addFoodQuickAccess => 'Быстрый доступ';
+
+  @override
   String get addFoodName => 'Название продукта';
 
   @override
@@ -404,6 +410,33 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get addFoodGrams => 'Порция, г';
+
+  @override
+  String get addFoodQuickAccessChooseProduct =>
+      'Сначала выберите продукт из быстрого доступа.';
+
+  @override
+  String get addFoodQuickAccessChooseProducts =>
+      'Выберите хотя бы один продукт из быстрого доступа.';
+
+  @override
+  String get addFoodQuickAccessEmpty =>
+      'Пока нет сохранённых продуктов. Добавьте новый продукт вручную или по штрихкоду, и он появится здесь.';
+
+  @override
+  String get addFoodQuickAccessEdit => 'Изменить продукт';
+
+  @override
+  String addFoodQuickAccessSelectedCount(Object count) {
+    return 'Выбрано продуктов: $count';
+  }
+
+  @override
+  String get addFoodEditingProductTitle =>
+      'Редактирование сохранённого продукта';
+
+  @override
+  String get addFoodCreateNewProduct => 'Создать новый продукт';
 
   @override
   String get productDetailsTitle => 'Информация о продукте';
@@ -425,7 +458,99 @@ class AppLocalizationsRu extends AppLocalizations {
   String get productDetailsPortionMacros => 'Для выбранной порции';
 
   @override
+  String get productDetailsSelectedProductsTitle => 'Выбранные продукты';
+
+  @override
+  String productDetailsSelectedProductsCount(Object count) {
+    return 'Продуктов выбрано: $count';
+  }
+
+  @override
+  String get productDetailsTotalMacros => 'Итого по выбранным порциям';
+
+  @override
   String get productDetailsSave => 'Сохранить запись';
+
+  @override
+  String get stepCounterTitle => 'Шагомер';
+
+  @override
+  String get stepCounterToday => 'Шаги за сегодня';
+
+  @override
+  String get stepCounterTodayHint =>
+      'Значение читается из локальной базы и обновляется, пока работает сервис отслеживания.';
+
+  @override
+  String get stepCounterStatusTitle => 'Статус';
+
+  @override
+  String get stepCounterStatusPlatform => 'Платформа';
+
+  @override
+  String get stepCounterStatusPermission => 'Разрешение';
+
+  @override
+  String get stepCounterStatusService => 'Сервис';
+
+  @override
+  String get stepCounterStatusAccount => 'Аккаунт';
+
+  @override
+  String get stepCounterStatusSupported => 'Поддерживается';
+
+  @override
+  String get stepCounterStatusUnsupported => 'Не поддерживается';
+
+  @override
+  String get stepCounterStatusGranted => 'Выдано';
+
+  @override
+  String get stepCounterStatusDenied => 'Не выдано';
+
+  @override
+  String get stepCounterStatusPermanentlyDenied => 'Запрещено в настройках';
+
+  @override
+  String get stepCounterStatusRunning => 'Работает';
+
+  @override
+  String get stepCounterStatusStopped => 'Остановлен';
+
+  @override
+  String get stepCounterStatusLinked => 'Привязан к текущему аккаунту';
+
+  @override
+  String get stepCounterStatusNotLinked => 'Не привязан';
+
+  @override
+  String get stepCounterActionsTitle => 'Действия';
+
+  @override
+  String get stepCounterEnable => 'Включить шагомер';
+
+  @override
+  String get stepCounterOpenSettings => 'Открыть настройки приложения';
+
+  @override
+  String get stepCounterUnsupportedHint =>
+      'Непрерывный подсчёт шагов сейчас доступен только на Android-устройствах с шаговым сенсором.';
+
+  @override
+  String get stepCounterPermissionHint =>
+      'Выдайте разрешение на физическую активность, чтобы запустить постоянный подсчёт шагов.';
+
+  @override
+  String get stepCounterSettingsHint =>
+      'Откройте настройки приложения, разрешите физическую активность и вернитесь сюда.';
+
+  @override
+  String get stepCounterEnableHint =>
+      'Отслеживание доступно, но сервис ещё не полностью активен. Нажмите кнопку включения.';
+
+  @override
+  String get stepCounterRunningHint =>
+      'Отслеживание активно. Шаги должны продолжать обновляться, пока приложение свернуто.';
 
   @override
   String get foodCalories => 'Калории';

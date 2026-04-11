@@ -1,10 +1,11 @@
 import 'dart:convert';
 
+import '../../../../core/offline/offline_sync_record.dart';
 import '../../domain/entities/workout.dart';
 import '../../domain/entities/workout_route_point.dart';
 import '../../domain/entities/workout_type.dart';
 
-class WorkoutModel extends Workout {
+class WorkoutModel extends Workout implements OfflineSyncRecord {
   const WorkoutModel({
     required super.id,
     required super.userId,
@@ -56,6 +57,37 @@ class WorkoutModel extends Workout {
       isSynced: (map['is_synced'] as int) == 1,
     );
   }
+
+  factory WorkoutModel.fromFirestore(
+    String id,
+    String userId,
+    Map<String, Object?> json,
+  ) {
+    final routeJson = json['routeJson'] as String? ?? '[]';
+    final decodedRoute = (jsonDecode(routeJson) as List<dynamic>)
+        .map(
+          (item) => WorkoutRoutePoint.fromJson(
+            Map<String, Object?>.from(item as Map),
+          ),
+        )
+        .toList(growable: false);
+
+    return WorkoutModel(
+      id: id,
+      userId: userId,
+      type: WorkoutType.values.byName(json['type']! as String),
+      startedAt: DateTime.parse(json['startedAt']! as String),
+      endedAt: DateTime.parse(json['endedAt']! as String),
+      duration: Duration(seconds: json['durationSeconds']! as int),
+      calories: (json['calories']! as num).toDouble(),
+      distanceMeters: (json['distanceMeters']! as num).toDouble(),
+      route: decodedRoute,
+      isSynced: true,
+    );
+  }
+
+  @override
+  DateTime get lastModifiedAt => endedAt;
 
   Map<String, Object?> toLocalMap() {
     return {

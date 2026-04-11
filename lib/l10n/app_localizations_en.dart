@@ -122,6 +122,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardWorkoutHistory => 'Workout history';
 
   @override
+  String get dashboardStepCounter => 'Step counter';
+
+  @override
   String get dashboardNutritionDiary => 'Food diary';
 
   @override
@@ -396,6 +399,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addFoodBarcode => 'Barcode';
 
   @override
+  String get addFoodQuickAccess => 'Quick access';
+
+  @override
   String get addFoodName => 'Product name';
 
   @override
@@ -403,6 +409,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addFoodGrams => 'Portion, g';
+
+  @override
+  String get addFoodQuickAccessChooseProduct =>
+      'Select a product from quick access first.';
+
+  @override
+  String get addFoodQuickAccessChooseProducts =>
+      'Select at least one product from quick access.';
+
+  @override
+  String get addFoodQuickAccessEmpty =>
+      'There are no saved products yet. Add a new one manually or by barcode and it will appear here.';
+
+  @override
+  String get addFoodQuickAccessEdit => 'Edit product';
+
+  @override
+  String addFoodQuickAccessSelectedCount(Object count) {
+    return 'Selected products: $count';
+  }
+
+  @override
+  String get addFoodEditingProductTitle => 'Editing saved product';
+
+  @override
+  String get addFoodCreateNewProduct => 'Create new product';
 
   @override
   String get productDetailsTitle => 'Product details';
@@ -424,7 +456,99 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productDetailsPortionMacros => 'For selected portion';
 
   @override
+  String get productDetailsSelectedProductsTitle => 'Selected products';
+
+  @override
+  String productDetailsSelectedProductsCount(Object count) {
+    return 'Selected products: $count';
+  }
+
+  @override
+  String get productDetailsTotalMacros => 'Total for selected portions';
+
+  @override
   String get productDetailsSave => 'Save entry';
+
+  @override
+  String get stepCounterTitle => 'Step counter';
+
+  @override
+  String get stepCounterToday => 'Today\'s steps';
+
+  @override
+  String get stepCounterTodayHint =>
+      'The value is read from the local database and updates while the tracking service is running.';
+
+  @override
+  String get stepCounterStatusTitle => 'Status';
+
+  @override
+  String get stepCounterStatusPlatform => 'Platform';
+
+  @override
+  String get stepCounterStatusPermission => 'Permission';
+
+  @override
+  String get stepCounterStatusService => 'Service';
+
+  @override
+  String get stepCounterStatusAccount => 'Account';
+
+  @override
+  String get stepCounterStatusSupported => 'Supported';
+
+  @override
+  String get stepCounterStatusUnsupported => 'Not supported';
+
+  @override
+  String get stepCounterStatusGranted => 'Granted';
+
+  @override
+  String get stepCounterStatusDenied => 'Not granted';
+
+  @override
+  String get stepCounterStatusPermanentlyDenied => 'Denied in settings';
+
+  @override
+  String get stepCounterStatusRunning => 'Running';
+
+  @override
+  String get stepCounterStatusStopped => 'Stopped';
+
+  @override
+  String get stepCounterStatusLinked => 'Linked to current account';
+
+  @override
+  String get stepCounterStatusNotLinked => 'Not linked';
+
+  @override
+  String get stepCounterActionsTitle => 'Actions';
+
+  @override
+  String get stepCounterEnable => 'Enable step tracking';
+
+  @override
+  String get stepCounterOpenSettings => 'Open app settings';
+
+  @override
+  String get stepCounterUnsupportedHint =>
+      'Continuous step tracking is currently available only on Android devices with a step sensor.';
+
+  @override
+  String get stepCounterPermissionHint =>
+      'Grant Activity Recognition permission to start continuous step counting.';
+
+  @override
+  String get stepCounterSettingsHint =>
+      'Open app settings and allow Activity Recognition, then return here.';
+
+  @override
+  String get stepCounterEnableHint =>
+      'Tracking is available, but the service is not fully active yet. Tap the enable button.';
+
+  @override
+  String get stepCounterRunningHint =>
+      'Tracking is active. Steps should continue updating while the app is minimized.';
 
   @override
   String get foodCalories => 'Calories';

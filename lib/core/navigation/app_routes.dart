@@ -13,4 +13,5 @@ abstract final class AppRoutes {
   static const foodDiary = '/nutrition/diary';
   static const addFood = '/nutrition/add';
   static const productDetails = '/nutrition/product-details';
+  static const stepCounter = '/steps';
 }

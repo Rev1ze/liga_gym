@@ -5,6 +5,7 @@ import 'package:liga_gym_app/features/nutrition/domain/entities/food_entry.dart'
 import 'package:liga_gym_app/features/nutrition/domain/entities/food_input_method.dart';
 import 'package:liga_gym_app/features/nutrition/domain/entities/food_macros.dart';
 import 'package:liga_gym_app/features/nutrition/domain/entities/meal_type.dart';
+import 'package:liga_gym_app/features/steps/domain/entities/daily_step_count.dart';
 import 'package:liga_gym_app/features/workout/domain/entities/workout.dart';
 import 'package:liga_gym_app/features/workout/domain/entities/workout_type.dart';
 
@@ -83,21 +84,34 @@ void main() {
           ],
         ),
       ];
+      final stepCounts = [
+        DailyStepCount(
+          userId: 'user-1',
+          date: DateTime(2026, 4, 7),
+          steps: 5000,
+        ),
+        DailyStepCount(
+          userId: 'user-1',
+          date: DateTime(2026, 4, 9),
+          steps: 6500,
+        ),
+      ];
 
       final stats = calculator.calculateWeeklyStats(
         workouts: workouts,
         diaries: diaries,
+        stepCounts: stepCounts,
         now: now,
       );
 
       expect(stats.days, hasLength(7));
-      expect(stats.today.steps, 4000);
+      expect(stats.today.steps, 6500);
       expect(stats.today.calories, 1800);
       expect(stats.days[5].steps, 0);
       expect(stats.days[4].steps, 5000);
-      expect(stats.totalSteps, 9000);
+      expect(stats.totalSteps, 11500);
       expect(stats.totalCalories, 3400);
-      expect(stats.today.progress.steps, closeTo(0.4, 0.001));
+      expect(stats.today.progress.steps, closeTo(0.65, 0.001));
       expect(stats.today.progress.calories, closeTo(1800 / 2200, 0.001));
     });
 
