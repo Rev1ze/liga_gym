@@ -9,6 +9,7 @@ import '../../../auth/domain/entities/user_goal.dart';
 import '../../../auth/domain/entities/user_profile.dart';
 import '../../../auth/domain/entities/user_profile_update_data.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../steps/presentation/providers/step_providers.dart';
 import '../providers/dashboard_providers.dart';
 import '../utils/goal_settings_route_arguments.dart';
 
@@ -25,6 +26,7 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
   final _formKey = GlobalKey<FormState>();
   final _stepGoalController = TextEditingController();
   final _calorieGoalController = TextEditingController();
+  final _startWeightController = TextEditingController();
   final _currentWeightController = TextEditingController();
   final _targetWeightController = TextEditingController();
 
@@ -36,6 +38,7 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
   void dispose() {
     _stepGoalController.dispose();
     _calorieGoalController.dispose();
+    _startWeightController.dispose();
     _currentWeightController.dispose();
     _targetWeightController.dispose();
     super.dispose();
@@ -170,13 +173,23 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
                                   validatorMessage:
                                       l10n.validationInvalidCurrentWeight,
                                 ),
-                                const SizedBox(height: 16),
-                                _DecimalGoalField(
-                                  controller: _targetWeightController,
-                                  label: l10n.profileTargetWeight,
-                                  validatorMessage:
-                                      l10n.validationInvalidTargetWeight,
-                                ),
+                                if (_selectedGoalType !=
+                                    UserGoalType.maintainWeight) ...[
+                                  const SizedBox(height: 16),
+                                  _DecimalGoalField(
+                                    controller: _startWeightController,
+                                    label: l10n.profileStartWeight,
+                                    validatorMessage:
+                                        l10n.validationInvalidCurrentWeight,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _DecimalGoalField(
+                                    controller: _targetWeightController,
+                                    label: l10n.profileTargetWeight,
+                                    validatorMessage:
+                                        l10n.validationInvalidTargetWeight,
+                                  ),
+                                ],
                               ],
                             ),
                           ),
@@ -233,12 +246,20 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
           .read(updateUserProfileUseCaseProvider)
           .call(
             UserProfileUpdateData(
+              userId: profile.userId,
+              email: profile.email,
               name: profile.name,
               gender: profile.gender,
               birthDate: profile.birthDate,
+              city: profile.city,
               heightCm: profile.heightCm,
+              startWeightKg: _selectedGoalType == UserGoalType.maintainWeight
+                  ? null
+                  : _parseDouble(_startWeightController.text),
               currentWeightKg: _parseDouble(_currentWeightController.text),
-              targetWeightKg: _parseDouble(_targetWeightController.text),
+              targetWeightKg: _selectedGoalType == UserGoalType.maintainWeight
+                  ? null
+                  : _parseDouble(_targetWeightController.text),
               goalType: _selectedGoalType,
               dailyStepGoal:
                   int.tryParse(_stepGoalController.text.trim()) ??
@@ -248,8 +269,17 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
                   profile.dailyCalorieGoal,
             ),
           );
+      await ref
+          .read(stepTrackingServiceProvider)
+          .saveDailyGoal(
+            userId: profile.userId,
+            goal:
+                int.tryParse(_stepGoalController.text.trim()) ??
+                profile.dailyStepGoal,
+          );
       ref.invalidate(currentUserProfileProvider);
       ref.invalidate(dashboardAnalyticsProvider);
+      ref.invalidate(stepGoalProvider);
 
       if (!mounted) {
         return;
@@ -287,6 +317,7 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
       profile.dailyCalorieGoal,
       fractionDigits: 0,
     );
+    _startWeightController.text = _formatDouble(profile.startWeightKg);
     _currentWeightController.text = _formatDouble(profile.currentWeightKg);
     _targetWeightController.text = _formatDouble(profile.targetWeightKg);
   }

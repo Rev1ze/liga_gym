@@ -211,6 +211,9 @@ class DashboardAnalyticsCalculator {
     final firstWeightInPeriod = sortedHistory.isNotEmpty
         ? sortedHistory.first.weightKg
         : latestWeight;
+    final lastWeightInPeriod = sortedHistory.isNotEmpty
+        ? sortedHistory.last.weightKg
+        : latestWeight;
     final startWeight = profile?.startWeightKg ?? firstWeightInPeriod;
     final targetWeight = profile?.targetWeightKg;
     final goalType = profile?.goalType ?? UserGoalType.maintainWeight;
@@ -259,6 +262,8 @@ class DashboardAnalyticsCalculator {
       startWeightKg: startWeight,
       currentWeightKg: latestWeight,
       targetWeightKg: targetWeight,
+      periodStartWeightKg: firstWeightInPeriod,
+      periodEndWeightKg: lastWeightInPeriod,
       weeklyChangeKg: weeklyChange,
       totalChangeKg: totalChange,
       remainingToGoalKg: remainingToGoal,

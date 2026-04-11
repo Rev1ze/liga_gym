@@ -8,6 +8,7 @@ class UserProfile {
     required this.name,
     required this.gender,
     required this.birthDate,
+    this.city,
     this.heightCm,
     this.startWeightKg,
     this.currentWeightKg,
@@ -22,6 +23,7 @@ class UserProfile {
   final String name;
   final Gender gender;
   final DateTime birthDate;
+  final String? city;
   final double? heightCm;
   final double? startWeightKg;
   final double? currentWeightKg;

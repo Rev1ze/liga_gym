@@ -116,9 +116,12 @@ class FirestoreProfileRemoteDataSource implements ProfileRemoteDataSource {
         _firestore.collection(_leaderboardCollection).doc(profile.userId),
         <String, Object?>{
           'displayName': profile.name,
+          'city': profile.city,
+          'countryCode': 'RU',
           'score': FieldValue.increment(0),
           'workoutsCount': FieldValue.increment(0),
           'caloriesBurned': FieldValue.increment(0),
+          'stepsCount': FieldValue.increment(0),
           'updatedAt': FieldValue.serverTimestamp(),
           'createdAt': FieldValue.serverTimestamp(),
         },

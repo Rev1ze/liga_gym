@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../../core/providers/shared_preferences_provider.dart';
+import '../../data/services/step_tracking_service.dart';
 import '../providers/step_providers.dart';
 
 class StepScreenController extends Notifier<AsyncValue<void>> {
@@ -30,5 +32,16 @@ class StepScreenController extends Notifier<AsyncValue<void>> {
   void refresh() {
     ref.invalidate(stepTrackingStatusProvider);
     ref.invalidate(todayStepCountProvider);
+    ref.invalidate(stepGoalProvider);
+  }
+
+  Future<void> markGoalCelebrationSeen() async {
+    final user = ref.read(firebaseStepUserProvider);
+    if (user == null) {
+      return;
+    }
+    final sharedPreferences = ref.read(sharedPreferencesProvider);
+    await sharedPreferences?.remove(stepGoalCelebrationPendingDateKey(user.uid));
+    ref.invalidate(stepGoalCelebrationPendingProvider);
   }
 }

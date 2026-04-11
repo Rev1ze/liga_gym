@@ -29,6 +29,9 @@ abstract final class AppKeys {
   static const dashboardWorkoutHistoryButton = ValueKey<String>(
     'dashboardWorkoutHistoryButton',
   );
+  static const dashboardTodayOverviewButton = ValueKey<String>(
+    'dashboardTodayOverviewButton',
+  );
   static const dashboardStepCounterButton = ValueKey<String>(
     'dashboardStepCounterButton',
   );
@@ -49,6 +52,10 @@ abstract final class AppKeys {
   static const chatSendButton = ValueKey<String>('chatSendButton');
   static const foodDiaryAddButton = ValueKey<String>('foodDiaryAddButton');
   static const foodDiaryDateButton = ValueKey<String>('foodDiaryDateButton');
+  static const foodDiaryWeightField = ValueKey<String>('foodDiaryWeightField');
+  static const foodDiaryWeightSaveButton = ValueKey<String>(
+    'foodDiaryWeightSaveButton',
+  );
   static const addFoodManualTab = ValueKey<String>('addFoodManualTab');
   static const addFoodBarcodeTab = ValueKey<String>('addFoodBarcodeTab');
   static const addFoodQuickAccessTab = ValueKey<String>(
@@ -70,6 +77,9 @@ abstract final class AppKeys {
   );
   static const stepScreenEnableButton = ValueKey<String>(
     'stepScreenEnableButton',
+  );
+  static const stepScreenSettingsButton = ValueKey<String>(
+    'stepScreenSettingsButton',
   );
   static const stepScreenOpenSettingsButton = ValueKey<String>(
     'stepScreenOpenSettingsButton',

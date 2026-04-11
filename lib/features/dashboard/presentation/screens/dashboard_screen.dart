@@ -18,6 +18,12 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
+  Future<void> _openTodayOverview(BuildContext context, WidgetRef ref) async {
+    await Navigator.of(context).pushNamed(AppRoutes.todayOverview);
+    ref.invalidate(dashboardAnalyticsProvider);
+    ref.invalidate(currentUserProfileProvider);
+  }
+
   Future<void> _openProfile(BuildContext context, WidgetRef ref) async {
     await Navigator.of(context).pushNamed(AppRoutes.profile);
     ref.invalidate(dashboardAnalyticsProvider);
@@ -103,6 +109,7 @@ class DashboardScreen extends ConsumerWidget {
         ],
       ),
       bottomNavigationBar: _DashboardBottomBar(
+        onOpenTodayOverview: () => _openTodayOverview(context, ref),
         onStartWorkout: () =>
             Navigator.of(context).pushNamed(AppRoutes.startWorkout),
         onOpenWorkouts: () =>
@@ -318,6 +325,7 @@ class _DashboardErrorCard extends StatelessWidget {
 
 class _DashboardBottomBar extends StatelessWidget {
   const _DashboardBottomBar({
+    required this.onOpenTodayOverview,
     required this.onStartWorkout,
     required this.onOpenWorkouts,
     required this.onOpenStepCounter,
@@ -325,6 +333,7 @@ class _DashboardBottomBar extends StatelessWidget {
     required this.l10n,
   });
 
+  final VoidCallback onOpenTodayOverview;
   final VoidCallback onStartWorkout;
   final VoidCallback onOpenWorkouts;
   final VoidCallback onOpenStepCounter;
@@ -344,6 +353,13 @@ class _DashboardBottomBar extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
+            _BottomBarAction(
+              key: AppKeys.dashboardTodayOverviewButton,
+              onTap: onOpenTodayOverview,
+              icon: Icons.dashboard_customize_rounded,
+              label: l10n.todayOverviewTitle,
+              isCompact: isCompact,
+            ),
             _BottomBarAction(
               key: AppKeys.dashboardStartWorkoutButton,
               onTap: onStartWorkout,
@@ -449,58 +465,12 @@ class _AnalyticsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final today = analytics.weeklyStats.today;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          l10n.dashboardAnalyticsOverview,
+          l10n.dashboardAnalyticsWeeklyTitle,
           style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 16,
-          runSpacing: 16,
-          children: [
-            _MetricCard(
-              title: l10n.dashboardAnalyticsSteps,
-              value: NumberFormat.decimalPattern().format(today.steps),
-              subtitle: l10n.dashboardAnalyticsStepGoal(
-                NumberFormat.decimalPattern().format(analytics.goals.stepGoal),
-              ),
-              color: const Color(0xFF2563EB),
-              progress: analytics.progress.steps,
-              icon: Icons.directions_walk,
-              onTap: () => onOpenGoalSettings(GoalSettingsSection.steps),
-            ),
-            _MetricCard(
-              title: l10n.dashboardAnalyticsCalories,
-              value: today.calories.toStringAsFixed(0),
-              subtitle: l10n.dashboardAnalyticsCalorieGoal(
-                analytics.goals.calorieGoal.toStringAsFixed(0),
-              ),
-              color: const Color(0xFFF97316),
-              progress: analytics.progress.calories,
-              icon: Icons.local_fire_department,
-              onTap: () => onOpenGoalSettings(GoalSettingsSection.calories),
-            ),
-            _MetricCard(
-              title: l10n.dashboardAnalyticsProgress,
-              value: '${(analytics.progress.overall * 100).round()}%',
-              subtitle: l10n.dashboardAnalyticsOverallGoal,
-              color: const Color(0xFF0F766E),
-              progress: analytics.progress.overall,
-              icon: Icons.track_changes,
-              onTap: () => onOpenGoalSettings(GoalSettingsSection.progress),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        _WeightAnalyticsCard(
-          analytics: analytics,
-          l10n: l10n,
-          onOpenGoals: () => onOpenGoalSettings(GoalSettingsSection.progress),
         ),
         const SizedBox(height: 20),
         InkWell(
@@ -562,6 +532,20 @@ class _AnalyticsContent extends StatelessWidget {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
+                      if (analytics.weightAnalytics.periodStartWeightKg != null)
+                        _WeeklySummaryPill(
+                          label: l10n.dashboardWeekStartWeight(
+                            analytics.weightAnalytics.periodStartWeightKg!
+                                .toStringAsFixed(1),
+                          ),
+                        ),
+                      if (analytics.weightAnalytics.periodEndWeightKg != null)
+                        _WeeklySummaryPill(
+                          label: l10n.dashboardWeekEndWeight(
+                            analytics.weightAnalytics.periodEndWeightKg!
+                                .toStringAsFixed(1),
+                          ),
+                        ),
                       _WeeklySummaryPill(
                         label: l10n.dashboardAnalyticsWeeklySteps(
                           NumberFormat.decimalPattern().format(
@@ -584,38 +568,10 @@ class _AnalyticsContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.dashboardNutritionTitle,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    _MacroChip(
-                      label: l10n.foodProteins,
-                      value: analytics.proteins.toStringAsFixed(1),
-                    ),
-                    _MacroChip(
-                      label: l10n.foodFats,
-                      value: analytics.fats.toStringAsFixed(1),
-                    ),
-                    _MacroChip(
-                      label: l10n.foodCarbs,
-                      value: analytics.carbs.toStringAsFixed(1),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+        _WeightAnalyticsCard(
+          analytics: analytics,
+          l10n: l10n,
+          onOpenGoals: () => onOpenGoalSettings(GoalSettingsSection.progress),
         ),
       ],
     );
@@ -710,142 +666,6 @@ class _WeightAnalyticsCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _MetricCard extends StatelessWidget {
-  const _MetricCard({
-    required this.title,
-    required this.value,
-    required this.subtitle,
-    required this.color,
-    required this.progress,
-    required this.icon,
-    this.onTap,
-  });
-
-  final String title;
-  final String value;
-  final String subtitle;
-  final Color color;
-  final double progress;
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
-    final cardWidth = width > 950
-        ? 320.0
-        : width > 700
-        ? 280.0
-        : (width - 80).clamp(260.0, 520.0).toDouble();
-
-    return SizedBox(
-      width: cardWidth,
-      child: Card(
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                _ProgressRing(
-                  progress: progress,
-                  color: color,
-                  child: Icon(icon, color: color),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        value,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        subtitle,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).hintColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (onTap != null) ...[
-                  const SizedBox(width: 12),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProgressRing extends StatelessWidget {
-  const _ProgressRing({
-    required this.progress,
-    required this.color,
-    required this.child,
-  });
-
-  final double progress;
-  final Color color;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 74,
-      height: 74,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          SizedBox(
-            width: 74,
-            height: 74,
-            child: CircularProgressIndicator(
-              value: 1,
-              strokeWidth: 8,
-              color: color.withValues(alpha: 0.14),
-            ),
-          ),
-          SizedBox(
-            width: 74,
-            height: 74,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: 0, end: progress),
-              duration: const Duration(milliseconds: 700),
-              curve: Curves.easeOutCubic,
-              builder: (context, value, _) {
-                return CircularProgressIndicator(
-                  value: value,
-                  strokeWidth: 8,
-                  color: color,
-                  backgroundColor: Colors.transparent,
-                );
-              },
-            ),
-          ),
-          child,
-        ],
       ),
     );
   }
@@ -1071,38 +891,6 @@ class _WeeklySummaryPill extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Text(label),
-      ),
-    );
-  }
-}
-
-class _MacroChip extends StatelessWidget {
-  const _MacroChip({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: RichText(
-          text: TextSpan(
-            style: Theme.of(context).textTheme.bodyMedium,
-            children: [
-              TextSpan(
-                text: '$label: ',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              TextSpan(text: value),
-            ],
-          ),
-        ),
       ),
     );
   }

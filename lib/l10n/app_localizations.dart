@@ -278,6 +278,18 @@ abstract class AppLocalizations {
   /// **'Profile & goals'**
   String get dashboardProfile;
 
+  /// No description provided for @todayOverviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s overview'**
+  String get todayOverviewTitle;
+
+  /// No description provided for @todayOverviewSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goals, progress, and nutrition in one place.'**
+  String get todayOverviewSubtitle;
+
   /// No description provided for @dashboardHeadline.
   ///
   /// In en, this message translates to:
@@ -668,6 +680,12 @@ abstract class AppLocalizations {
   /// **'Current weight, kg'**
   String get profileCurrentWeight;
 
+  /// No description provided for @profileStartWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting weight, kg'**
+  String get profileStartWeight;
+
   /// No description provided for @profileTargetWeight.
   ///
   /// In en, this message translates to:
@@ -679,6 +697,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Main goal'**
   String get profileGoalType;
+
+  /// No description provided for @profileCity.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get profileCity;
+
+  /// No description provided for @profileCityRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please choose your city'**
+  String get profileCityRequired;
+
+  /// No description provided for @profileCityDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your city'**
+  String get profileCityDialogTitle;
+
+  /// No description provided for @profileCityDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'To participate in the city leaderboard, select the city where you live.'**
+  String get profileCityDialogMessage;
 
   /// No description provided for @profileDailyStepGoal.
   ///
@@ -715,6 +757,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Current'**
   String get profileCurrentWeightShort;
+
+  /// No description provided for @profileStartWeightShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get profileStartWeightShort;
 
   /// No description provided for @profileTargetWeightShort.
   ///
@@ -793,6 +841,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Once you do that, the dashboard will show weight-loss analytics.'**
   String get dashboardWeightEmptySubtitle;
+
+  /// No description provided for @dashboardWeekStartWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Week start {value} kg'**
+  String dashboardWeekStartWeight(Object value);
+
+  /// No description provided for @dashboardWeekEndWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Week end {value} kg'**
+  String dashboardWeekEndWeight(Object value);
 
   /// No description provided for @goalSettingsTitle.
   ///
@@ -1040,6 +1100,24 @@ abstract class AppLocalizations {
   /// **'Add food'**
   String get foodDiaryAddFood;
 
+  /// No description provided for @foodDiaryTodayWeightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s weight'**
+  String get foodDiaryTodayWeightTitle;
+
+  /// No description provided for @foodDiaryTodayWeightSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save today\'s weight so it appears in your profile and analytics.'**
+  String get foodDiaryTodayWeightSubtitle;
+
+  /// No description provided for @foodDiaryWeightSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s weight saved.'**
+  String get foodDiaryWeightSaved;
+
   /// No description provided for @chatTitle.
   ///
   /// In en, this message translates to:
@@ -1051,6 +1129,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Real-time messages from Liga Gym members.'**
   String get chatSubtitle;
+
+  /// No description provided for @chatDirectoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest chats'**
+  String get chatDirectoryTitle;
+
+  /// No description provided for @chatDirectorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your own communities, join any chat, and find like-minded people.'**
+  String get chatDirectorySubtitle;
+
+  /// No description provided for @chatDirectoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no chats yet. Create the first interest chat.'**
+  String get chatDirectoryEmpty;
+
+  /// No description provided for @chatSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by interest'**
+  String get chatSearchHint;
+
+  /// No description provided for @chatSearchEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No chats found for your search.'**
+  String get chatSearchEmpty;
+
+  /// No description provided for @chatCreateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create chat'**
+  String get chatCreateAction;
+
+  /// No description provided for @chatCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New chat'**
+  String get chatCreateTitle;
+
+  /// No description provided for @chatInterestName.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest name'**
+  String get chatInterestName;
+
+  /// No description provided for @chatInterestDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat description'**
+  String get chatInterestDescription;
+
+  /// No description provided for @chatMembersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} members'**
+  String chatMembersCount(Object value);
+
+  /// No description provided for @chatJoinPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not joined this chat yet. Join to read and send messages.'**
+  String get chatJoinPrompt;
+
+  /// No description provided for @chatJoinAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Join chat'**
+  String get chatJoinAction;
+
+  /// No description provided for @chatRoomNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat was not found or has been removed.'**
+  String get chatRoomNotFound;
+
+  /// No description provided for @chatManageParticipantTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage: {name}'**
+  String chatManageParticipantTitle(Object name);
+
+  /// No description provided for @chatRemoveParticipantTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove user {name}'**
+  String chatRemoveParticipantTitle(Object name);
+
+  /// No description provided for @chatRemoveParticipantAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get chatRemoveParticipantAction;
+
+  /// No description provided for @chatRemoveReasonOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Removal reason, optional'**
+  String get chatRemoveReasonOptional;
+
+  /// No description provided for @chatRoleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get chatRoleLabel;
+
+  /// No description provided for @chatRoleAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrator'**
+  String get chatRoleAdmin;
+
+  /// No description provided for @chatRoleModerator.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderator'**
+  String get chatRoleModerator;
+
+  /// No description provided for @chatRoleMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get chatRoleMember;
+
+  /// No description provided for @chatCanDeleteMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Can delete messages'**
+  String get chatCanDeleteMessages;
+
+  /// No description provided for @chatCanDeleteUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'Can delete users'**
+  String get chatCanDeleteUsers;
 
   /// No description provided for @chatEmpty.
   ///
@@ -1088,11 +1304,29 @@ abstract class AppLocalizations {
   /// **'Top athletes by social score.'**
   String get leaderboardSubtitle;
 
+  /// No description provided for @leaderboardRussiaTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Russia'**
+  String get leaderboardRussiaTab;
+
+  /// No description provided for @leaderboardCityTab.
+  ///
+  /// In en, this message translates to:
+  /// **'My city'**
+  String get leaderboardCityTab;
+
   /// No description provided for @leaderboardEmpty.
   ///
   /// In en, this message translates to:
   /// **'Leaderboard is still empty. Save a workout to claim the first spot.'**
   String get leaderboardEmpty;
+
+  /// No description provided for @leaderboardCityEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no participants in {city} yet.'**
+  String leaderboardCityEmpty(Object city);
 
   /// No description provided for @leaderboardPoints.
   ///
@@ -1105,6 +1339,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{value} workouts'**
   String leaderboardWorkouts(Object value);
+
+  /// No description provided for @leaderboardSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} steps'**
+  String leaderboardSteps(Object value);
 
   /// No description provided for @leaderboardYou.
   ///
@@ -1280,6 +1520,12 @@ abstract class AppLocalizations {
   /// **'Step counter'**
   String get stepCounterTitle;
 
+  /// No description provided for @stepCounterSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Step settings'**
+  String get stepCounterSettingsTitle;
+
   /// No description provided for @stepCounterToday.
   ///
   /// In en, this message translates to:
@@ -1291,6 +1537,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The value is read from the local database and updates while the tracking service is running.'**
   String get stepCounterTodayHint;
+
+  /// No description provided for @stepCounterGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {value} steps'**
+  String stepCounterGoal(Object value);
+
+  /// No description provided for @stepCounterRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} steps left to the goal'**
+  String stepCounterRemaining(Object value);
 
   /// No description provided for @stepCounterStatusTitle.
   ///
@@ -1393,6 +1651,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open app settings'**
   String get stepCounterOpenSettings;
+
+  /// No description provided for @stepCounterGoalSettingsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open goal settings'**
+  String get stepCounterGoalSettingsAction;
+
+  /// No description provided for @stepGoalReachedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Step goal achieved'**
+  String get stepGoalReachedTitle;
+
+  /// No description provided for @stepGoalReachedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You reached your daily step goal. Amazing work!'**
+  String get stepGoalReachedMessage;
+
+  /// No description provided for @stepGoalReachedInline.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached. Time to celebrate!'**
+  String get stepGoalReachedInline;
 
   /// No description provided for @stepCounterUnsupportedHint.
   ///

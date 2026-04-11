@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/russian_cities.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/input_validators.dart';
@@ -9,6 +10,7 @@ import '../../../../core/utils/localization_extensions.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/gender.dart';
+import '../../domain/entities/user_goal.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/entities/user_profile_update_data.dart';
 import '../providers/auth_providers.dart';
@@ -25,9 +27,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _nameController = TextEditingController();
   final _birthDateController = TextEditingController();
   final _heightController = TextEditingController();
+  final _startWeightController = TextEditingController();
+  final _currentWeightController = TextEditingController();
+  final _targetWeightController = TextEditingController();
 
   Gender? _selectedGender;
   DateTime? _selectedBirthDate;
+  String? _selectedCity;
   bool _isSaving = false;
   bool _didPopulateForm = false;
 
@@ -36,6 +42,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _nameController.dispose();
     _birthDateController.dispose();
     _heightController.dispose();
+    _startWeightController.dispose();
+    _currentWeightController.dispose();
+    _targetWeightController.dispose();
     super.dispose();
   }
 
@@ -141,6 +150,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     return errorCode?.localize(l10n);
                                   },
                                 ),
+                                const SizedBox(height: 16),
+                                DropdownButtonFormField<String>(
+                                  initialValue: _selectedCity,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.profileCity,
+                                  ),
+                                  items: russianCities
+                                      .map(
+                                        (city) => DropdownMenuItem<String>(
+                                          value: city,
+                                          child: Text(city),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: _isSaving
+                                      ? null
+                                      : (value) {
+                                          setState(() {
+                                            _selectedCity = value;
+                                          });
+                                        },
+                                  validator: (value) {
+                                    if ((value ?? '').trim().isEmpty) {
+                                      return l10n.profileCityRequired;
+                                    }
+                                    return null;
+                                  },
+                                ),
                               ],
                             ),
                           ),
@@ -155,6 +192,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   validatorMessage:
                                       l10n.validationInvalidHeight,
                                 ),
+                                const SizedBox(height: 16),
+                                _DecimalFormField(
+                                  controller: _currentWeightController,
+                                  label: l10n.profileCurrentWeight,
+                                  validatorMessage:
+                                      l10n.validationInvalidCurrentWeight,
+                                ),
+                                if (profile.goalType !=
+                                    UserGoalType.maintainWeight) ...[
+                                  const SizedBox(height: 16),
+                                  _DecimalFormField(
+                                    controller: _startWeightController,
+                                    label: l10n.profileStartWeight,
+                                    validatorMessage:
+                                        l10n.validationInvalidCurrentWeight,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _DecimalFormField(
+                                    controller: _targetWeightController,
+                                    label: l10n.profileTargetWeight,
+                                    validatorMessage:
+                                        l10n.validationInvalidTargetWeight,
+                                  ),
+                                ],
                               ],
                             ),
                           ),
@@ -240,12 +301,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           .read(updateUserProfileUseCaseProvider)
           .call(
             UserProfileUpdateData(
+              userId: profile.userId,
+              email: profile.email,
               name: _nameController.text.trim(),
               gender: _selectedGender!,
               birthDate: _selectedBirthDate!,
+              city: _selectedCity,
               heightCm: _parseDouble(_heightController.text),
-              currentWeightKg: profile.currentWeightKg,
-              targetWeightKg: profile.targetWeightKg,
+              startWeightKg: profile.goalType == UserGoalType.maintainWeight
+                  ? null
+                  : _parseDouble(_startWeightController.text),
+              currentWeightKg: _parseDouble(_currentWeightController.text),
+              targetWeightKg: profile.goalType == UserGoalType.maintainWeight
+                  ? null
+                  : _parseDouble(_targetWeightController.text),
               goalType: profile.goalType,
               dailyStepGoal: profile.dailyStepGoal,
               dailyCalorieGoal: profile.dailyCalorieGoal,
@@ -287,11 +356,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _nameController.text = profile.name;
     _selectedGender = profile.gender;
     _selectedBirthDate = profile.birthDate;
+    _selectedCity = profile.city;
     _birthDateController.text = formatLocalizedDate(
       profile.birthDate,
       Localizations.localeOf(context),
     );
     _heightController.text = _formatDouble(profile.heightCm);
+    _startWeightController.text = _formatDouble(profile.startWeightKg);
+    _currentWeightController.text = _formatDouble(profile.currentWeightKg);
+    _targetWeightController.text = _formatDouble(profile.targetWeightKg);
   }
 
   String _formatDouble(double? value, {int fractionDigits = 1}) {
@@ -347,7 +420,15 @@ class _ProfileOverviewCard extends StatelessWidget {
                 label:
                     '${l10n.profileCurrentWeightShort} ${profile.currentWeightKg!.toStringAsFixed(1)} ${l10n.profileKgUnit}',
               ),
-            if (profile.targetWeightKg != null)
+            if (profile.goalType != UserGoalType.maintainWeight &&
+                profile.startWeightKg != null)
+              _OverviewPill(
+                icon: Icons.play_arrow_outlined,
+                label:
+                    '${l10n.profileStartWeightShort} ${profile.startWeightKg!.toStringAsFixed(1)} ${l10n.profileKgUnit}',
+              ),
+            if (profile.goalType != UserGoalType.maintainWeight &&
+                profile.targetWeightKg != null)
               _OverviewPill(
                 icon: Icons.track_changes_outlined,
                 label:
@@ -358,6 +439,11 @@ class _ProfileOverviewCard extends StatelessWidget {
                 icon: Icons.height_outlined,
                 label:
                     '${l10n.profileHeightShort} ${profile.heightCm!.toStringAsFixed(0)} ${l10n.profileCmUnit}',
+              ),
+            if ((profile.city ?? '').isNotEmpty)
+              _OverviewPill(
+                icon: Icons.location_city_outlined,
+                label: profile.city!,
               ),
             _OverviewPill(
               icon: Icons.directions_walk_outlined,

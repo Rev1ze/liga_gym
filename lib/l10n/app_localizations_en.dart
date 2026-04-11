@@ -103,6 +103,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardProfile => 'Profile & goals';
 
   @override
+  String get todayOverviewTitle => 'Today\'s overview';
+
+  @override
+  String get todayOverviewSubtitle =>
+      'Daily goals, progress, and nutrition in one place.';
+
+  @override
   String get dashboardHeadline => 'You\'re in';
 
   @override
@@ -336,10 +343,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileCurrentWeight => 'Current weight, kg';
 
   @override
+  String get profileStartWeight => 'Starting weight, kg';
+
+  @override
   String get profileTargetWeight => 'Target weight, kg';
 
   @override
   String get profileGoalType => 'Main goal';
+
+  @override
+  String get profileCity => 'City';
+
+  @override
+  String get profileCityRequired => 'Please choose your city';
+
+  @override
+  String get profileCityDialogTitle => 'Choose your city';
+
+  @override
+  String get profileCityDialogMessage =>
+      'To participate in the city leaderboard, select the city where you live.';
 
   @override
   String get profileDailyStepGoal => 'Daily step goal';
@@ -358,6 +381,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileCurrentWeightShort => 'Current';
+
+  @override
+  String get profileStartWeightShort => 'Start';
 
   @override
   String get profileTargetWeightShort => 'Target';
@@ -409,6 +435,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get dashboardWeightEmptySubtitle =>
       'Once you do that, the dashboard will show weight-loss analytics.';
+
+  @override
+  String dashboardWeekStartWeight(Object value) {
+    return 'Week start $value kg';
+  }
+
+  @override
+  String dashboardWeekEndWeight(Object value) {
+    return 'Week end $value kg';
+  }
 
   @override
   String get goalSettingsTitle => 'Goal settings';
@@ -544,10 +580,98 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foodDiaryAddFood => 'Add food';
 
   @override
+  String get foodDiaryTodayWeightTitle => 'Today\'s weight';
+
+  @override
+  String get foodDiaryTodayWeightSubtitle =>
+      'Save today\'s weight so it appears in your profile and analytics.';
+
+  @override
+  String get foodDiaryWeightSaved => 'Today\'s weight saved.';
+
+  @override
   String get chatTitle => 'Community chat';
 
   @override
   String get chatSubtitle => 'Real-time messages from Liga Gym members.';
+
+  @override
+  String get chatDirectoryTitle => 'Interest chats';
+
+  @override
+  String get chatDirectorySubtitle =>
+      'Create your own communities, join any chat, and find like-minded people.';
+
+  @override
+  String get chatDirectoryEmpty =>
+      'There are no chats yet. Create the first interest chat.';
+
+  @override
+  String get chatSearchHint => 'Search by interest';
+
+  @override
+  String get chatSearchEmpty => 'No chats found for your search.';
+
+  @override
+  String get chatCreateAction => 'Create chat';
+
+  @override
+  String get chatCreateTitle => 'New chat';
+
+  @override
+  String get chatInterestName => 'Interest name';
+
+  @override
+  String get chatInterestDescription => 'Chat description';
+
+  @override
+  String chatMembersCount(Object value) {
+    return '$value members';
+  }
+
+  @override
+  String get chatJoinPrompt =>
+      'You have not joined this chat yet. Join to read and send messages.';
+
+  @override
+  String get chatJoinAction => 'Join chat';
+
+  @override
+  String get chatRoomNotFound => 'Chat was not found or has been removed.';
+
+  @override
+  String chatManageParticipantTitle(Object name) {
+    return 'Manage: $name';
+  }
+
+  @override
+  String chatRemoveParticipantTitle(Object name) {
+    return 'Remove user $name';
+  }
+
+  @override
+  String get chatRemoveParticipantAction => 'Remove';
+
+  @override
+  String get chatRemoveReasonOptional => 'Removal reason, optional';
+
+  @override
+  String get chatRoleLabel => 'Role';
+
+  @override
+  String get chatRoleAdmin => 'Administrator';
+
+  @override
+  String get chatRoleModerator => 'Moderator';
+
+  @override
+  String get chatRoleMember => 'Member';
+
+  @override
+  String get chatCanDeleteMessages => 'Can delete messages';
+
+  @override
+  String get chatCanDeleteUsers => 'Can delete users';
 
   @override
   String get chatEmpty => 'No messages yet. Start the conversation.';
@@ -568,8 +692,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leaderboardSubtitle => 'Top athletes by social score.';
 
   @override
+  String get leaderboardRussiaTab => 'Russia';
+
+  @override
+  String get leaderboardCityTab => 'My city';
+
+  @override
   String get leaderboardEmpty =>
       'Leaderboard is still empty. Save a workout to claim the first spot.';
+
+  @override
+  String leaderboardCityEmpty(Object city) {
+    return 'There are no participants in $city yet.';
+  }
 
   @override
   String leaderboardPoints(Object value) {
@@ -579,6 +714,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String leaderboardWorkouts(Object value) {
     return '$value workouts';
+  }
+
+  @override
+  String leaderboardSteps(Object value) {
+    return '$value steps';
   }
 
   @override
@@ -684,11 +824,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stepCounterTitle => 'Step counter';
 
   @override
+  String get stepCounterSettingsTitle => 'Step settings';
+
+  @override
   String get stepCounterToday => 'Today\'s steps';
 
   @override
   String get stepCounterTodayHint =>
       'The value is read from the local database and updates while the tracking service is running.';
+
+  @override
+  String stepCounterGoal(Object value) {
+    return 'Goal $value steps';
+  }
+
+  @override
+  String stepCounterRemaining(Object value) {
+    return '$value steps left to the goal';
+  }
 
   @override
   String get stepCounterStatusTitle => 'Status';
@@ -740,6 +893,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stepCounterOpenSettings => 'Open app settings';
+
+  @override
+  String get stepCounterGoalSettingsAction => 'Open goal settings';
+
+  @override
+  String get stepGoalReachedTitle => 'Step goal achieved';
+
+  @override
+  String get stepGoalReachedMessage =>
+      'You reached your daily step goal. Amazing work!';
+
+  @override
+  String get stepGoalReachedInline => 'Goal reached. Time to celebrate!';
 
   @override
   String get stepCounterUnsupportedHint =>

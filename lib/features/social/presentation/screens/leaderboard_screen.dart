@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/localization_extensions.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../auth/domain/entities/user_profile.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../domain/entities/leaderboard_user.dart';
 import '../providers/social_providers.dart';
@@ -16,6 +17,7 @@ class LeaderboardScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final leaderboardState = ref.watch(leaderboardProvider);
     final currentUserId = ref.watch(firebaseAuthProvider).currentUser?.uid;
+    final profileState = ref.watch(currentUserProfileProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -37,40 +39,61 @@ class LeaderboardScreen extends ConsumerWidget {
         ),
       ),
       body: SafeArea(
-        child: leaderboardState.when(
-          data: (users) {
-            if (users.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    l10n.leaderboardEmpty,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge,
+        child: profileState.when(
+          data: (profile) => DefaultTabController(
+            length: 2,
+            child: Column(
+              children: [
+                TabBar(
+                  tabs: [
+                    Tab(text: l10n.leaderboardRussiaTab),
+                    Tab(text: profile?.city ?? l10n.leaderboardCityTab),
+                  ],
+                ),
+                Expanded(
+                  child: leaderboardState.when(
+                    data: (users) {
+                      final cityUsers = _filterCityUsers(users, profile);
+                      return TabBarView(
+                        children: [
+                          _LeaderboardList(
+                            users: users,
+                            currentUserId: currentUserId,
+                            emptyMessage: l10n.leaderboardEmpty,
+                          ),
+                          _LeaderboardList(
+                            users: cityUsers,
+                            currentUserId: currentUserId,
+                            emptyMessage: profile?.city == null
+                                ? l10n.profileCityRequired
+                                : l10n.leaderboardCityEmpty(profile!.city!),
+                          ),
+                        ],
+                      );
+                    },
+                    error: (error, _) {
+                      final message = error is AppException
+                          ? error.code.localize(l10n)
+                          : l10n.errorUnknown;
+
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Text(message, textAlign: TextAlign.center),
+                        ),
+                      );
+                    },
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                   ),
                 ),
-              );
-            }
-
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: users.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final user = users[index];
-                return _LeaderboardTile(
-                  position: index + 1,
-                  user: user,
-                  isCurrentUser: user.userId == currentUserId,
-                );
-              },
-            );
-          },
+              ],
+            ),
+          ),
           error: (error, _) {
             final message = error is AppException
                 ? error.code.localize(l10n)
                 : l10n.errorUnknown;
-
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -81,6 +104,62 @@ class LeaderboardScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
         ),
       ),
+    );
+  }
+
+  List<LeaderboardUser> _filterCityUsers(
+    List<LeaderboardUser> users,
+    UserProfile? profile,
+  ) {
+    final city = profile?.city?.trim();
+    if (city == null || city.isEmpty) {
+      return const <LeaderboardUser>[];
+    }
+
+    return users
+        .where((user) => user.city?.trim().toLowerCase() == city.toLowerCase())
+        .toList(growable: false);
+  }
+}
+
+class _LeaderboardList extends StatelessWidget {
+  const _LeaderboardList({
+    required this.users,
+    required this.currentUserId,
+    required this.emptyMessage,
+  });
+
+  final List<LeaderboardUser> users;
+  final String? currentUserId;
+  final String emptyMessage;
+
+  @override
+  Widget build(BuildContext context) {
+    if (users.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            emptyMessage,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: users.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final user = users[index];
+        return _LeaderboardTile(
+          position: index + 1,
+          user: user,
+          isCurrentUser: user.userId == currentUserId,
+        );
+      },
     );
   }
 }
@@ -134,6 +213,11 @@ class _LeaderboardTile extends StatelessWidget {
                           label: Text(l10n.leaderboardYou),
                           visualDensity: VisualDensity.compact,
                         ),
+                      if ((user.city ?? '').isNotEmpty)
+                        Chip(
+                          label: Text(user.city!),
+                          visualDensity: VisualDensity.compact,
+                        ),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -146,6 +230,9 @@ class _LeaderboardTile extends StatelessWidget {
                         label: l10n.leaderboardWorkouts(
                           '${user.workoutsCount}',
                         ),
+                      ),
+                      _StatChip(
+                        label: l10n.leaderboardSteps('${user.stepsCount}'),
                       ),
                     ],
                   ),

@@ -84,6 +84,7 @@ class AuthRepositoryImpl implements AuthRepository {
         name: profile.name,
         gender: profile.gender,
         birthDate: profile.birthDate,
+        city: null,
         goalType: UserGoalType.maintainWeight,
       ),
     );
@@ -104,28 +105,36 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> updateUserProfile(UserProfileUpdateData profile) async {
     final currentUser = await _authRemoteDataSource.getCurrentUser();
+    final resolvedUserId = currentUser?.id ?? profile.userId;
+    final resolvedEmail = currentUser?.email ?? profile.email;
 
-    if (currentUser == null) {
+    if (resolvedUserId.isEmpty || resolvedEmail.isEmpty) {
       throw const AuthException(AppErrorCode.unauthorized);
     }
 
     final existingProfile = await _profileRemoteDataSource.getUserProfile(
-      currentUser.id,
+      resolvedUserId,
     );
-    final startWeightKg =
-        existingProfile?.startWeightKg ?? profile.currentWeightKg;
+    final startWeightKg = switch (profile.goalType) {
+      UserGoalType.maintainWeight => null,
+      _ => profile.startWeightKg ?? existingProfile?.startWeightKg,
+    };
+    final targetWeightKg = profile.goalType == UserGoalType.maintainWeight
+        ? null
+        : profile.targetWeightKg;
 
     await _profileRemoteDataSource.saveUserProfile(
       UserProfileModel(
-        userId: currentUser.id,
-        email: currentUser.email,
+        userId: resolvedUserId,
+        email: resolvedEmail,
         name: profile.name,
         gender: profile.gender,
         birthDate: profile.birthDate,
+        city: profile.city,
         heightCm: profile.heightCm,
         startWeightKg: startWeightKg,
         currentWeightKg: profile.currentWeightKg,
-        targetWeightKg: profile.targetWeightKg,
+        targetWeightKg: targetWeightKg,
         goalType: profile.goalType,
         dailyStepGoal: profile.dailyStepGoal,
         dailyCalorieGoal: profile.dailyCalorieGoal,

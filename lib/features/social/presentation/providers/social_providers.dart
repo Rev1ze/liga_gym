@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/firebase/firebase_bootstrap.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../domain/entities/chat_participant.dart';
+import '../../domain/entities/interest_chat_room.dart';
 import '../../data/datasources/social_remote_data_source.dart';
 import '../../data/repositories/social_repository_impl.dart';
 import '../../domain/entities/chat_message.dart';
@@ -10,6 +12,7 @@ import '../../domain/usecases/ensure_leaderboard_entry_use_case.dart';
 import '../../domain/usecases/listen_leaderboard_use_case.dart';
 import '../../domain/usecases/listen_messages_use_case.dart';
 import '../../domain/usecases/send_message_use_case.dart';
+import '../../domain/usecases/update_leaderboard_steps_use_case.dart';
 
 final socialRemoteDataSourceProvider = Provider<SocialRemoteDataSource>((ref) {
   final firebaseBootstrap = ref.watch(firebaseBootstrapProvider);
@@ -44,11 +47,41 @@ final ensureLeaderboardEntryUseCaseProvider = Provider(
   (ref) => EnsureLeaderboardEntryUseCase(ref.watch(socialRepositoryProvider)),
 );
 
-final chatMessagesProvider = StreamProvider.autoDispose<List<ChatMessage>>((
-  ref,
-) {
-  return ref.watch(listenMessagesUseCaseProvider).call();
-});
+final updateLeaderboardStepsUseCaseProvider = Provider(
+  (ref) => UpdateLeaderboardStepsUseCase(ref.watch(socialRepositoryProvider)),
+);
+
+final interestChatsProvider =
+    StreamProvider.autoDispose<List<InterestChatRoom>>((ref) {
+      return ref.watch(socialRepositoryProvider).listenInterestChats(limit: 100);
+    });
+
+final interestChatProvider =
+    StreamProvider.autoDispose.family<InterestChatRoom?, String>((ref, chatId) {
+      return ref.watch(socialRepositoryProvider).watchInterestChat(chatId);
+    });
+
+final chatMessagesProvider =
+    StreamProvider.autoDispose.family<List<ChatMessage>, String>((ref, chatId) {
+      return ref.watch(listenMessagesUseCaseProvider).call(chatId: chatId);
+    });
+
+final chatParticipantsProvider = StreamProvider.autoDispose
+    .family<List<ChatParticipant>, String>((ref, chatId) {
+      return ref.watch(socialRepositoryProvider).listenParticipants(chatId);
+    });
+
+final currentChatParticipantProvider = StreamProvider.autoDispose
+    .family<ChatParticipant?, String>((ref, chatId) {
+      final currentUser = ref.watch(firebaseAuthProvider).currentUser;
+      if (currentUser == null) {
+        return Stream<ChatParticipant?>.value(null);
+      }
+
+      return ref
+          .watch(socialRepositoryProvider)
+          .watchParticipant(chatId: chatId, userId: currentUser.uid);
+    });
 
 final leaderboardProvider = StreamProvider.autoDispose<List<LeaderboardUser>>((
   ref,
@@ -65,5 +98,5 @@ final leaderboardProvider = StreamProvider.autoDispose<List<LeaderboardUser>>((
         );
   }
 
-  yield* ref.watch(listenLeaderboardUseCaseProvider).call();
+  yield* ref.watch(listenLeaderboardUseCaseProvider).call(limit: 100);
 });

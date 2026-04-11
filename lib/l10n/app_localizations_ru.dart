@@ -103,6 +103,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get dashboardProfile => 'Профиль и цели';
 
   @override
+  String get todayOverviewTitle => 'Обзор за сегодня';
+
+  @override
+  String get todayOverviewSubtitle =>
+      'Дневные цели, прогресс и питание в одном месте.';
+
+  @override
   String get dashboardHeadline => 'Вы вошли';
 
   @override
@@ -336,10 +343,26 @@ class AppLocalizationsRu extends AppLocalizations {
   String get profileCurrentWeight => 'Текущий вес, кг';
 
   @override
+  String get profileStartWeight => 'Начальный вес, кг';
+
+  @override
   String get profileTargetWeight => 'Целевой вес, кг';
 
   @override
   String get profileGoalType => 'Основная цель';
+
+  @override
+  String get profileCity => 'Город';
+
+  @override
+  String get profileCityRequired => 'Пожалуйста, выберите город';
+
+  @override
+  String get profileCityDialogTitle => 'Укажите ваш город';
+
+  @override
+  String get profileCityDialogMessage =>
+      'Чтобы участвовать в городском лидерборде, выберите город проживания.';
 
   @override
   String get profileDailyStepGoal => 'Дневная цель по шагам';
@@ -358,6 +381,9 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get profileCurrentWeightShort => 'Текущий';
+
+  @override
+  String get profileStartWeightShort => 'Старт';
 
   @override
   String get profileTargetWeightShort => 'Цель';
@@ -409,6 +435,16 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get dashboardWeightEmptySubtitle =>
       'Тогда дашборд начнёт показывать аналитику снижения веса.';
+
+  @override
+  String dashboardWeekStartWeight(Object value) {
+    return 'Вес в начале недели $value кг';
+  }
+
+  @override
+  String dashboardWeekEndWeight(Object value) {
+    return 'Вес в конце недели $value кг';
+  }
 
   @override
   String get goalSettingsTitle => 'Настройка целей';
@@ -544,11 +580,99 @@ class AppLocalizationsRu extends AppLocalizations {
   String get foodDiaryAddFood => 'Добавить еду';
 
   @override
+  String get foodDiaryTodayWeightTitle => 'Вес сегодня';
+
+  @override
+  String get foodDiaryTodayWeightSubtitle =>
+      'Сохраните сегодняшний вес, чтобы он попал в профиль и аналитику.';
+
+  @override
+  String get foodDiaryWeightSaved => 'Вес за сегодня сохранён.';
+
+  @override
   String get chatTitle => 'Чат сообщества';
 
   @override
   String get chatSubtitle =>
       'Сообщения участников Liga Gym в реальном времени.';
+
+  @override
+  String get chatDirectoryTitle => 'Чаты по интересам';
+
+  @override
+  String get chatDirectorySubtitle =>
+      'Создавайте свои сообщества, вступайте в любые чаты и находите единомышленников.';
+
+  @override
+  String get chatDirectoryEmpty =>
+      'Пока нет ни одного чата. Создайте первый чат по интересам.';
+
+  @override
+  String get chatSearchHint => 'Поиск по интересу';
+
+  @override
+  String get chatSearchEmpty => 'По вашему запросу чаты не найдены.';
+
+  @override
+  String get chatCreateAction => 'Создать чат';
+
+  @override
+  String get chatCreateTitle => 'Новый чат';
+
+  @override
+  String get chatInterestName => 'Название интереса';
+
+  @override
+  String get chatInterestDescription => 'Описание чата';
+
+  @override
+  String chatMembersCount(Object value) {
+    return '$value участников';
+  }
+
+  @override
+  String get chatJoinPrompt =>
+      'Вы ещё не вступили в этот чат. Вступите, чтобы читать сообщения и писать в беседу.';
+
+  @override
+  String get chatJoinAction => 'Вступить в чат';
+
+  @override
+  String get chatRoomNotFound => 'Чат не найден или был удалён.';
+
+  @override
+  String chatManageParticipantTitle(Object name) {
+    return 'Управление: $name';
+  }
+
+  @override
+  String chatRemoveParticipantTitle(Object name) {
+    return 'Исключить пользователя $name';
+  }
+
+  @override
+  String get chatRemoveParticipantAction => 'Исключить';
+
+  @override
+  String get chatRemoveReasonOptional => 'Причина исключения, необязательно';
+
+  @override
+  String get chatRoleLabel => 'Роль';
+
+  @override
+  String get chatRoleAdmin => 'Администратор';
+
+  @override
+  String get chatRoleModerator => 'Модератор';
+
+  @override
+  String get chatRoleMember => 'Участник';
+
+  @override
+  String get chatCanDeleteMessages => 'Может удалять сообщения';
+
+  @override
+  String get chatCanDeleteUsers => 'Может удалять пользователей';
 
   @override
   String get chatEmpty => 'Сообщений пока нет. Начните разговор первым.';
@@ -569,8 +693,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get leaderboardSubtitle => 'Топ спортсменов по social score.';
 
   @override
+  String get leaderboardRussiaTab => 'Россия';
+
+  @override
+  String get leaderboardCityTab => 'Мой город';
+
+  @override
   String get leaderboardEmpty =>
       'Лидерборд пока пуст. Сохраните тренировку, чтобы занять первое место.';
+
+  @override
+  String leaderboardCityEmpty(Object city) {
+    return 'В городе $city пока нет участников.';
+  }
 
   @override
   String leaderboardPoints(Object value) {
@@ -580,6 +715,11 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String leaderboardWorkouts(Object value) {
     return '$value тренировок';
+  }
+
+  @override
+  String leaderboardSteps(Object value) {
+    return '$value шагов';
   }
 
   @override
@@ -686,11 +826,24 @@ class AppLocalizationsRu extends AppLocalizations {
   String get stepCounterTitle => 'Шагомер';
 
   @override
+  String get stepCounterSettingsTitle => 'Настройки шагомера';
+
+  @override
   String get stepCounterToday => 'Шаги за сегодня';
 
   @override
   String get stepCounterTodayHint =>
       'Значение читается из локальной базы и обновляется, пока работает сервис отслеживания.';
+
+  @override
+  String stepCounterGoal(Object value) {
+    return 'Цель $value шагов';
+  }
+
+  @override
+  String stepCounterRemaining(Object value) {
+    return 'До цели осталось $value шагов';
+  }
 
   @override
   String get stepCounterStatusTitle => 'Статус';
@@ -742,6 +895,19 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get stepCounterOpenSettings => 'Открыть настройки приложения';
+
+  @override
+  String get stepCounterGoalSettingsAction => 'Открыть настройки цели';
+
+  @override
+  String get stepGoalReachedTitle => 'Цель по шагам достигнута';
+
+  @override
+  String get stepGoalReachedMessage =>
+      'Вы достигли дневной цели по шагам. Отличная работа!';
+
+  @override
+  String get stepGoalReachedInline => 'Цель выполнена. Можно праздновать!';
 
   @override
   String get stepCounterUnsupportedHint =>

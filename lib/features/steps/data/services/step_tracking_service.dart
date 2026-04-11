@@ -59,6 +59,7 @@ class StepTrackingService {
     if (!permissionStatus.isGranted) {
       return false;
     }
+    await Permission.notification.request();
 
     await _sharedPreferences?.setString(stepTrackingActiveUserIdKey, userId);
 
@@ -92,7 +93,48 @@ class StepTrackingService {
 
     return FlutterBackgroundService().isRunning();
   }
+
+  Future<void> saveDailyGoal({
+    required String userId,
+    required int goal,
+  }) async {
+    await _sharedPreferences?.setInt(stepTrackingGoalKey(userId), goal);
+  }
+
+  Future<void> resetUserSession({
+    required String? previousUserId,
+    required String? nextUserId,
+  }) async {
+    if (_sharedPreferences == null) {
+      return;
+    }
+
+    if (previousUserId != null && previousUserId.isNotEmpty) {
+      await _sharedPreferences.remove(stepTrackingGoalKey(previousUserId));
+      await _sharedPreferences.remove(
+        stepGoalCelebrationPendingDateKey(previousUserId),
+      );
+      await _sharedPreferences.remove(
+        stepGoalCelebratedDateKey(previousUserId),
+      );
+    }
+
+    if (nextUserId == null || nextUserId.isEmpty) {
+      await _sharedPreferences.remove(stepTrackingActiveUserIdKey);
+      return;
+    }
+
+    await _sharedPreferences.setString(stepTrackingActiveUserIdKey, nextUserId);
+  }
 }
+
+String stepTrackingGoalKey(String userId) => 'step_tracking_daily_goal_$userId';
+
+String stepGoalCelebrationPendingDateKey(String userId) =>
+    'step_goal_celebration_pending_date_$userId';
+
+String stepGoalCelebratedDateKey(String userId) =>
+    'step_goal_celebrated_date_$userId';
 
 bool get isStepTrackingSupportedPlatform =>
     !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
@@ -143,10 +185,16 @@ void stepTrackingBackgroundEntrypoint(ServiceInstance service) async {
       userId: userId,
       date: event.timeStamp,
     );
+    final goalReachedNow = await _handleGoalReached(
+      sharedPreferences: sharedPreferences,
+      userId: userId,
+      todaySteps: todaySteps,
+    );
     service.invoke(stepTrackingUpdateEvent, <String, Object?>{
       'userId': userId,
       'steps': todaySteps,
       'dateKey': buildStepDateKey(event.timeStamp),
+      'goalReachedNow': goalReachedNow,
     });
   }
 
@@ -191,4 +239,30 @@ void stepTrackingBackgroundEntrypoint(ServiceInstance service) async {
   });
 
   await startTracking();
+}
+
+Future<bool> _handleGoalReached({
+  required SharedPreferences sharedPreferences,
+  required String userId,
+  required int todaySteps,
+}) async {
+  final stepGoal = sharedPreferences.getInt(stepTrackingGoalKey(userId)) ?? 10000;
+  if (todaySteps < stepGoal) {
+    return false;
+  }
+
+  final todayKey = buildStepDateKey(DateTime.now());
+  final lastCelebratedDate = sharedPreferences.getString(
+    stepGoalCelebratedDateKey(userId),
+  );
+  if (lastCelebratedDate == todayKey) {
+    return false;
+  }
+
+  await sharedPreferences.setString(stepGoalCelebratedDateKey(userId), todayKey);
+  await sharedPreferences.setString(
+    stepGoalCelebrationPendingDateKey(userId),
+    todayKey,
+  );
+  return true;
 }

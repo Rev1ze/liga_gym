@@ -69,6 +69,8 @@ class DashboardWeightAnalytics {
     this.startWeightKg,
     this.currentWeightKg,
     this.targetWeightKg,
+    this.periodStartWeightKg,
+    this.periodEndWeightKg,
     this.weeklyChangeKg,
     this.totalChangeKg,
     this.remainingToGoalKg,
@@ -79,6 +81,8 @@ class DashboardWeightAnalytics {
   final double? startWeightKg;
   final double? currentWeightKg;
   final double? targetWeightKg;
+  final double? periodStartWeightKg;
+  final double? periodEndWeightKg;
   final double? weeklyChangeKg;
   final double? totalChangeKg;
   final double? remainingToGoalKg;

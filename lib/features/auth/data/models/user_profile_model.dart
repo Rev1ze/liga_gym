@@ -11,6 +11,7 @@ class UserProfileModel extends UserProfile {
     required super.name,
     required super.gender,
     required super.birthDate,
+    super.city,
     super.heightCm,
     super.startWeightKg,
     super.currentWeightKg,
@@ -34,6 +35,7 @@ class UserProfileModel extends UserProfile {
       birthDate:
           birthDateTimestamp?.toDate() ??
           DateTime.fromMillisecondsSinceEpoch(0),
+      city: (data['city'] as String?)?.trim(),
       heightCm: (data['heightCm'] as num?)?.toDouble(),
       startWeightKg: (data['startWeightKg'] as num?)?.toDouble(),
       currentWeightKg: (data['currentWeightKg'] as num?)?.toDouble(),
@@ -50,6 +52,8 @@ class UserProfileModel extends UserProfile {
       'name': name,
       'gender': gender.name,
       'birthDate': Timestamp.fromDate(birthDate),
+      'city': city,
+      'countryCode': 'RU',
       'heightCm': heightCm,
       'startWeightKg': startWeightKg,
       'currentWeightKg': currentWeightKg,

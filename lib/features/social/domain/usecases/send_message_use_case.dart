@@ -7,6 +7,7 @@ class SendMessageUseCase {
   final SocialRepository _repository;
 
   Future<void> call({
+    required String chatId,
     required String userId,
     required String fallbackName,
     required String fallbackEmail,
@@ -18,6 +19,7 @@ class SendMessageUseCase {
     }
 
     return _repository.sendMessage(
+      chatId: chatId,
       userId: userId,
       fallbackName: fallbackName,
       fallbackEmail: fallbackEmail,

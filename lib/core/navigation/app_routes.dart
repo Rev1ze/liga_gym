@@ -5,9 +5,11 @@ abstract final class AppRoutes {
   static const profileSetup = '/profile-setup';
   static const profile = '/profile';
   static const dashboard = '/dashboard';
+  static const todayOverview = '/dashboard/today-overview';
   static const goalSettings = '/dashboard/goal-settings';
   static const dashboardAnalyticsDetails = '/dashboard/analytics-details';
   static const chat = '/social/chat';
+  static const chatRoom = '/social/chat-room';
   static const leaderboard = '/social/leaderboard';
   static const workoutList = '/workouts';
   static const startWorkout = '/workouts/start';
@@ -17,4 +19,5 @@ abstract final class AppRoutes {
   static const addFood = '/nutrition/add';
   static const productDetails = '/nutrition/product-details';
   static const stepCounter = '/steps';
+  static const stepSettings = '/steps/settings';
 }

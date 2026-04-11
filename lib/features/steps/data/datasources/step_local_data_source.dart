@@ -134,11 +134,16 @@ class SqfliteStepLocalDataSource implements StepLocalDataSource {
       final previousSensorSteps = state['last_sensor_steps']! as int;
       final previousTimestamp = state['last_sensor_timestamp']! as int;
 
-      var delta = sensorSteps - previousSensorSteps;
       if (sensorSteps < previousSensorSteps || updatedAt < previousTimestamp) {
-        delta = sensorSteps;
+        await txn.insert(_sensorStateTable, <String, Object?>{
+          'user_id': userId,
+          'last_sensor_steps': sensorSteps,
+          'last_sensor_timestamp': updatedAt,
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
+        return;
       }
 
+      final delta = sensorSteps - previousSensorSteps;
       if (delta > 0) {
         final currentDayMaps = await txn.query(
           _dailyStepsTable,

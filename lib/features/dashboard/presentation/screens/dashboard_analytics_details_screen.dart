@@ -424,6 +424,20 @@ class _AnalyticsDetailsContent extends StatelessWidget {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
+                      if (analytics.weightAnalytics.periodStartWeightKg != null)
+                        _ResultPill(
+                          label: l10n.dashboardWeekStartWeight(
+                            analytics.weightAnalytics.periodStartWeightKg!
+                                .toStringAsFixed(1),
+                          ),
+                        ),
+                      if (analytics.weightAnalytics.periodEndWeightKg != null)
+                        _ResultPill(
+                          label: l10n.dashboardWeekEndWeight(
+                            analytics.weightAnalytics.periodEndWeightKg!
+                                .toStringAsFixed(1),
+                          ),
+                        ),
                       if (analytics.weightAnalytics.currentWeightKg != null)
                         _ResultPill(
                           label: l10n.dashboardWeightCurrent(

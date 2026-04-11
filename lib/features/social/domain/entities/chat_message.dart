@@ -6,6 +6,7 @@ class ChatMessage {
     required this.senderId,
     required this.senderName,
     required this.senderEmail,
+    this.senderCity,
     required this.message,
     required this.sentAt,
   });
@@ -21,6 +22,7 @@ class ChatMessage {
       senderId: data['senderId'] as String? ?? '',
       senderName: data['senderName'] as String? ?? 'Athlete',
       senderEmail: data['senderEmail'] as String? ?? '',
+      senderCity: (data['senderCity'] as String?)?.trim(),
       message: data['message'] as String? ?? '',
       sentAt: timestamp?.toDate() ?? DateTime.now(),
     );
@@ -30,6 +32,7 @@ class ChatMessage {
   final String senderId;
   final String senderName;
   final String senderEmail;
+  final String? senderCity;
   final String message;
   final DateTime sentAt;
 }

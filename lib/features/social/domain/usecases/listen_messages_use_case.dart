@@ -6,7 +6,10 @@ class ListenMessagesUseCase {
 
   final SocialRepository _repository;
 
-  Stream<List<ChatMessage>> call({int limit = 50}) {
-    return _repository.listenMessages(limit: limit);
+  Stream<List<ChatMessage>> call({
+    required String chatId,
+    int limit = 50,
+  }) {
+    return _repository.listenMessages(chatId: chatId, limit: limit);
   }
 }

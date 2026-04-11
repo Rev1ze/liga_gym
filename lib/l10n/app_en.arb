@@ -30,6 +30,8 @@
   "profileBirthDatePickerHelp": "Select birth date",
   "dashboardTitle": "Dashboard",
   "dashboardProfile": "Profile & goals",
+  "todayOverviewTitle": "Today's overview",
+  "todayOverviewSubtitle": "Daily goals, progress, and nutrition in one place.",
   "dashboardHeadline": "You're in",
   "dashboardSubtitle": "Your account is ready for the next workout.",
   "dashboardGoalsTitle": "Goals",
@@ -177,14 +179,20 @@
   "profileGoalsSection": "Goal settings",
   "profileHeight": "Height, cm",
   "profileCurrentWeight": "Current weight, kg",
+  "profileStartWeight": "Starting weight, kg",
   "profileTargetWeight": "Target weight, kg",
   "profileGoalType": "Main goal",
+  "profileCity": "City",
+  "profileCityRequired": "Please choose your city",
+  "profileCityDialogTitle": "Choose your city",
+  "profileCityDialogMessage": "To participate in the city leaderboard, select the city where you live.",
   "profileDailyStepGoal": "Daily step goal",
   "profileDailyCalorieGoal": "Daily calorie goal, kcal",
   "profileSaveButton": "Save changes",
   "profileSavedMessage": "Profile updated.",
   "profileHeightShort": "Height",
   "profileCurrentWeightShort": "Current",
+  "profileStartWeightShort": "Start",
   "profileTargetWeightShort": "Target",
   "profileKgUnit": "kg",
   "profileCmUnit": "cm",
@@ -223,6 +231,18 @@
   },
   "dashboardWeightEmptyTitle": "Add your current and target weight",
   "dashboardWeightEmptySubtitle": "Once you do that, the dashboard will show weight-loss analytics.",
+  "dashboardWeekStartWeight": "Week start {value} kg",
+  "@dashboardWeekStartWeight": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardWeekEndWeight": "Week end {value} kg",
+  "@dashboardWeekEndWeight": {
+    "placeholders": {
+      "value": {}
+    }
+  },
   "goalSettingsTitle": "Goal settings",
   "goalSettingsStepsSubtitle": "Adjust the daily step goal from the Today's Overview card.",
   "goalSettingsCaloriesSubtitle": "Adjust the daily calorie goal from the Today's Overview card.",
@@ -264,15 +284,64 @@
   "foodDiaryTitle": "Food diary",
   "foodDiaryPickDate": "Select diary date",
   "foodDiaryAddFood": "Add food",
+  "foodDiaryTodayWeightTitle": "Today's weight",
+  "foodDiaryTodayWeightSubtitle": "Save today's weight so it appears in your profile and analytics.",
+  "foodDiaryWeightSaved": "Today's weight saved.",
   "chatTitle": "Community chat",
   "chatSubtitle": "Real-time messages from Liga Gym members.",
+  "chatDirectoryTitle": "Interest chats",
+  "chatDirectorySubtitle": "Create your own communities, join any chat, and find like-minded people.",
+  "chatDirectoryEmpty": "There are no chats yet. Create the first interest chat.",
+  "chatSearchHint": "Search by interest",
+  "chatSearchEmpty": "No chats found for your search.",
+  "chatCreateAction": "Create chat",
+  "chatCreateTitle": "New chat",
+  "chatInterestName": "Interest name",
+  "chatInterestDescription": "Chat description",
+  "chatMembersCount": "{value} members",
+  "@chatMembersCount": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "chatJoinPrompt": "You have not joined this chat yet. Join to read and send messages.",
+  "chatJoinAction": "Join chat",
+  "chatRoomNotFound": "Chat was not found or has been removed.",
+  "chatManageParticipantTitle": "Manage: {name}",
+  "@chatManageParticipantTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "chatRemoveParticipantTitle": "Remove user {name}",
+  "@chatRemoveParticipantTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "chatRemoveParticipantAction": "Remove",
+  "chatRemoveReasonOptional": "Removal reason, optional",
+  "chatRoleLabel": "Role",
+  "chatRoleAdmin": "Administrator",
+  "chatRoleModerator": "Moderator",
+  "chatRoleMember": "Member",
+  "chatCanDeleteMessages": "Can delete messages",
+  "chatCanDeleteUsers": "Can delete users",
   "chatEmpty": "No messages yet. Start the conversation.",
   "chatInputHint": "Write a message",
   "chatSend": "Send",
   "chatYou": "You",
   "leaderboardTitle": "Leaderboard",
   "leaderboardSubtitle": "Top athletes by social score.",
+  "leaderboardRussiaTab": "Russia",
+  "leaderboardCityTab": "My city",
   "leaderboardEmpty": "Leaderboard is still empty. Save a workout to claim the first spot.",
+  "leaderboardCityEmpty": "There are no participants in {city} yet.",
+  "@leaderboardCityEmpty": {
+    "placeholders": {
+      "city": {}
+    }
+  },
   "leaderboardPoints": "{value} pts",
   "@leaderboardPoints": {
     "placeholders": {
@@ -281,6 +350,12 @@
   },
   "leaderboardWorkouts": "{value} workouts",
   "@leaderboardWorkouts": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "leaderboardSteps": "{value} steps",
+  "@leaderboardSteps": {
     "placeholders": {
       "value": {}
     }
@@ -347,8 +422,21 @@
   "productDetailsTotalMacros": "Total for selected portions",
   "productDetailsSave": "Save entry",
   "stepCounterTitle": "Step counter",
+  "stepCounterSettingsTitle": "Step settings",
   "stepCounterToday": "Today's steps",
   "stepCounterTodayHint": "The value is read from the local database and updates while the tracking service is running.",
+  "stepCounterGoal": "Goal {value} steps",
+  "@stepCounterGoal": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "stepCounterRemaining": "{value} steps left to the goal",
+  "@stepCounterRemaining": {
+    "placeholders": {
+      "value": {}
+    }
+  },
   "stepCounterStatusTitle": "Status",
   "stepCounterStatusPlatform": "Platform",
   "stepCounterStatusPermission": "Permission",
@@ -366,6 +454,10 @@
   "stepCounterActionsTitle": "Actions",
   "stepCounterEnable": "Enable step tracking",
   "stepCounterOpenSettings": "Open app settings",
+  "stepCounterGoalSettingsAction": "Open goal settings",
+  "stepGoalReachedTitle": "Step goal achieved",
+  "stepGoalReachedMessage": "You reached your daily step goal. Amazing work!",
+  "stepGoalReachedInline": "Goal reached. Time to celebrate!",
   "stepCounterUnsupportedHint": "Continuous step tracking is currently available only on Android devices with a step sensor.",
   "stepCounterPermissionHint": "Grant Activity Recognition permission to start continuous step counting.",
   "stepCounterSettingsHint": "Open app settings and allow Activity Recognition, then return here.",

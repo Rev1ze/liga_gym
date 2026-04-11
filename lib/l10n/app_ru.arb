@@ -30,6 +30,8 @@
   "profileBirthDatePickerHelp": "Выберите дату рождения",
   "dashboardTitle": "Главная",
   "dashboardProfile": "Профиль и цели",
+  "todayOverviewTitle": "Обзор за сегодня",
+  "todayOverviewSubtitle": "Дневные цели, прогресс и питание в одном месте.",
   "dashboardHeadline": "Вы вошли",
   "dashboardSubtitle": "Ваш аккаунт готов к следующей тренировке.",
   "dashboardGoalsTitle": "Цели",
@@ -177,14 +179,20 @@
   "profileGoalsSection": "Настройка целей",
   "profileHeight": "Рост, см",
   "profileCurrentWeight": "Текущий вес, кг",
+  "profileStartWeight": "Начальный вес, кг",
   "profileTargetWeight": "Целевой вес, кг",
   "profileGoalType": "Основная цель",
+  "profileCity": "Город",
+  "profileCityRequired": "Пожалуйста, выберите город",
+  "profileCityDialogTitle": "Укажите ваш город",
+  "profileCityDialogMessage": "Чтобы участвовать в городском лидерборде, выберите город проживания.",
   "profileDailyStepGoal": "Дневная цель по шагам",
   "profileDailyCalorieGoal": "Дневная цель по калориям, ккал",
   "profileSaveButton": "Сохранить изменения",
   "profileSavedMessage": "Профиль обновлён.",
   "profileHeightShort": "Рост",
   "profileCurrentWeightShort": "Текущий",
+  "profileStartWeightShort": "Старт",
   "profileTargetWeightShort": "Цель",
   "profileKgUnit": "кг",
   "profileCmUnit": "см",
@@ -223,6 +231,18 @@
   },
   "dashboardWeightEmptyTitle": "Добавьте текущий и целевой вес",
   "dashboardWeightEmptySubtitle": "Тогда дашборд начнёт показывать аналитику снижения веса.",
+  "dashboardWeekStartWeight": "Вес в начале недели {value} кг",
+  "@dashboardWeekStartWeight": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "dashboardWeekEndWeight": "Вес в конце недели {value} кг",
+  "@dashboardWeekEndWeight": {
+    "placeholders": {
+      "value": {}
+    }
+  },
   "goalSettingsTitle": "Настройка целей",
   "goalSettingsStepsSubtitle": "Измените дневную цель по шагам прямо из карточки «Обзор за сегодня».",
   "goalSettingsCaloriesSubtitle": "Измените дневную цель по калориям прямо из карточки «Обзор за сегодня».",
@@ -264,15 +284,64 @@
   "foodDiaryTitle": "Дневник питания",
   "foodDiaryPickDate": "Выберите дату дневника",
   "foodDiaryAddFood": "Добавить еду",
+  "foodDiaryTodayWeightTitle": "Вес сегодня",
+  "foodDiaryTodayWeightSubtitle": "Сохраните сегодняшний вес, чтобы он попал в профиль и аналитику.",
+  "foodDiaryWeightSaved": "Вес за сегодня сохранён.",
   "chatTitle": "Чат сообщества",
   "chatSubtitle": "Сообщения участников Liga Gym в реальном времени.",
+  "chatDirectoryTitle": "Чаты по интересам",
+  "chatDirectorySubtitle": "Создавайте свои сообщества, вступайте в любые чаты и находите единомышленников.",
+  "chatDirectoryEmpty": "Пока нет ни одного чата. Создайте первый чат по интересам.",
+  "chatSearchHint": "Поиск по интересу",
+  "chatSearchEmpty": "По вашему запросу чаты не найдены.",
+  "chatCreateAction": "Создать чат",
+  "chatCreateTitle": "Новый чат",
+  "chatInterestName": "Название интереса",
+  "chatInterestDescription": "Описание чата",
+  "chatMembersCount": "{value} участников",
+  "@chatMembersCount": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "chatJoinPrompt": "Вы ещё не вступили в этот чат. Вступите, чтобы читать сообщения и писать в беседу.",
+  "chatJoinAction": "Вступить в чат",
+  "chatRoomNotFound": "Чат не найден или был удалён.",
+  "chatManageParticipantTitle": "Управление: {name}",
+  "@chatManageParticipantTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "chatRemoveParticipantTitle": "Исключить пользователя {name}",
+  "@chatRemoveParticipantTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "chatRemoveParticipantAction": "Исключить",
+  "chatRemoveReasonOptional": "Причина исключения, необязательно",
+  "chatRoleLabel": "Роль",
+  "chatRoleAdmin": "Администратор",
+  "chatRoleModerator": "Модератор",
+  "chatRoleMember": "Участник",
+  "chatCanDeleteMessages": "Может удалять сообщения",
+  "chatCanDeleteUsers": "Может удалять пользователей",
   "chatEmpty": "Сообщений пока нет. Начните разговор первым.",
   "chatInputHint": "Напишите сообщение",
   "chatSend": "Отправить",
   "chatYou": "Вы",
   "leaderboardTitle": "Лидерборд",
   "leaderboardSubtitle": "Топ спортсменов по social score.",
+  "leaderboardRussiaTab": "Россия",
+  "leaderboardCityTab": "Мой город",
   "leaderboardEmpty": "Лидерборд пока пуст. Сохраните тренировку, чтобы занять первое место.",
+  "leaderboardCityEmpty": "В городе {city} пока нет участников.",
+  "@leaderboardCityEmpty": {
+    "placeholders": {
+      "city": {}
+    }
+  },
   "leaderboardPoints": "{value} очков",
   "@leaderboardPoints": {
     "placeholders": {
@@ -281,6 +350,12 @@
   },
   "leaderboardWorkouts": "{value} тренировок",
   "@leaderboardWorkouts": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "leaderboardSteps": "{value} шагов",
+  "@leaderboardSteps": {
     "placeholders": {
       "value": {}
     }
@@ -347,8 +422,21 @@
   "productDetailsTotalMacros": "Итого по выбранным порциям",
   "productDetailsSave": "Сохранить запись",
   "stepCounterTitle": "Шагомер",
+  "stepCounterSettingsTitle": "Настройки шагомера",
   "stepCounterToday": "Шаги за сегодня",
   "stepCounterTodayHint": "Значение читается из локальной базы и обновляется, пока работает сервис отслеживания.",
+  "stepCounterGoal": "Цель {value} шагов",
+  "@stepCounterGoal": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "stepCounterRemaining": "До цели осталось {value} шагов",
+  "@stepCounterRemaining": {
+    "placeholders": {
+      "value": {}
+    }
+  },
   "stepCounterStatusTitle": "Статус",
   "stepCounterStatusPlatform": "Платформа",
   "stepCounterStatusPermission": "Разрешение",
@@ -366,6 +454,10 @@
   "stepCounterActionsTitle": "Действия",
   "stepCounterEnable": "Включить шагомер",
   "stepCounterOpenSettings": "Открыть настройки приложения",
+  "stepCounterGoalSettingsAction": "Открыть настройки цели",
+  "stepGoalReachedTitle": "Цель по шагам достигнута",
+  "stepGoalReachedMessage": "Вы достигли дневной цели по шагам. Отличная работа!",
+  "stepGoalReachedInline": "Цель выполнена. Можно праздновать!",
   "stepCounterUnsupportedHint": "Непрерывный подсчёт шагов сейчас доступен только на Android-устройствах с шаговым сенсором.",
   "stepCounterPermissionHint": "Выдайте разрешение на физическую активность, чтобы запустить постоянный подсчёт шагов.",
   "stepCounterSettingsHint": "Откройте настройки приложения, разрешите физическую активность и вернитесь сюда.",

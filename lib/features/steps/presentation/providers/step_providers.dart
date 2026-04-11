@@ -4,6 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/providers/shared_preferences_provider.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/datasources/step_local_data_source.dart';
+import '../../data/models/daily_step_count_model.dart';
 import '../../data/repositories/step_repository_impl.dart';
 import '../../data/services/step_tracking_service.dart';
 import '../controllers/step_screen_controller.dart';
@@ -91,6 +92,24 @@ final todayStepCountProvider = FutureProvider<int>((ref) async {
   return ref
       .watch(stepRepositoryProvider)
       .loadStepsForDate(userId: user.uid, date: DateTime.now());
+});
+
+final stepGoalProvider = FutureProvider<int>((ref) async {
+  final profile = await ref.watch(currentUserProfileProvider.future);
+  return profile?.dailyStepGoal ?? 10000;
+});
+
+final stepGoalCelebrationPendingProvider = FutureProvider<bool>((ref) async {
+  final user = ref.watch(firebaseStepUserProvider);
+  if (user == null) {
+    return false;
+  }
+  final sharedPreferences = ref.watch(sharedPreferencesProvider);
+  final pendingDate = sharedPreferences?.getString(
+    stepGoalCelebrationPendingDateKey(user.uid),
+  );
+  final todayKey = buildStepDateKey(DateTime.now());
+  return pendingDate == todayKey;
 });
 
 final stepScreenControllerProvider =
