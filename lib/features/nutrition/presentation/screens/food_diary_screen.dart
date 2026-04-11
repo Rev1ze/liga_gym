@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_keys.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/localization_extensions.dart';
+import '../../../auth/domain/entities/user_goal.dart';
+import '../../../auth/domain/entities/user_profile.dart';
+import '../../../auth/domain/entities/user_profile_update_data.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/food_entry.dart';
 import '../../domain/entities/food_macros.dart';
@@ -20,6 +27,10 @@ class FoodDiaryScreen extends ConsumerStatefulWidget {
 }
 
 class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
+  final _weightController = TextEditingController();
+  bool _isSavingWeight = false;
+  bool _didPopulateWeight = false;
+
   @override
   void initState() {
     super.initState();
@@ -27,6 +38,12 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(foodDiaryControllerProvider.notifier).loadDailyFoodEntries();
     });
+  }
+
+  @override
+  void dispose() {
+    _weightController.dispose();
+    super.dispose();
   }
 
   Future<void> _pickDate() async {
@@ -74,7 +91,9 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(foodDiaryControllerProvider);
+    final profileState = ref.watch(currentUserProfileProvider);
     final totalMacros = state.diary.totalMacros();
+    final isToday = DateUtils.isSameDay(state.selectedDate, DateTime.now());
 
     return Scaffold(
       appBar: AppBar(
@@ -102,6 +121,29 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              if (isToday) ...[
+                profileState.when(
+                  data: (profile) {
+                    if (profile == null) {
+                      return const SizedBox.shrink();
+                    }
+                    _populateWeightIfNeeded(profile);
+                    return _TodayWeightCard(
+                      controller: _weightController,
+                      isSaving: _isSavingWeight,
+                      onSave: () => _saveTodayWeight(profile),
+                    );
+                  },
+                  error: (_, _) => const SizedBox.shrink(),
+                  loading: () => const Card(
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
@@ -153,6 +195,157 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
               ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _populateWeightIfNeeded(UserProfile profile) {
+    if (_didPopulateWeight) {
+      return;
+    }
+
+    _didPopulateWeight = true;
+    if (profile.currentWeightKg != null) {
+      _weightController.text = profile.currentWeightKg!
+          .toStringAsFixed(1)
+          .replaceAll(RegExp(r'\.0$'), '');
+    }
+  }
+
+  Future<void> _saveTodayWeight(UserProfile profile) async {
+    final l10n = AppLocalizations.of(context)!;
+    final parsedWeight = double.tryParse(
+      _weightController.text.trim().replaceAll(',', '.'),
+    );
+    if (parsedWeight == null || parsedWeight <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.validationInvalidCurrentWeight)),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSavingWeight = true;
+    });
+
+    try {
+      await ref
+          .read(updateUserProfileUseCaseProvider)
+          .call(
+            UserProfileUpdateData(
+              userId: profile.userId,
+              email: profile.email,
+              name: profile.name,
+              gender: profile.gender,
+              birthDate: profile.birthDate,
+              city: profile.city,
+              heightCm: profile.heightCm,
+              startWeightKg: profile.goalType == UserGoalType.maintainWeight
+                  ? null
+                  : profile.startWeightKg,
+              currentWeightKg: parsedWeight,
+              targetWeightKg: profile.goalType == UserGoalType.maintainWeight
+                  ? null
+                  : profile.targetWeightKg,
+              goalType: profile.goalType,
+              dailyStepGoal: profile.dailyStepGoal,
+              dailyCalorieGoal: profile.dailyCalorieGoal,
+            ),
+          );
+      ref.invalidate(currentUserProfileProvider);
+      ref.invalidate(dashboardAnalyticsProvider);
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.foodDiaryWeightSaved)));
+    } on AppException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.code.localize(l10n))));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSavingWeight = false;
+        });
+      }
+    }
+  }
+}
+
+class _TodayWeightCard extends StatelessWidget {
+  const _TodayWeightCard({
+    required this.controller,
+    required this.isSaving,
+    required this.onSave,
+  });
+
+  final TextEditingController controller;
+  final bool isSaving;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.foodDiaryTodayWeightTitle,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.foodDiaryTodayWeightSubtitle,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).hintColor,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: AppKeys.foodDiaryWeightField,
+                    controller: controller,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                    ],
+                    decoration: InputDecoration(
+                      labelText: l10n.profileCurrentWeight,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                FilledButton(
+                  key: AppKeys.foodDiaryWeightSaveButton,
+                  onPressed: isSaving ? null : onSave,
+                  child: isSaving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.commonSave),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

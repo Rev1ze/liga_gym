@@ -1,1 +1,1 @@
-enum FoodInputMethod { manual, barcode }
+enum FoodInputMethod { manual, barcode, quickAccess }

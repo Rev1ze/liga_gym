@@ -13,6 +13,7 @@ class InMemoryNutritionRepository implements NutritionRepository {
 
   final NutritionMacroCalculator _calculator = const NutritionMacroCalculator();
   final List<FoodEntry> _entries = <FoodEntry>[];
+  final Map<String, FoodProduct> _savedProducts = <String, FoodProduct>{};
   final Map<String, FoodProduct> _productsByBarcode = <String, FoodProduct>{
     '4607002010012': FoodProduct(
       id: 'greek-yogurt',
@@ -33,6 +34,8 @@ class InMemoryNutritionRepository implements NutritionRepository {
     required String userId,
     required FoodEntryDraft draft,
   }) async {
+    await saveSavedProduct(userId: userId, product: draft.product);
+
     _entries.add(
       FoodEntry(
         id: 'entry_${_entries.length + 1}',
@@ -84,5 +87,18 @@ class InMemoryNutritionRepository implements NutritionRepository {
         .toList(growable: false);
 
     return DailyFoodDiary(date: date, entries: entriesForDay);
+  }
+
+  @override
+  Future<List<FoodProduct>> loadSavedProducts({required String userId}) async {
+    return _savedProducts.values.toList(growable: false);
+  }
+
+  @override
+  Future<void> saveSavedProduct({
+    required String userId,
+    required FoodProduct product,
+  }) async {
+    _savedProducts[product.id] = product;
   }
 }

@@ -10,6 +10,7 @@ enum AppErrorCode {
   emptyBirthDate,
   emptyFoodName,
   emptyBarcode,
+  emptyChatMessage,
   invalidFoodWeight,
   invalidCalories,
   invalidProteins,
@@ -28,6 +29,9 @@ enum AppErrorCode {
   unauthorized,
   profileSaveFailed,
   workoutSaveFailed,
+  chatSendFailed,
+  chatLoadFailed,
+  leaderboardLoadFailed,
   nutritionDiaryLoadFailed,
   nutritionEntrySaveFailed,
   foodProductNotFound,
@@ -59,4 +63,8 @@ final class WorkoutException extends AppException {
 
 final class NutritionException extends AppException {
   const NutritionException(super.code);
+}
+
+final class SocialException extends AppException {
+  const SocialException(super.code);
 }

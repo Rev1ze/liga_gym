@@ -33,6 +33,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonBirthDate => 'Birth date';
 
   @override
+  String get commonDate => 'Date';
+
+  @override
   String get commonSave => 'Save';
 
   @override
@@ -97,16 +100,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardTitle => 'Dashboard';
 
   @override
+  String get dashboardProfile => 'Profile & goals';
+
+  @override
+  String get todayOverviewTitle => 'Today\'s overview';
+
+  @override
+  String get todayOverviewSubtitle =>
+      'Daily goals, progress, and nutrition in one place.';
+
+  @override
   String get dashboardHeadline => 'You\'re in';
 
   @override
   String get dashboardSubtitle => 'Your account is ready for the next workout.';
 
   @override
+  String get dashboardGoalsTitle => 'Goals';
+
+  @override
+  String get dashboardGoalsSubtitle =>
+      'Set your daily targets and target weight to personalize the dashboard.';
+
+  @override
+  String dashboardGoalsSummary(Object goal, Object steps, Object calories) {
+    return '$goal • $steps steps • $calories kcal';
+  }
+
+  @override
+  String get dashboardGoalsAction => 'Edit goals';
+
+  @override
+  String get dashboardCommunityTitle => 'Community';
+
+  @override
+  String get dashboardCommunitySubtitle =>
+      'Jump into the live chat and see who is leading this week.';
+
+  @override
+  String get dashboardCommunityChat => 'Chat';
+
+  @override
+  String get dashboardCommunityLeaderboard => 'Leaderboard';
+
+  @override
   String get dashboardStartWorkout => 'Start workout';
 
   @override
   String get dashboardWorkoutHistory => 'Workout history';
+
+  @override
+  String get dashboardStepCounter => 'Step counter';
 
   @override
   String get dashboardNutritionDiary => 'Food diary';
@@ -166,6 +210,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardAnalyticsWeeklySubtitle => 'Last 7 days';
 
   @override
+  String get dashboardAnalyticsOpenDetails => 'Detailed report';
+
+  @override
+  String get dashboardAnalyticsRangeTitle => 'Results analytics';
+
+  @override
+  String get dashboardAnalyticsRangeSubtitle =>
+      'Choose any period up to 31 days and review your results.';
+
+  @override
+  String get dashboardAnalyticsFrom => 'From';
+
+  @override
+  String get dashboardAnalyticsTo => 'To';
+
+  @override
+  String get dashboardAnalyticsMaxRangeHint =>
+      'The selected range cannot be longer than 31 days.';
+
+  @override
+  String dashboardAnalyticsAverageSteps(Object value) {
+    return 'Average $value steps per day';
+  }
+
+  @override
+  String dashboardAnalyticsAverageCalories(Object value) {
+    return 'Average $value kcal per day';
+  }
+
+  @override
+  String dashboardAnalyticsWorkoutCalories(Object value) {
+    return '$value kcal burned in workouts';
+  }
+
+  @override
+  String dashboardAnalyticsWorkoutsCount(Object value) {
+    return '$value workouts completed';
+  }
+
+  @override
+  String get dashboardAnalyticsResultsByDay => 'Daily results';
+
+  @override
+  String get dashboardAnalyticsNoWeightData =>
+      'No weight data for the selected period yet.';
+
+  @override
+  String dashboardAnalyticsWeightChange(Object value) {
+    return 'Weight progress $value kg';
+  }
+
+  @override
+  String get dashboardAnalyticsExportPdf => 'Save as PDF';
+
+  @override
+  String get dashboardAnalyticsPdfTitle => 'Liga Gym analytics report';
+
+  @override
+  String get dashboardAnalyticsPdfRangeLabel => 'Period';
+
+  @override
+  String get dashboardAnalyticsPdfSummaryTitle => 'Summary';
+
+  @override
+  String dashboardAnalyticsPdfSaved(Object path) {
+    return 'PDF saved to: $path';
+  }
+
+  @override
   String get dashboardAnalyticsStepsLegend => 'Steps';
 
   @override
@@ -197,6 +310,156 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get genderOther => 'Other';
+
+  @override
+  String get goalLoseWeight => 'Lose weight';
+
+  @override
+  String get goalMaintainWeight => 'Maintain weight';
+
+  @override
+  String get goalGainWeight => 'Gain weight';
+
+  @override
+  String get profileScreenTitle => 'Profile & goals';
+
+  @override
+  String get profileScreenSubtitle =>
+      'Manage your profile, personal data, and body metrics.';
+
+  @override
+  String get profilePersonalSection => 'Personal data';
+
+  @override
+  String get profileBodySection => 'Body metrics';
+
+  @override
+  String get profileGoalsSection => 'Goal settings';
+
+  @override
+  String get profileHeight => 'Height, cm';
+
+  @override
+  String get profileCurrentWeight => 'Current weight, kg';
+
+  @override
+  String get profileStartWeight => 'Starting weight, kg';
+
+  @override
+  String get profileTargetWeight => 'Target weight, kg';
+
+  @override
+  String get profileGoalType => 'Main goal';
+
+  @override
+  String get profileCity => 'City';
+
+  @override
+  String get profileCityRequired => 'Please choose your city';
+
+  @override
+  String get profileCityDialogTitle => 'Choose your city';
+
+  @override
+  String get profileCityDialogMessage =>
+      'To participate in the city leaderboard, select the city where you live.';
+
+  @override
+  String get profileDailyStepGoal => 'Daily step goal';
+
+  @override
+  String get profileDailyCalorieGoal => 'Daily calorie goal, kcal';
+
+  @override
+  String get profileSaveButton => 'Save changes';
+
+  @override
+  String get profileSavedMessage => 'Profile updated.';
+
+  @override
+  String get profileHeightShort => 'Height';
+
+  @override
+  String get profileCurrentWeightShort => 'Current';
+
+  @override
+  String get profileStartWeightShort => 'Start';
+
+  @override
+  String get profileTargetWeightShort => 'Target';
+
+  @override
+  String get profileKgUnit => 'kg';
+
+  @override
+  String get profileCmUnit => 'cm';
+
+  @override
+  String get profileCaloriesUnit => 'kcal';
+
+  @override
+  String get dashboardWeightTitle => 'Weight loss analytics';
+
+  @override
+  String get dashboardWeightSubtitle =>
+      'Your current dynamics based on the saved weight history.';
+
+  @override
+  String dashboardWeightCurrent(Object value) {
+    return 'Current weight $value kg';
+  }
+
+  @override
+  String dashboardWeightTarget(Object value) {
+    return 'Target $value kg';
+  }
+
+  @override
+  String dashboardWeightLost(Object value) {
+    return 'Progress $value kg';
+  }
+
+  @override
+  String dashboardWeightWeekly(Object value) {
+    return 'For the selected week $value kg';
+  }
+
+  @override
+  String dashboardWeightRemaining(Object value) {
+    return 'Remaining $value kg';
+  }
+
+  @override
+  String get dashboardWeightEmptyTitle => 'Add your current and target weight';
+
+  @override
+  String get dashboardWeightEmptySubtitle =>
+      'Once you do that, the dashboard will show weight-loss analytics.';
+
+  @override
+  String dashboardWeekStartWeight(Object value) {
+    return 'Week start $value kg';
+  }
+
+  @override
+  String dashboardWeekEndWeight(Object value) {
+    return 'Week end $value kg';
+  }
+
+  @override
+  String get goalSettingsTitle => 'Goal settings';
+
+  @override
+  String get goalSettingsStepsSubtitle =>
+      'Adjust the daily step goal from the Today\'s Overview card.';
+
+  @override
+  String get goalSettingsCaloriesSubtitle =>
+      'Adjust the daily calorie goal from the Today\'s Overview card.';
+
+  @override
+  String get goalSettingsProgressSubtitle =>
+      'Set your main goal and weight targets for progress tracking.';
 
   @override
   String get workoutTypeRunning => 'Running';
@@ -317,6 +580,151 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foodDiaryAddFood => 'Add food';
 
   @override
+  String get foodDiaryTodayWeightTitle => 'Today\'s weight';
+
+  @override
+  String get foodDiaryTodayWeightSubtitle =>
+      'Save today\'s weight so it appears in your profile and analytics.';
+
+  @override
+  String get foodDiaryWeightSaved => 'Today\'s weight saved.';
+
+  @override
+  String get chatTitle => 'Community chat';
+
+  @override
+  String get chatSubtitle => 'Real-time messages from Liga Gym members.';
+
+  @override
+  String get chatDirectoryTitle => 'Interest chats';
+
+  @override
+  String get chatDirectorySubtitle =>
+      'Create your own communities, join any chat, and find like-minded people.';
+
+  @override
+  String get chatDirectoryEmpty =>
+      'There are no chats yet. Create the first interest chat.';
+
+  @override
+  String get chatSearchHint => 'Search by interest';
+
+  @override
+  String get chatSearchEmpty => 'No chats found for your search.';
+
+  @override
+  String get chatCreateAction => 'Create chat';
+
+  @override
+  String get chatCreateTitle => 'New chat';
+
+  @override
+  String get chatInterestName => 'Interest name';
+
+  @override
+  String get chatInterestDescription => 'Chat description';
+
+  @override
+  String chatMembersCount(Object value) {
+    return '$value members';
+  }
+
+  @override
+  String get chatJoinPrompt =>
+      'You have not joined this chat yet. Join to read and send messages.';
+
+  @override
+  String get chatJoinAction => 'Join chat';
+
+  @override
+  String get chatRoomNotFound => 'Chat was not found or has been removed.';
+
+  @override
+  String chatManageParticipantTitle(Object name) {
+    return 'Manage: $name';
+  }
+
+  @override
+  String chatRemoveParticipantTitle(Object name) {
+    return 'Remove user $name';
+  }
+
+  @override
+  String get chatRemoveParticipantAction => 'Remove';
+
+  @override
+  String get chatRemoveReasonOptional => 'Removal reason, optional';
+
+  @override
+  String get chatRoleLabel => 'Role';
+
+  @override
+  String get chatRoleAdmin => 'Administrator';
+
+  @override
+  String get chatRoleModerator => 'Moderator';
+
+  @override
+  String get chatRoleMember => 'Member';
+
+  @override
+  String get chatCanDeleteMessages => 'Can delete messages';
+
+  @override
+  String get chatCanDeleteUsers => 'Can delete users';
+
+  @override
+  String get chatEmpty => 'No messages yet. Start the conversation.';
+
+  @override
+  String get chatInputHint => 'Write a message';
+
+  @override
+  String get chatSend => 'Send';
+
+  @override
+  String get chatYou => 'You';
+
+  @override
+  String get leaderboardTitle => 'Leaderboard';
+
+  @override
+  String get leaderboardSubtitle => 'Top athletes by social score.';
+
+  @override
+  String get leaderboardRussiaTab => 'Russia';
+
+  @override
+  String get leaderboardCityTab => 'My city';
+
+  @override
+  String get leaderboardEmpty =>
+      'Leaderboard is still empty. Save a workout to claim the first spot.';
+
+  @override
+  String leaderboardCityEmpty(Object city) {
+    return 'There are no participants in $city yet.';
+  }
+
+  @override
+  String leaderboardPoints(Object value) {
+    return '$value pts';
+  }
+
+  @override
+  String leaderboardWorkouts(Object value) {
+    return '$value workouts';
+  }
+
+  @override
+  String leaderboardSteps(Object value) {
+    return '$value steps';
+  }
+
+  @override
+  String get leaderboardYou => 'You';
+
+  @override
   String get foodDiaryMealType => 'Meal';
 
   @override
@@ -342,6 +750,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addFoodBarcode => 'Barcode';
 
   @override
+  String get addFoodQuickAccess => 'Quick access';
+
+  @override
   String get addFoodName => 'Product name';
 
   @override
@@ -349,6 +760,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addFoodGrams => 'Portion, g';
+
+  @override
+  String get addFoodQuickAccessChooseProduct =>
+      'Select a product from quick access first.';
+
+  @override
+  String get addFoodQuickAccessChooseProducts =>
+      'Select at least one product from quick access.';
+
+  @override
+  String get addFoodQuickAccessEmpty =>
+      'There are no saved products yet. Add a new one manually or by barcode and it will appear here.';
+
+  @override
+  String get addFoodQuickAccessEdit => 'Edit product';
+
+  @override
+  String addFoodQuickAccessSelectedCount(Object count) {
+    return 'Selected products: $count';
+  }
+
+  @override
+  String get addFoodEditingProductTitle => 'Editing saved product';
+
+  @override
+  String get addFoodCreateNewProduct => 'Create new product';
 
   @override
   String get productDetailsTitle => 'Product details';
@@ -370,7 +807,125 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productDetailsPortionMacros => 'For selected portion';
 
   @override
+  String get productDetailsSelectedProductsTitle => 'Selected products';
+
+  @override
+  String productDetailsSelectedProductsCount(Object count) {
+    return 'Selected products: $count';
+  }
+
+  @override
+  String get productDetailsTotalMacros => 'Total for selected portions';
+
+  @override
   String get productDetailsSave => 'Save entry';
+
+  @override
+  String get stepCounterTitle => 'Step counter';
+
+  @override
+  String get stepCounterSettingsTitle => 'Step settings';
+
+  @override
+  String get stepCounterToday => 'Today\'s steps';
+
+  @override
+  String get stepCounterTodayHint =>
+      'The value is read from the local database and updates while the tracking service is running.';
+
+  @override
+  String stepCounterGoal(Object value) {
+    return 'Goal $value steps';
+  }
+
+  @override
+  String stepCounterRemaining(Object value) {
+    return '$value steps left to the goal';
+  }
+
+  @override
+  String get stepCounterStatusTitle => 'Status';
+
+  @override
+  String get stepCounterStatusPlatform => 'Platform';
+
+  @override
+  String get stepCounterStatusPermission => 'Permission';
+
+  @override
+  String get stepCounterStatusService => 'Service';
+
+  @override
+  String get stepCounterStatusAccount => 'Account';
+
+  @override
+  String get stepCounterStatusSupported => 'Supported';
+
+  @override
+  String get stepCounterStatusUnsupported => 'Not supported';
+
+  @override
+  String get stepCounterStatusGranted => 'Granted';
+
+  @override
+  String get stepCounterStatusDenied => 'Not granted';
+
+  @override
+  String get stepCounterStatusPermanentlyDenied => 'Denied in settings';
+
+  @override
+  String get stepCounterStatusRunning => 'Running';
+
+  @override
+  String get stepCounterStatusStopped => 'Stopped';
+
+  @override
+  String get stepCounterStatusLinked => 'Linked to current account';
+
+  @override
+  String get stepCounterStatusNotLinked => 'Not linked';
+
+  @override
+  String get stepCounterActionsTitle => 'Actions';
+
+  @override
+  String get stepCounterEnable => 'Enable step tracking';
+
+  @override
+  String get stepCounterOpenSettings => 'Open app settings';
+
+  @override
+  String get stepCounterGoalSettingsAction => 'Open goal settings';
+
+  @override
+  String get stepGoalReachedTitle => 'Step goal achieved';
+
+  @override
+  String get stepGoalReachedMessage =>
+      'You reached your daily step goal. Amazing work!';
+
+  @override
+  String get stepGoalReachedInline => 'Goal reached. Time to celebrate!';
+
+  @override
+  String get stepCounterUnsupportedHint =>
+      'Continuous step tracking is currently available only on Android devices with a step sensor.';
+
+  @override
+  String get stepCounterPermissionHint =>
+      'Grant Activity Recognition permission to start continuous step counting.';
+
+  @override
+  String get stepCounterSettingsHint =>
+      'Open app settings and allow Activity Recognition, then return here.';
+
+  @override
+  String get stepCounterEnableHint =>
+      'Tracking is available, but the service is not fully active yet. Tap the enable button.';
+
+  @override
+  String get stepCounterRunningHint =>
+      'Tracking is active. Steps should continue updating while the app is minimized.';
 
   @override
   String get foodCalories => 'Calories';
@@ -423,6 +978,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get validationEmptyBirthDate => 'Select your birth date.';
+
+  @override
+  String get validationInvalidHeight => 'Enter a valid height.';
+
+  @override
+  String get validationInvalidCurrentWeight => 'Enter a valid current weight.';
+
+  @override
+  String get validationInvalidTargetWeight => 'Enter a valid target weight.';
+
+  @override
+  String get validationInvalidStepGoal => 'Enter a valid daily step goal.';
+
+  @override
+  String get validationInvalidCalorieGoal =>
+      'Enter a valid daily calorie goal.';
+
+  @override
+  String get validationEmptyChatMessage => 'Enter a message.';
 
   @override
   String get validationEmptyFoodName => 'Enter the product name.';
@@ -489,6 +1063,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorWorkoutSaveFailed => 'Workout could not be saved.';
+
+  @override
+  String get errorChatSendFailed => 'Message could not be sent.';
+
+  @override
+  String get errorChatLoadFailed => 'Chat could not be loaded.';
+
+  @override
+  String get errorLeaderboardLoadFailed => 'Leaderboard could not be loaded.';
 
   @override
   String get errorNutritionDiaryLoadFailed => 'Food diary could not be loaded.';

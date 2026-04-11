@@ -29,6 +29,12 @@ abstract final class AppKeys {
   static const dashboardWorkoutHistoryButton = ValueKey<String>(
     'dashboardWorkoutHistoryButton',
   );
+  static const dashboardTodayOverviewButton = ValueKey<String>(
+    'dashboardTodayOverviewButton',
+  );
+  static const dashboardStepCounterButton = ValueKey<String>(
+    'dashboardStepCounterButton',
+  );
   static const workoutStartButton = ValueKey<String>('workoutStartButton');
   static const workoutPauseButton = ValueKey<String>('workoutPauseButton');
   static const workoutStopButton = ValueKey<String>('workoutStopButton');
@@ -38,10 +44,23 @@ abstract final class AppKeys {
   static const dashboardNutritionDiaryButton = ValueKey<String>(
     'dashboardNutritionDiaryButton',
   );
+  static const dashboardChatButton = ValueKey<String>('dashboardChatButton');
+  static const dashboardLeaderboardButton = ValueKey<String>(
+    'dashboardLeaderboardButton',
+  );
+  static const chatMessageField = ValueKey<String>('chatMessageField');
+  static const chatSendButton = ValueKey<String>('chatSendButton');
   static const foodDiaryAddButton = ValueKey<String>('foodDiaryAddButton');
   static const foodDiaryDateButton = ValueKey<String>('foodDiaryDateButton');
+  static const foodDiaryWeightField = ValueKey<String>('foodDiaryWeightField');
+  static const foodDiaryWeightSaveButton = ValueKey<String>(
+    'foodDiaryWeightSaveButton',
+  );
   static const addFoodManualTab = ValueKey<String>('addFoodManualTab');
   static const addFoodBarcodeTab = ValueKey<String>('addFoodBarcodeTab');
+  static const addFoodQuickAccessTab = ValueKey<String>(
+    'addFoodQuickAccessTab',
+  );
   static const addFoodMealTypeField = ValueKey<String>('addFoodMealTypeField');
   static const addFoodNameField = ValueKey<String>('addFoodNameField');
   static const addFoodBarcodeField = ValueKey<String>('addFoodBarcodeField');
@@ -55,5 +74,17 @@ abstract final class AppKeys {
   );
   static const productDetailsSaveButton = ValueKey<String>(
     'productDetailsSaveButton',
+  );
+  static const stepScreenEnableButton = ValueKey<String>(
+    'stepScreenEnableButton',
+  );
+  static const stepScreenSettingsButton = ValueKey<String>(
+    'stepScreenSettingsButton',
+  );
+  static const stepScreenOpenSettingsButton = ValueKey<String>(
+    'stepScreenOpenSettingsButton',
+  );
+  static const stepScreenRefreshButton = ValueKey<String>(
+    'stepScreenRefreshButton',
   );
 }

@@ -3,7 +3,12 @@ import 'dart:async';
 import 'package:liga_gym_app/core/errors/app_exception.dart';
 import 'package:liga_gym_app/features/auth/domain/entities/auth_status.dart';
 import 'package:liga_gym_app/features/auth/domain/entities/auth_user.dart';
+import 'package:liga_gym_app/features/auth/domain/entities/gender.dart';
 import 'package:liga_gym_app/features/auth/domain/entities/profile_setup_data.dart';
+import 'package:liga_gym_app/features/auth/domain/entities/user_goal.dart';
+import 'package:liga_gym_app/features/auth/domain/entities/user_profile.dart';
+import 'package:liga_gym_app/features/auth/domain/entities/user_profile_update_data.dart';
+import 'package:liga_gym_app/features/auth/domain/entities/weight_history_entry.dart';
 import 'package:liga_gym_app/features/auth/domain/repositories/auth_repository.dart';
 
 class InMemoryAuthRepository implements AuthRepository {
@@ -16,6 +21,9 @@ class InMemoryAuthRepository implements AuthRepository {
   final Map<String, String> _passwordsByEmail = <String, String>{};
   final Map<String, String> _userIdsByEmail = <String, String>{};
   final Set<String> _profiledUserIds = <String>{};
+  final Map<String, UserProfile> _profilesByUserId = <String, UserProfile>{};
+  final Map<String, List<WeightHistoryEntry>> _weightHistoryByUserId =
+      <String, List<WeightHistoryEntry>>{};
 
   AuthUser? _currentUser;
 
@@ -93,8 +101,92 @@ class InMemoryAuthRepository implements AuthRepository {
     }
 
     _profiledUserIds.add(currentUser.id);
+    _profilesByUserId[currentUser.id] = UserProfile(
+      userId: currentUser.id,
+      email: currentUser.email,
+      name: profile.name,
+      gender: profile.gender,
+      birthDate: profile.birthDate,
+      goalType: UserGoalType.maintainWeight,
+      dailyStepGoal: 10000,
+      dailyCalorieGoal: 2200,
+    );
 
     return AuthStatus.authenticated;
+  }
+
+  @override
+  Future<UserProfile> getUserProfile(String userId) async {
+    final profile = _profilesByUserId[userId];
+    if (profile == null) {
+      throw const ProfileException(AppErrorCode.profileSaveFailed);
+    }
+
+    return profile;
+  }
+
+  @override
+  Future<void> updateUserProfile(UserProfileUpdateData profile) async {
+    final currentUser = _currentUser;
+    if (currentUser == null) {
+      throw const AuthException(AppErrorCode.unauthorized);
+    }
+
+    final existingProfile =
+        _profilesByUserId[currentUser.id] ??
+        UserProfile(
+          userId: currentUser.id,
+          email: currentUser.email,
+          name: profile.name,
+          gender: profile.gender,
+          birthDate: profile.birthDate,
+        );
+    final startWeight =
+        existingProfile.startWeightKg ?? profile.currentWeightKg;
+    _profilesByUserId[currentUser.id] = UserProfile(
+      userId: currentUser.id,
+      email: currentUser.email,
+      name: profile.name,
+      gender: profile.gender,
+      birthDate: profile.birthDate,
+      heightCm: profile.heightCm,
+      startWeightKg: startWeight,
+      currentWeightKg: profile.currentWeightKg,
+      targetWeightKg: profile.targetWeightKg,
+      goalType: profile.goalType,
+      dailyStepGoal: profile.dailyStepGoal,
+      dailyCalorieGoal: profile.dailyCalorieGoal,
+    );
+
+    if (profile.currentWeightKg != null) {
+      final history = _weightHistoryByUserId.putIfAbsent(
+        currentUser.id,
+        () => <WeightHistoryEntry>[],
+      );
+      history.add(
+        WeightHistoryEntry(
+          userId: currentUser.id,
+          recordedAt: DateTime.now(),
+          weightKg: profile.currentWeightKg!,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<List<WeightHistoryEntry>> loadWeightHistory({
+    required String userId,
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    final history =
+        _weightHistoryByUserId[userId] ?? const <WeightHistoryEntry>[];
+    return history
+        .where(
+          (entry) =>
+              !entry.recordedAt.isBefore(from) && !entry.recordedAt.isAfter(to),
+        )
+        .toList(growable: false);
   }
 
   @override
@@ -116,6 +208,16 @@ class InMemoryAuthRepository implements AuthRepository {
 
     if (hasProfile) {
       _profiledUserIds.add(userId);
+      _profilesByUserId[userId] = UserProfile(
+        userId: userId,
+        email: email,
+        name: 'User',
+        gender: Gender.other,
+        birthDate: DateTime(2000, 1, 1),
+        goalType: UserGoalType.maintainWeight,
+        dailyStepGoal: 10000,
+        dailyCalorieGoal: 2200,
+      );
     }
   }
 

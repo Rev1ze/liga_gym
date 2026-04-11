@@ -515,6 +515,150 @@ final class SaveUserProfileUseCaseProvider
 String _$saveUserProfileUseCaseHash() =>
     r'b481e0f9177ec95393c5abf6ffb08a28fe5e4117';
 
+@ProviderFor(loadUserProfileUseCase)
+const loadUserProfileUseCaseProvider = LoadUserProfileUseCaseProvider._();
+
+final class LoadUserProfileUseCaseProvider
+    extends
+        $FunctionalProvider<
+          LoadUserProfileUseCase,
+          LoadUserProfileUseCase,
+          LoadUserProfileUseCase
+        >
+    with $Provider<LoadUserProfileUseCase> {
+  const LoadUserProfileUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'loadUserProfileUseCaseProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$loadUserProfileUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<LoadUserProfileUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  LoadUserProfileUseCase create(Ref ref) {
+    return loadUserProfileUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LoadUserProfileUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LoadUserProfileUseCase>(value),
+    );
+  }
+}
+
+String _$loadUserProfileUseCaseHash() =>
+    r'22de47955c5dbdfdc5b2766d200614c63523cd0c';
+
+@ProviderFor(updateUserProfileUseCase)
+const updateUserProfileUseCaseProvider = UpdateUserProfileUseCaseProvider._();
+
+final class UpdateUserProfileUseCaseProvider
+    extends
+        $FunctionalProvider<
+          UpdateUserProfileUseCase,
+          UpdateUserProfileUseCase,
+          UpdateUserProfileUseCase
+        >
+    with $Provider<UpdateUserProfileUseCase> {
+  const UpdateUserProfileUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'updateUserProfileUseCaseProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$updateUserProfileUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<UpdateUserProfileUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  UpdateUserProfileUseCase create(Ref ref) {
+    return updateUserProfileUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(UpdateUserProfileUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<UpdateUserProfileUseCase>(value),
+    );
+  }
+}
+
+String _$updateUserProfileUseCaseHash() =>
+    r'2cb1ff32bb635f77ed7a3396dd84948601217040';
+
+@ProviderFor(loadWeightHistoryUseCase)
+const loadWeightHistoryUseCaseProvider = LoadWeightHistoryUseCaseProvider._();
+
+final class LoadWeightHistoryUseCaseProvider
+    extends
+        $FunctionalProvider<
+          LoadWeightHistoryUseCase,
+          LoadWeightHistoryUseCase,
+          LoadWeightHistoryUseCase
+        >
+    with $Provider<LoadWeightHistoryUseCase> {
+  const LoadWeightHistoryUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'loadWeightHistoryUseCaseProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$loadWeightHistoryUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<LoadWeightHistoryUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  LoadWeightHistoryUseCase create(Ref ref) {
+    return loadWeightHistoryUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LoadWeightHistoryUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LoadWeightHistoryUseCase>(value),
+    );
+  }
+}
+
+String _$loadWeightHistoryUseCaseHash() =>
+    r'1090f99f5398d09493f11072902defd8d4a230f7';
+
 @ProviderFor(authStateChanges)
 const authStateChangesProvider = AuthStateChangesProvider._();
 

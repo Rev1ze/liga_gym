@@ -4,8 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'core/firebase/firebase_bootstrap.dart';
+import 'core/notifications/app_notification_service.dart';
 import 'core/providers/locale_provider.dart';
 import 'core/providers/shared_preferences_provider.dart';
+import 'features/steps/data/services/step_tracking_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,6 +15,8 @@ Future<void> main() async {
   // Инициализируем Firebase до старта приложения, чтобы Splash сразу видел auth-состояние.
   final firebaseBootstrap = await FirebaseBootstrapResult.initialize();
   final sharedPreferences = await SharedPreferences.getInstance();
+  await AppNotificationService.initialize();
+  await StepTrackingService.configureBackgroundTracking();
   final initialLocale = parseSavedLocale(
     sharedPreferences.getString('app_locale'),
   );

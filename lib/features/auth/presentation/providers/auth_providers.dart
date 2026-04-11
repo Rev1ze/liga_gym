@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -8,12 +9,16 @@ import '../../data/datasources/auth_remote_data_source.dart';
 import '../../data/datasources/profile_remote_data_source.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/auth_user.dart';
+import '../../domain/entities/user_profile.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/check_user_auth_state_use_case.dart';
 import '../../domain/usecases/login_with_email_use_case.dart';
+import '../../domain/usecases/load_user_profile_use_case.dart';
+import '../../domain/usecases/load_weight_history_use_case.dart';
 import '../../domain/usecases/register_user_use_case.dart';
 import '../../domain/usecases/save_user_profile_use_case.dart';
 import '../../domain/usecases/sign_in_with_google_use_case.dart';
+import '../../domain/usecases/update_user_profile_use_case.dart';
 
 part 'auth_providers.g.dart';
 
@@ -92,6 +97,21 @@ SaveUserProfileUseCase saveUserProfileUseCase(Ref ref) {
   return SaveUserProfileUseCase(ref.watch(authRepositoryProvider));
 }
 
+@Riverpod(keepAlive: true)
+LoadUserProfileUseCase loadUserProfileUseCase(Ref ref) {
+  return LoadUserProfileUseCase(ref.watch(authRepositoryProvider));
+}
+
+@Riverpod(keepAlive: true)
+UpdateUserProfileUseCase updateUserProfileUseCase(Ref ref) {
+  return UpdateUserProfileUseCase(ref.watch(authRepositoryProvider));
+}
+
+@Riverpod(keepAlive: true)
+LoadWeightHistoryUseCase loadWeightHistoryUseCase(Ref ref) {
+  return LoadWeightHistoryUseCase(ref.watch(authRepositoryProvider));
+}
+
 @riverpod
 Stream<AuthUser?> authStateChanges(Ref ref) {
   return ref.watch(authRepositoryProvider).watchAuthState();
@@ -101,3 +121,12 @@ Stream<AuthUser?> authStateChanges(Ref ref) {
 Future<AuthUser?> currentAuthUser(Ref ref) {
   return ref.watch(authRepositoryProvider).getCurrentUser();
 }
+
+final currentUserProfileProvider = FutureProvider<UserProfile?>((ref) async {
+  final currentUser = await ref.watch(currentAuthUserProvider.future);
+  if (currentUser == null) {
+    return null;
+  }
+
+  return ref.watch(loadUserProfileUseCaseProvider).call(currentUser.id);
+});

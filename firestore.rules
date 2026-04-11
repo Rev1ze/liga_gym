@@ -3,6 +3,55 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /workouts/{workoutId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /food_entries/{entryId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /saved_food_products/{productId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /weight_history/{entryId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    match /leaderboard/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /interest_chats/{chatId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null
+        && resource.data.createdBy == request.auth.uid;
+
+      match /members/{userId} {
+        allow read, write: if request.auth != null;
+      }
+
+      match /messages/{messageId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.message is string
+          && request.resource.data.message.size() > 0;
+        allow delete: if request.auth != null;
+      }
+
+      match /moderation_logs/{logId} {
+        allow read, write: if request.auth != null;
+      }
     }
   }
 }

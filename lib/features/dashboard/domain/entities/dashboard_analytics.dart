@@ -1,3 +1,5 @@
+import '../../../auth/domain/entities/user_goal.dart';
+
 class DashboardGoalProgress {
   const DashboardGoalProgress({
     required this.steps,
@@ -45,10 +47,60 @@ class DashboardWeeklyStats {
   });
 }
 
+class DashboardUserGoals {
+  const DashboardUserGoals({
+    required this.stepGoal,
+    required this.calorieGoal,
+    required this.goalType,
+    this.currentWeightKg,
+    this.targetWeightKg,
+  });
+
+  final int stepGoal;
+  final double calorieGoal;
+  final UserGoalType goalType;
+  final double? currentWeightKg;
+  final double? targetWeightKg;
+}
+
+class DashboardWeightAnalytics {
+  const DashboardWeightAnalytics({
+    required this.goalType,
+    this.startWeightKg,
+    this.currentWeightKg,
+    this.targetWeightKg,
+    this.periodStartWeightKg,
+    this.periodEndWeightKg,
+    this.weeklyChangeKg,
+    this.totalChangeKg,
+    this.remainingToGoalKg,
+    this.goalProgress,
+  });
+
+  final UserGoalType goalType;
+  final double? startWeightKg;
+  final double? currentWeightKg;
+  final double? targetWeightKg;
+  final double? periodStartWeightKg;
+  final double? periodEndWeightKg;
+  final double? weeklyChangeKg;
+  final double? totalChangeKg;
+  final double? remainingToGoalKg;
+  final double? goalProgress;
+
+  bool get hasData =>
+      currentWeightKg != null &&
+      (targetWeightKg != null ||
+          totalChangeKg != null ||
+          weeklyChangeKg != null);
+}
+
 class DashboardAnalytics {
   const DashboardAnalytics({
     required this.weeklyStats,
     required this.progress,
+    required this.goals,
+    required this.weightAnalytics,
     required this.proteins,
     required this.fats,
     required this.carbs,
@@ -56,7 +108,31 @@ class DashboardAnalytics {
 
   final DashboardWeeklyStats weeklyStats;
   final DashboardGoalProgress progress;
+  final DashboardUserGoals goals;
+  final DashboardWeightAnalytics weightAnalytics;
   final double proteins;
   final double fats;
   final double carbs;
+}
+
+class DashboardRangeAnalytics {
+  const DashboardRangeAnalytics({
+    required this.from,
+    required this.to,
+    required this.stats,
+    required this.weightAnalytics,
+    required this.totalWorkoutCalories,
+    required this.totalWorkouts,
+    required this.averageDailySteps,
+    required this.averageDailyCalories,
+  });
+
+  final DateTime from;
+  final DateTime to;
+  final DashboardWeeklyStats stats;
+  final DashboardWeightAnalytics weightAnalytics;
+  final double totalWorkoutCalories;
+  final int totalWorkouts;
+  final double averageDailySteps;
+  final double averageDailyCalories;
 }

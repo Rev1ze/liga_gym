@@ -247,7 +247,7 @@ final class NutritionRepositoryProvider
 }
 
 String _$nutritionRepositoryHash() =>
-    r'ad4f7c5327cf3c8151020563e4c4bd60cac7a9b1';
+    r'b391b6bbb14344228907d2e20e73e5e766aba7ca';
 
 @ProviderFor(loadDailyFoodEntriesUseCase)
 const loadDailyFoodEntriesUseCaseProvider =
@@ -297,6 +297,55 @@ final class LoadDailyFoodEntriesUseCaseProvider
 
 String _$loadDailyFoodEntriesUseCaseHash() =>
     r'69f1fb1b5de57ed90b7cf7f02a52a16ce4d042d5';
+
+@ProviderFor(loadSavedFoodProductsUseCase)
+const loadSavedFoodProductsUseCaseProvider =
+    LoadSavedFoodProductsUseCaseProvider._();
+
+final class LoadSavedFoodProductsUseCaseProvider
+    extends
+        $FunctionalProvider<
+          LoadSavedFoodProductsUseCase,
+          LoadSavedFoodProductsUseCase,
+          LoadSavedFoodProductsUseCase
+        >
+    with $Provider<LoadSavedFoodProductsUseCase> {
+  const LoadSavedFoodProductsUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'loadSavedFoodProductsUseCaseProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$loadSavedFoodProductsUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<LoadSavedFoodProductsUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  LoadSavedFoodProductsUseCase create(Ref ref) {
+    return loadSavedFoodProductsUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LoadSavedFoodProductsUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LoadSavedFoodProductsUseCase>(value),
+    );
+  }
+}
+
+String _$loadSavedFoodProductsUseCaseHash() =>
+    r'3b155a2eab8372ddd013a0ef0a946bad884877e7';
 
 @ProviderFor(addFoodEntryUseCase)
 const addFoodEntryUseCaseProvider = AddFoodEntryUseCaseProvider._();

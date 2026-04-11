@@ -9,6 +9,8 @@ abstract interface class NutritionLocalDataSource {
     required DateTime date,
   });
 
+  Future<List<FoodEntryModel>> loadPendingFoodEntries({required String userId});
+
   Future<void> saveFoodEntry(FoodEntryModel entry);
 
   Future<void> saveFoodEntries(List<FoodEntryModel> entries);
@@ -71,6 +73,21 @@ class SqfliteNutritionLocalDataSource implements NutritionLocalDataSource {
       _tableName,
       where: 'user_id = ? AND date_key = ?',
       whereArgs: [userId, buildDateKey(date)],
+      orderBy: 'logged_at ASC',
+    );
+
+    return maps.map(FoodEntryModel.fromLocalMap).toList(growable: false);
+  }
+
+  @override
+  Future<List<FoodEntryModel>> loadPendingFoodEntries({
+    required String userId,
+  }) async {
+    final database = await _db;
+    final maps = await database.query(
+      _tableName,
+      where: 'user_id = ? AND is_synced = 0',
+      whereArgs: [userId],
       orderBy: 'logged_at ASC',
     );
 

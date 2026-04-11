@@ -14,16 +14,43 @@ class AddFoodRouteArguments {
 
 class ProductDetailsRouteArguments {
   const ProductDetailsRouteArguments({
-    required this.product,
+    required this.items,
     required this.mealType,
-    required this.grams,
     required this.loggedAt,
     required this.inputMethod,
+  }) : assert(items.length > 0);
+
+  factory ProductDetailsRouteArguments.single({
+    required FoodProduct product,
+    required MealType mealType,
+    required double grams,
+    required DateTime loggedAt,
+    required FoodInputMethod inputMethod,
+  }) {
+    return ProductDetailsRouteArguments(
+      items: [ProductDetailsItemArguments(product: product, grams: grams)],
+      mealType: mealType,
+      loggedAt: loggedAt,
+      inputMethod: inputMethod,
+    );
+  }
+
+  final List<ProductDetailsItemArguments> items;
+  final MealType mealType;
+  final DateTime loggedAt;
+  final FoodInputMethod inputMethod;
+
+  bool get isMultiple => items.length > 1;
+  FoodProduct get product => items.single.product;
+  double get grams => items.single.grams;
+}
+
+class ProductDetailsItemArguments {
+  const ProductDetailsItemArguments({
+    required this.product,
+    required this.grams,
   });
 
   final FoodProduct product;
-  final MealType mealType;
   final double grams;
-  final DateTime loggedAt;
-  final FoodInputMethod inputMethod;
 }
