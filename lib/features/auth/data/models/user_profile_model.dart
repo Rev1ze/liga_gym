@@ -17,6 +17,9 @@ class UserProfileModel extends UserProfile {
       'name': name,
       'gender': gender.name,
       'birthDate': Timestamp.fromDate(birthDate),
+      'socialScore': FieldValue.increment(0),
+      'socialWorkoutsCount': FieldValue.increment(0),
+      'socialCaloriesBurned': FieldValue.increment(0),
       'updatedAt': FieldValue.serverTimestamp(),
       'createdAt': FieldValue.serverTimestamp(),
     };

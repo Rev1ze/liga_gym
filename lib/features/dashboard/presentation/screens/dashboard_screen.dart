@@ -84,6 +84,8 @@ class DashboardScreen extends ConsumerWidget {
                   children: [
                     _WelcomeCard(email: authUser?.email ?? '-', l10n: l10n),
                     const SizedBox(height: 20),
+                    _CommunityCard(l10n: l10n),
+                    const SizedBox(height: 20),
                     analyticsState.when(
                       data: (analytics) =>
                           _AnalyticsContent(analytics: analytics, l10n: l10n),
@@ -105,6 +107,58 @@ class DashboardScreen extends ConsumerWidget {
           },
           error: (_, _) => Center(child: Text(l10n.errorUnknown)),
           loading: () => const Center(child: CircularProgressIndicator()),
+        ),
+      ),
+    );
+  }
+}
+
+class _CommunityCard extends StatelessWidget {
+  const _CommunityCard({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.dashboardCommunityTitle,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.dashboardCommunitySubtitle,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).hintColor,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                FilledButton.icon(
+                  key: AppKeys.dashboardChatButton,
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed(AppRoutes.chat),
+                  icon: const Icon(Icons.chat_bubble_outline_rounded),
+                  label: Text(l10n.dashboardCommunityChat),
+                ),
+                OutlinedButton.icon(
+                  key: AppKeys.dashboardLeaderboardButton,
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed(AppRoutes.leaderboard),
+                  icon: const Icon(Icons.emoji_events_outlined),
+                  label: Text(l10n.dashboardCommunityLeaderboard),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

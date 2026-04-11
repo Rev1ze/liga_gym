@@ -30,6 +30,10 @@
   "dashboardTitle": "Dashboard",
   "dashboardHeadline": "You're in",
   "dashboardSubtitle": "Your account is ready for the next workout.",
+  "dashboardCommunityTitle": "Community",
+  "dashboardCommunitySubtitle": "Jump into the live chat and see who is leading this week.",
+  "dashboardCommunityChat": "Chat",
+  "dashboardCommunityLeaderboard": "Leaderboard",
   "dashboardStartWorkout": "Start workout",
   "dashboardWorkoutHistory": "Workout history",
   "dashboardNutritionDiary": "Food diary",
@@ -137,6 +141,28 @@
   "foodDiaryTitle": "Food diary",
   "foodDiaryPickDate": "Select diary date",
   "foodDiaryAddFood": "Add food",
+  "chatTitle": "Community chat",
+  "chatSubtitle": "Real-time messages from Liga Gym members.",
+  "chatEmpty": "No messages yet. Start the conversation.",
+  "chatInputHint": "Write a message",
+  "chatSend": "Send",
+  "chatYou": "You",
+  "leaderboardTitle": "Leaderboard",
+  "leaderboardSubtitle": "Top athletes by social score.",
+  "leaderboardEmpty": "Leaderboard is still empty. Save a workout to claim the first spot.",
+  "leaderboardPoints": "{value} pts",
+  "@leaderboardPoints": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "leaderboardWorkouts": "{value} workouts",
+  "@leaderboardWorkouts": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "leaderboardYou": "You",
   "foodDiaryMealType": "Meal",
   "foodDiaryEmptySection": "No entries for this meal yet.",
   "foodDiaryEntrySubtitle": "{grams} g • {calories} kcal",
@@ -193,6 +219,7 @@
   "validationEmptyName": "Enter your name.",
   "validationEmptyGender": "Select your gender.",
   "validationEmptyBirthDate": "Select your birth date.",
+  "validationEmptyChatMessage": "Enter a message.",
   "validationEmptyFoodName": "Enter the product name.",
   "validationEmptyBarcode": "Enter a barcode.",
   "validationInvalidFoodWeight": "Enter a valid portion in grams.",
@@ -213,6 +240,9 @@
   "errorUnauthorized": "Please log in again.",
   "errorProfileSaveFailed": "Profile could not be saved.",
   "errorWorkoutSaveFailed": "Workout could not be saved.",
+  "errorChatSendFailed": "Message could not be sent.",
+  "errorChatLoadFailed": "Chat could not be loaded.",
+  "errorLeaderboardLoadFailed": "Leaderboard could not be loaded.",
   "errorNutritionDiaryLoadFailed": "Food diary could not be loaded.",
   "errorNutritionEntrySaveFailed": "Food entry could not be saved.",
   "errorFoodProductNotFound": "Product with this barcode was not found.",

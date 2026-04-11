@@ -30,6 +30,10 @@
   "dashboardTitle": "Главная",
   "dashboardHeadline": "Вы вошли",
   "dashboardSubtitle": "Ваш аккаунт готов к следующей тренировке.",
+  "dashboardCommunityTitle": "Сообщество",
+  "dashboardCommunitySubtitle": "Общайтесь в реальном времени и смотрите, кто лидирует на этой неделе.",
+  "dashboardCommunityChat": "Чат",
+  "dashboardCommunityLeaderboard": "Лидерборд",
   "dashboardStartWorkout": "Начать тренировку",
   "dashboardWorkoutHistory": "История тренировок",
   "dashboardNutritionDiary": "Дневник питания",
@@ -137,6 +141,28 @@
   "foodDiaryTitle": "Дневник питания",
   "foodDiaryPickDate": "Выберите дату дневника",
   "foodDiaryAddFood": "Добавить еду",
+  "chatTitle": "Чат сообщества",
+  "chatSubtitle": "Сообщения участников Liga Gym в реальном времени.",
+  "chatEmpty": "Сообщений пока нет. Начните разговор первым.",
+  "chatInputHint": "Напишите сообщение",
+  "chatSend": "Отправить",
+  "chatYou": "Вы",
+  "leaderboardTitle": "Лидерборд",
+  "leaderboardSubtitle": "Топ спортсменов по social score.",
+  "leaderboardEmpty": "Лидерборд пока пуст. Сохраните тренировку, чтобы занять первое место.",
+  "leaderboardPoints": "{value} очков",
+  "@leaderboardPoints": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "leaderboardWorkouts": "{value} тренировок",
+  "@leaderboardWorkouts": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "leaderboardYou": "Вы",
   "foodDiaryMealType": "Приём пищи",
   "foodDiaryEmptySection": "Для этого приёма пищи записей пока нет.",
   "foodDiaryEntrySubtitle": "{grams} г • {calories} ккал",
@@ -193,6 +219,7 @@
   "validationEmptyName": "Введите имя.",
   "validationEmptyGender": "Выберите пол.",
   "validationEmptyBirthDate": "Выберите дату рождения.",
+  "validationEmptyChatMessage": "Введите сообщение.",
   "validationEmptyFoodName": "Введите название продукта.",
   "validationEmptyBarcode": "Введите штрихкод.",
   "validationInvalidFoodWeight": "Введите корректный вес порции в граммах.",
@@ -213,6 +240,9 @@
   "errorUnauthorized": "Пожалуйста, войдите снова.",
   "errorProfileSaveFailed": "Не удалось сохранить профиль.",
   "errorWorkoutSaveFailed": "Не удалось сохранить тренировку.",
+  "errorChatSendFailed": "Не удалось отправить сообщение.",
+  "errorChatLoadFailed": "Не удалось загрузить чат.",
+  "errorLeaderboardLoadFailed": "Не удалось загрузить лидерборд.",
   "errorNutritionDiaryLoadFailed": "Не удалось загрузить дневник питания.",
   "errorNutritionEntrySaveFailed": "Не удалось сохранить запись о еде.",
   "errorFoodProductNotFound": "Продукт с таким штрихкодом не найден.",

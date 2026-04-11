@@ -103,6 +103,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardSubtitle => 'Your account is ready for the next workout.';
 
   @override
+  String get dashboardCommunityTitle => 'Community';
+
+  @override
+  String get dashboardCommunitySubtitle =>
+      'Jump into the live chat and see who is leading this week.';
+
+  @override
+  String get dashboardCommunityChat => 'Chat';
+
+  @override
+  String get dashboardCommunityLeaderboard => 'Leaderboard';
+
+  @override
   String get dashboardStartWorkout => 'Start workout';
 
   @override
@@ -317,6 +330,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foodDiaryAddFood => 'Add food';
 
   @override
+  String get chatTitle => 'Community chat';
+
+  @override
+  String get chatSubtitle => 'Real-time messages from Liga Gym members.';
+
+  @override
+  String get chatEmpty => 'No messages yet. Start the conversation.';
+
+  @override
+  String get chatInputHint => 'Write a message';
+
+  @override
+  String get chatSend => 'Send';
+
+  @override
+  String get chatYou => 'You';
+
+  @override
+  String get leaderboardTitle => 'Leaderboard';
+
+  @override
+  String get leaderboardSubtitle => 'Top athletes by social score.';
+
+  @override
+  String get leaderboardEmpty =>
+      'Leaderboard is still empty. Save a workout to claim the first spot.';
+
+  @override
+  String leaderboardPoints(Object value) {
+    return '$value pts';
+  }
+
+  @override
+  String leaderboardWorkouts(Object value) {
+    return '$value workouts';
+  }
+
+  @override
+  String get leaderboardYou => 'You';
+
+  @override
   String get foodDiaryMealType => 'Meal';
 
   @override
@@ -425,6 +479,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationEmptyBirthDate => 'Select your birth date.';
 
   @override
+  String get validationEmptyChatMessage => 'Enter a message.';
+
+  @override
   String get validationEmptyFoodName => 'Enter the product name.';
 
   @override
@@ -489,6 +546,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorWorkoutSaveFailed => 'Workout could not be saved.';
+
+  @override
+  String get errorChatSendFailed => 'Message could not be sent.';
+
+  @override
+  String get errorChatLoadFailed => 'Chat could not be loaded.';
+
+  @override
+  String get errorLeaderboardLoadFailed => 'Leaderboard could not be loaded.';
 
   @override
   String get errorNutritionDiaryLoadFailed => 'Food diary could not be loaded.';

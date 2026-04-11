@@ -9,6 +9,8 @@ import '../../features/nutrition/presentation/screens/add_food_screen.dart';
 import '../../features/nutrition/presentation/screens/food_diary_screen.dart';
 import '../../features/nutrition/presentation/screens/product_details_screen.dart';
 import '../../features/nutrition/presentation/utils/nutrition_route_arguments.dart';
+import '../../features/social/presentation/screens/chat_screen.dart';
+import '../../features/social/presentation/screens/leaderboard_screen.dart';
 import '../../features/workout/presentation/screens/active_workout_screen.dart';
 import '../../features/workout/presentation/screens/start_workout_screen.dart';
 import '../../features/workout/presentation/screens/workout_list_screen.dart';
@@ -28,6 +30,10 @@ abstract final class AppRouter {
         return _buildRoute(const ProfileSetupScreen(), settings);
       case AppRoutes.dashboard:
         return _buildRoute(const DashboardScreen(), settings);
+      case AppRoutes.chat:
+        return _buildRoute(const ChatScreen(), settings);
+      case AppRoutes.leaderboard:
+        return _buildRoute(const LeaderboardScreen(), settings);
       case AppRoutes.workoutList:
         return _buildRoute(const WorkoutListScreen(), settings);
       case AppRoutes.startWorkout:

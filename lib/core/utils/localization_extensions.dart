@@ -17,6 +17,7 @@ extension AppErrorCodeLocalization on AppErrorCode {
       AppErrorCode.emptyBirthDate => l10n.validationEmptyBirthDate,
       AppErrorCode.emptyFoodName => l10n.validationEmptyFoodName,
       AppErrorCode.emptyBarcode => l10n.validationEmptyBarcode,
+      AppErrorCode.emptyChatMessage => l10n.validationEmptyChatMessage,
       AppErrorCode.invalidFoodWeight => l10n.validationInvalidFoodWeight,
       AppErrorCode.invalidCalories => l10n.validationInvalidCalories,
       AppErrorCode.invalidProteins => l10n.validationInvalidProteins,
@@ -37,6 +38,9 @@ extension AppErrorCodeLocalization on AppErrorCode {
       AppErrorCode.unauthorized => l10n.errorUnauthorized,
       AppErrorCode.profileSaveFailed => l10n.errorProfileSaveFailed,
       AppErrorCode.workoutSaveFailed => l10n.errorWorkoutSaveFailed,
+      AppErrorCode.chatSendFailed => l10n.errorChatSendFailed,
+      AppErrorCode.chatLoadFailed => l10n.errorChatLoadFailed,
+      AppErrorCode.leaderboardLoadFailed => l10n.errorLeaderboardLoadFailed,
       AppErrorCode.nutritionDiaryLoadFailed =>
         l10n.errorNutritionDiaryLoadFailed,
       AppErrorCode.nutritionEntrySaveFailed =>

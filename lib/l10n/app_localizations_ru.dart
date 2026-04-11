@@ -103,6 +103,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get dashboardSubtitle => 'Ваш аккаунт готов к следующей тренировке.';
 
   @override
+  String get dashboardCommunityTitle => 'Сообщество';
+
+  @override
+  String get dashboardCommunitySubtitle =>
+      'Общайтесь в реальном времени и смотрите, кто лидирует на этой неделе.';
+
+  @override
+  String get dashboardCommunityChat => 'Чат';
+
+  @override
+  String get dashboardCommunityLeaderboard => 'Лидерборд';
+
+  @override
   String get dashboardStartWorkout => 'Начать тренировку';
 
   @override
@@ -317,6 +330,48 @@ class AppLocalizationsRu extends AppLocalizations {
   String get foodDiaryAddFood => 'Добавить еду';
 
   @override
+  String get chatTitle => 'Чат сообщества';
+
+  @override
+  String get chatSubtitle =>
+      'Сообщения участников Liga Gym в реальном времени.';
+
+  @override
+  String get chatEmpty => 'Сообщений пока нет. Начните разговор первым.';
+
+  @override
+  String get chatInputHint => 'Напишите сообщение';
+
+  @override
+  String get chatSend => 'Отправить';
+
+  @override
+  String get chatYou => 'Вы';
+
+  @override
+  String get leaderboardTitle => 'Лидерборд';
+
+  @override
+  String get leaderboardSubtitle => 'Топ спортсменов по social score.';
+
+  @override
+  String get leaderboardEmpty =>
+      'Лидерборд пока пуст. Сохраните тренировку, чтобы занять первое место.';
+
+  @override
+  String leaderboardPoints(Object value) {
+    return '$value очков';
+  }
+
+  @override
+  String leaderboardWorkouts(Object value) {
+    return '$value тренировок';
+  }
+
+  @override
+  String get leaderboardYou => 'Вы';
+
+  @override
   String get foodDiaryMealType => 'Приём пищи';
 
   @override
@@ -425,6 +480,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get validationEmptyBirthDate => 'Выберите дату рождения.';
 
   @override
+  String get validationEmptyChatMessage => 'Введите сообщение.';
+
+  @override
   String get validationEmptyFoodName => 'Введите название продукта.';
 
   @override
@@ -489,6 +547,15 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get errorWorkoutSaveFailed => 'Не удалось сохранить тренировку.';
+
+  @override
+  String get errorChatSendFailed => 'Не удалось отправить сообщение.';
+
+  @override
+  String get errorChatLoadFailed => 'Не удалось загрузить чат.';
+
+  @override
+  String get errorLeaderboardLoadFailed => 'Не удалось загрузить лидерборд.';
 
   @override
   String get errorNutritionDiaryLoadFailed =>

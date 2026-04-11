@@ -33,6 +33,7 @@ class FirestoreProfileRemoteDataSource implements ProfileRemoteDataSource {
   final FirebaseFirestore _firestore;
 
   static const String _usersCollection = 'users';
+  static const String _leaderboardCollection = 'leaderboard';
   static const Duration _requestTimeout = Duration(seconds: 15);
 
   @override
@@ -55,11 +56,26 @@ class FirestoreProfileRemoteDataSource implements ProfileRemoteDataSource {
   @override
   Future<void> saveUserProfile(UserProfileModel profile) async {
     try {
-      await _firestore
-          .collection(_usersCollection)
-          .doc(profile.userId)
-          .set(profile.toFirestore(), SetOptions(merge: true))
-          .timeout(_requestTimeout);
+      final batch = _firestore.batch();
+      batch.set(
+        _firestore.collection(_usersCollection).doc(profile.userId),
+        profile.toFirestore(),
+        SetOptions(merge: true),
+      );
+      batch.set(
+        _firestore.collection(_leaderboardCollection).doc(profile.userId),
+        <String, Object?>{
+          'displayName': profile.name,
+          'score': FieldValue.increment(0),
+          'workoutsCount': FieldValue.increment(0),
+          'caloriesBurned': FieldValue.increment(0),
+          'updatedAt': FieldValue.serverTimestamp(),
+          'createdAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+
+      await batch.commit().timeout(_requestTimeout);
     } on FirebaseException catch (error) {
       // Любую ошибку Firestore поднимаем выше как доменную, чтобы UI не зависел от SDK.
       throw ProfileException(_mapFirestoreError(error.code));

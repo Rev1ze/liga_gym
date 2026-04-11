@@ -38,6 +38,12 @@ abstract final class AppKeys {
   static const dashboardNutritionDiaryButton = ValueKey<String>(
     'dashboardNutritionDiaryButton',
   );
+  static const dashboardChatButton = ValueKey<String>('dashboardChatButton');
+  static const dashboardLeaderboardButton = ValueKey<String>(
+    'dashboardLeaderboardButton',
+  );
+  static const chatMessageField = ValueKey<String>('chatMessageField');
+  static const chatSendButton = ValueKey<String>('chatSendButton');
   static const foodDiaryAddButton = ValueKey<String>('foodDiaryAddButton');
   static const foodDiaryDateButton = ValueKey<String>('foodDiaryDateButton');
   static const addFoodManualTab = ValueKey<String>('addFoodManualTab');

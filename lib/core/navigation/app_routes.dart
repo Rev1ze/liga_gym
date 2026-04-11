@@ -4,6 +4,8 @@ abstract final class AppRoutes {
   static const register = '/register';
   static const profileSetup = '/profile-setup';
   static const dashboard = '/dashboard';
+  static const chat = '/social/chat';
+  static const leaderboard = '/social/leaderboard';
   static const workoutList = '/workouts';
   static const startWorkout = '/workouts/start';
   static const activeWorkout = '/workouts/active';

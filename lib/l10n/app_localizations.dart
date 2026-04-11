@@ -278,6 +278,30 @@ abstract class AppLocalizations {
   /// **'Your account is ready for the next workout.'**
   String get dashboardSubtitle;
 
+  /// No description provided for @dashboardCommunityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get dashboardCommunityTitle;
+
+  /// No description provided for @dashboardCommunitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump into the live chat and see who is leading this week.'**
+  String get dashboardCommunitySubtitle;
+
+  /// No description provided for @dashboardCommunityChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get dashboardCommunityChat;
+
+  /// No description provided for @dashboardCommunityLeaderboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard'**
+  String get dashboardCommunityLeaderboard;
+
   /// No description provided for @dashboardStartWorkout.
   ///
   /// In en, this message translates to:
@@ -656,6 +680,78 @@ abstract class AppLocalizations {
   /// **'Add food'**
   String get foodDiaryAddFood;
 
+  /// No description provided for @chatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Community chat'**
+  String get chatTitle;
+
+  /// No description provided for @chatSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Real-time messages from Liga Gym members.'**
+  String get chatSubtitle;
+
+  /// No description provided for @chatEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet. Start the conversation.'**
+  String get chatEmpty;
+
+  /// No description provided for @chatInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a message'**
+  String get chatInputHint;
+
+  /// No description provided for @chatSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get chatSend;
+
+  /// No description provided for @chatYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get chatYou;
+
+  /// No description provided for @leaderboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard'**
+  String get leaderboardTitle;
+
+  /// No description provided for @leaderboardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Top athletes by social score.'**
+  String get leaderboardSubtitle;
+
+  /// No description provided for @leaderboardEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard is still empty. Save a workout to claim the first spot.'**
+  String get leaderboardEmpty;
+
+  /// No description provided for @leaderboardPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} pts'**
+  String leaderboardPoints(Object value);
+
+  /// No description provided for @leaderboardWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} workouts'**
+  String leaderboardWorkouts(Object value);
+
+  /// No description provided for @leaderboardYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get leaderboardYou;
+
   /// No description provided for @foodDiaryMealType.
   ///
   /// In en, this message translates to:
@@ -854,6 +950,12 @@ abstract class AppLocalizations {
   /// **'Select your birth date.'**
   String get validationEmptyBirthDate;
 
+  /// No description provided for @validationEmptyChatMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a message.'**
+  String get validationEmptyChatMessage;
+
   /// No description provided for @validationEmptyFoodName.
   ///
   /// In en, this message translates to:
@@ -973,6 +1075,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Workout could not be saved.'**
   String get errorWorkoutSaveFailed;
+
+  /// No description provided for @errorChatSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Message could not be sent.'**
+  String get errorChatSendFailed;
+
+  /// No description provided for @errorChatLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat could not be loaded.'**
+  String get errorChatLoadFailed;
+
+  /// No description provided for @errorLeaderboardLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard could not be loaded.'**
+  String get errorLeaderboardLoadFailed;
 
   /// No description provided for @errorNutritionDiaryLoadFailed.
   ///
