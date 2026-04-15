@@ -614,12 +614,6 @@ abstract class AppLocalizations {
   /// **'Female'**
   String get genderFemale;
 
-  /// No description provided for @genderOther.
-  ///
-  /// In en, this message translates to:
-  /// **'Other'**
-  String get genderOther;
-
   /// No description provided for @goalLoseWeight.
   ///
   /// In en, this message translates to:

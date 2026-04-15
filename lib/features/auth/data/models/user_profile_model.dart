@@ -72,7 +72,7 @@ class UserProfileModel extends UserProfile {
   static Gender _parseGender(String value) {
     return Gender.values.firstWhere(
       (gender) => gender.name == value,
-      orElse: () => Gender.other,
+      orElse: () => Gender.male,
     );
   }
 

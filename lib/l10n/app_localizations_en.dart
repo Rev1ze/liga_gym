@@ -309,9 +309,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get genderFemale => 'Female';
 
   @override
-  String get genderOther => 'Other';
-
-  @override
   String get goalLoseWeight => 'Lose weight';
 
   @override

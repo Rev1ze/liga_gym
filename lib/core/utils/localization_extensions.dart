@@ -70,7 +70,6 @@ extension GenderLocalization on Gender {
     return switch (this) {
       Gender.male => l10n.genderMale,
       Gender.female => l10n.genderFemale,
-      Gender.other => l10n.genderOther,
     };
   }
 }
