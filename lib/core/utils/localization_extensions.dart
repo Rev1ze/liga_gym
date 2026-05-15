@@ -47,6 +47,8 @@ extension AppErrorCodeLocalization on AppErrorCode {
       AppErrorCode.nutritionEntrySaveFailed =>
         l10n.errorNutritionEntrySaveFailed,
       AppErrorCode.foodProductNotFound => l10n.errorFoodProductNotFound,
+      AppErrorCode.firestoreConfigurationError =>
+        l10n.errorFirestoreConfiguration,
       AppErrorCode.firebaseConfigurationMissing =>
         l10n.errorFirebaseConfigurationMissing,
       AppErrorCode.unknown => l10n.errorUnknown,
@@ -70,7 +72,6 @@ extension GenderLocalization on Gender {
     return switch (this) {
       Gender.male => l10n.genderMale,
       Gender.female => l10n.genderFemale,
-      Gender.other => l10n.genderOther,
     };
   }
 }

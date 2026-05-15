@@ -309,9 +309,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get genderFemale => 'Женский';
 
   @override
-  String get genderOther => 'Другой';
-
-  @override
   String get goalLoseWeight => 'Снизить вес';
 
   @override
@@ -557,6 +554,54 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get workoutSavedLocalOnly =>
       'Тренировка сохранена локально. Синхронизация с Firestore выполнится позже.';
+
+  @override
+  String get workoutRouteMapTitle => 'Маршрут тренировки';
+
+  @override
+  String get workoutRouteWaitingForSignal =>
+      'Ждём GPS-сигнал. Маршрут появится здесь во время тренировки.';
+
+  @override
+  String get workoutRouteMissing => 'Нет маршрута тренировки';
+
+  @override
+  String get workoutRouteShare => 'Поделиться маршрутом';
+
+  @override
+  String get workoutRouteShareSubject => 'Маршрут тренировки Liga Gym';
+
+  @override
+  String get workoutRouteFullscreen => 'Открыть маршрут на весь экран';
+
+  @override
+  String get workoutRouteView => 'Посмотреть маршрут';
+
+  @override
+  String get workoutRoutePromptTitle => 'Нужна карта маршрута?';
+
+  @override
+  String get workoutRoutePromptMessage =>
+      'Геолокация выключена, поэтому тренировку можно продолжить без маршрута. Включите её, если нужна карта в реальном времени и сохранённый маршрут.';
+
+  @override
+  String get workoutRoutePromptNeedMap => 'Нужна карта';
+
+  @override
+  String get workoutRoutePromptSkip => 'Без карты';
+
+  @override
+  String get workoutRouteEnableLocationTitle => 'Включите геолокацию';
+
+  @override
+  String get workoutRouteEnableLocationMessage =>
+      'Разрешите доступ к геолокации, чтобы записать карту маршрута для этой тренировки.';
+
+  @override
+  String get workoutRouteOpenLocationSettings => 'Открыть настройки геолокации';
+
+  @override
+  String get workoutRouteCheckAgain => 'Проверить ещё раз';
 
   @override
   String get mealTypeBreakfast => 'Завтрак';
@@ -1045,7 +1090,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get errorTooManyRequests => 'Слишком много попыток. Попробуйте позже.';
 
   @override
-  String get errorGoogleSignInCancelled => 'Вход через Google был отменён.';
+  String get errorGoogleSignInCancelled =>
+      'Вход через Google был отменён или отклонён настройками приложения. Проверьте SHA-1 в Firebase.';
 
   @override
   String get errorGoogleSignInNotSupported =>
@@ -1053,7 +1099,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get errorGoogleSignInConfiguration =>
-      'Вход через Google настроен некорректно.';
+      'Вход через Google не включён в Firebase Authentication или настроен некорректно.';
 
   @override
   String get errorGoogleSignInFailed =>
@@ -1088,6 +1134,10 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get errorFoodProductNotFound =>
       'Продукт с таким штрихкодом не найден.';
+
+  @override
+  String get errorFirestoreConfiguration =>
+      'Firestore не создан, не включён или правила доступа не опубликованы.';
 
   @override
   String get errorFirebaseConfigurationMissing =>

@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/firebase/firebase_bootstrap.dart';
+import '../../../../core/firebase/google_sign_in_config.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
 import '../../data/datasources/profile_remote_data_source.dart';
 import '../../data/repositories/auth_repository_impl.dart';
@@ -48,6 +49,7 @@ AuthRemoteDataSource authRemoteDataSource(Ref ref) {
   return FirebaseAuthRemoteDataSource(
     firebaseAuth: ref.watch(firebaseAuthProvider),
     googleSignIn: ref.watch(googleSignInProvider),
+    googleServerClientId: GoogleSignInConfig.serverClientId,
   );
 }
 

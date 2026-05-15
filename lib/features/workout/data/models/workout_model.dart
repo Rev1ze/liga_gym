@@ -35,14 +35,7 @@ class WorkoutModel extends Workout implements OfflineSyncRecord {
   }
 
   factory WorkoutModel.fromLocalMap(Map<String, Object?> map) {
-    final routeJson = map['route_json'] as String? ?? '[]';
-    final decodedRoute = (jsonDecode(routeJson) as List<dynamic>)
-        .map(
-          (item) => WorkoutRoutePoint.fromJson(
-            Map<String, Object?>.from(item as Map),
-          ),
-        )
-        .toList();
+    final decodedRoute = _decodeRoute(map['route_json'] as String?);
 
     return WorkoutModel(
       id: map['id'] as String,
@@ -63,14 +56,7 @@ class WorkoutModel extends Workout implements OfflineSyncRecord {
     String userId,
     Map<String, Object?> json,
   ) {
-    final routeJson = json['routeJson'] as String? ?? '[]';
-    final decodedRoute = (jsonDecode(routeJson) as List<dynamic>)
-        .map(
-          (item) => WorkoutRoutePoint.fromJson(
-            Map<String, Object?>.from(item as Map),
-          ),
-        )
-        .toList(growable: false);
+    final decodedRoute = _decodeRoute(json['routeJson'] as String?);
 
     return WorkoutModel(
       id: id,
@@ -136,5 +122,23 @@ class WorkoutModel extends Workout implements OfflineSyncRecord {
       route: route,
       isSynced: isSynced,
     );
+  }
+
+  static List<WorkoutRoutePoint> _decodeRoute(String? routeJson) {
+    if (routeJson == null || routeJson.isEmpty) {
+      return const <WorkoutRoutePoint>[];
+    }
+
+    try {
+      return (jsonDecode(routeJson) as List<dynamic>)
+          .map(
+            (item) => WorkoutRoutePoint.fromJson(
+              Map<String, Object?>.from(item as Map),
+            ),
+          )
+          .toList(growable: false);
+    } catch (_) {
+      return const <WorkoutRoutePoint>[];
+    }
   }
 }

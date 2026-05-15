@@ -62,11 +62,14 @@ class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
   FirebaseAuthRemoteDataSource({
     required FirebaseAuth firebaseAuth,
     required GoogleSignIn googleSignIn,
+    required String googleServerClientId,
   }) : _firebaseAuth = firebaseAuth,
-       _googleSignIn = googleSignIn;
+       _googleSignIn = googleSignIn,
+       _googleServerClientId = googleServerClientId;
 
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  final String _googleServerClientId;
   static const Duration _requestTimeout = Duration(seconds: 15);
 
   Future<void>? _googleInitializationFuture;
@@ -167,6 +170,10 @@ class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
       // Отдельно обрабатываем ошибки Google Sign-In, чтобы показать точное сообщение пользователю.
       throw AuthException(_mapGoogleSignInError(error.code));
     } on FirebaseAuthException catch (error) {
+      if (error.code == 'operation-not-allowed') {
+        throw const AuthException(AppErrorCode.googleSignInConfigurationError);
+      }
+
       throw AuthException(_mapFirebaseAuthError(error.code));
     } on FirebaseException catch (error) {
       throw AuthException(_mapFirebaseCoreError(error.code));
@@ -192,7 +199,9 @@ class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 
   Future<void> _ensureGoogleInitialized() {
-    return _googleInitializationFuture ??= _googleSignIn.initialize();
+    return _googleInitializationFuture ??= _googleSignIn.initialize(
+      serverClientId: _googleServerClientId,
+    );
   }
 
   Future<void> _signOutGoogleSafely() async {

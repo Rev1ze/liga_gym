@@ -212,7 +212,7 @@ class InMemoryAuthRepository implements AuthRepository {
         userId: userId,
         email: email,
         name: 'User',
-        gender: Gender.other,
+        gender: Gender.male,
         birthDate: DateTime(2000, 1, 1),
         goalType: UserGoalType.maintainWeight,
         dailyStepGoal: 10000,

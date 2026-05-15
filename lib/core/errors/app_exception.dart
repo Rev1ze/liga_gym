@@ -35,6 +35,7 @@ enum AppErrorCode {
   nutritionDiaryLoadFailed,
   nutritionEntrySaveFailed,
   foodProductNotFound,
+  firestoreConfigurationError,
   firebaseConfigurationMissing,
   unknown,
 }

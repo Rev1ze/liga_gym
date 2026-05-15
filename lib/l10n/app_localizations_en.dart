@@ -309,9 +309,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get genderFemale => 'Female';
 
   @override
-  String get genderOther => 'Other';
-
-  @override
   String get goalLoseWeight => 'Lose weight';
 
   @override
@@ -557,6 +554,54 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get workoutSavedLocalOnly =>
       'Workout saved locally. Firestore sync will complete later.';
+
+  @override
+  String get workoutRouteMapTitle => 'Workout route';
+
+  @override
+  String get workoutRouteWaitingForSignal =>
+      'Waiting for GPS signal. The route will appear here during the workout.';
+
+  @override
+  String get workoutRouteMissing => 'No workout route';
+
+  @override
+  String get workoutRouteShare => 'Share route';
+
+  @override
+  String get workoutRouteShareSubject => 'Liga Gym workout route';
+
+  @override
+  String get workoutRouteFullscreen => 'Open route fullscreen';
+
+  @override
+  String get workoutRouteView => 'View route';
+
+  @override
+  String get workoutRoutePromptTitle => 'Do you need a route map?';
+
+  @override
+  String get workoutRoutePromptMessage =>
+      'Location is off, so the workout can continue without a route. Turn it on if you want a live map and saved route.';
+
+  @override
+  String get workoutRoutePromptNeedMap => 'Need map';
+
+  @override
+  String get workoutRoutePromptSkip => 'Without map';
+
+  @override
+  String get workoutRouteEnableLocationTitle => 'Enable location';
+
+  @override
+  String get workoutRouteEnableLocationMessage =>
+      'Turn on location access to record the route map for this workout.';
+
+  @override
+  String get workoutRouteOpenLocationSettings => 'Open location settings';
+
+  @override
+  String get workoutRouteCheckAgain => 'Check again';
 
   @override
   String get mealTypeBreakfast => 'Breakfast';
@@ -1041,7 +1086,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Too many attempts. Please try again later.';
 
   @override
-  String get errorGoogleSignInCancelled => 'Google sign-in was cancelled.';
+  String get errorGoogleSignInCancelled =>
+      'Google sign-in was cancelled or rejected by app configuration. Check the SHA-1 in Firebase.';
 
   @override
   String get errorGoogleSignInNotSupported =>
@@ -1049,7 +1095,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorGoogleSignInConfiguration =>
-      'Google sign-in is not configured correctly.';
+      'Google sign-in is not enabled in Firebase Authentication or is configured incorrectly.';
 
   @override
   String get errorGoogleSignInFailed =>
@@ -1082,6 +1128,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorFoodProductNotFound =>
       'Product with this barcode was not found.';
+
+  @override
+  String get errorFirestoreConfiguration =>
+      'Firestore is not created, enabled, or its access rules are not published.';
 
   @override
   String get errorFirebaseConfigurationMissing =>

@@ -33,7 +33,7 @@ class SqfliteWorkoutLocalDataSource implements WorkoutLocalDataSource {
     final databasePath = path.join(databasesPath, _databaseName);
     _database = await openDatabase(
       databasePath,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE $_tableName(
@@ -49,6 +49,12 @@ class SqfliteWorkoutLocalDataSource implements WorkoutLocalDataSource {
             is_synced INTEGER NOT NULL
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        await _ensureRouteColumn(db);
+      },
+      onOpen: (db) async {
+        await _ensureRouteColumn(db);
       },
     );
 
@@ -119,6 +125,20 @@ class SqfliteWorkoutLocalDataSource implements WorkoutLocalDataSource {
       <String, Object?>{'is_synced': 1},
       where: 'id = ?',
       whereArgs: [workoutId],
+    );
+  }
+
+  Future<void> _ensureRouteColumn(Database db) async {
+    final columns = await db.rawQuery('PRAGMA table_info($_tableName)');
+    final hasRouteColumn = columns.any(
+      (column) => column['name'] == 'route_json',
+    );
+    if (hasRouteColumn) {
+      return;
+    }
+
+    await db.execute(
+      "ALTER TABLE $_tableName ADD COLUMN route_json TEXT NOT NULL DEFAULT '[]'",
     );
   }
 }

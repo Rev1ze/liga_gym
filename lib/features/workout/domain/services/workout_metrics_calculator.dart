@@ -27,6 +27,10 @@ abstract final class WorkoutMetricsCalculator {
     WorkoutRoutePoint start,
     WorkoutRoutePoint end,
   ) {
+    if (!start.hasValidCoordinates || !end.hasValidCoordinates) {
+      return 0;
+    }
+
     const earthRadiusMeters = 6371000.0;
     final latitudeDistance = _toRadians(end.latitude - start.latitude);
     final longitudeDistance = _toRadians(end.longitude - start.longitude);
@@ -38,10 +42,16 @@ abstract final class WorkoutMetricsCalculator {
         math.cos(startLatitude) *
             math.cos(endLatitude) *
             math.pow(math.sin(longitudeDistance / 2), 2);
+    final normalizedHaversine = haversine.clamp(0, 1).toDouble();
     final angularDistance =
-        2 * math.atan2(math.sqrt(haversine), math.sqrt(1 - haversine));
+        2 *
+        math.atan2(
+          math.sqrt(normalizedHaversine),
+          math.sqrt(1 - normalizedHaversine),
+        );
 
-    return earthRadiusMeters * angularDistance;
+    final distance = earthRadiusMeters * angularDistance;
+    return distance.isFinite ? distance : 0;
   }
 
   static double _toRadians(double degrees) => degrees * math.pi / 180;

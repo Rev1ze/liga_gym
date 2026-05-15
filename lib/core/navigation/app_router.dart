@@ -22,6 +22,7 @@ import '../../features/steps/presentation/screens/step_counter_screen.dart';
 import '../../features/steps/presentation/screens/step_settings_screen.dart';
 import '../../features/workout/presentation/screens/active_workout_screen.dart';
 import '../../features/workout/presentation/screens/start_workout_screen.dart';
+import '../../features/workout/presentation/screens/workout_history_screen.dart';
 import '../../features/workout/presentation/screens/workout_list_screen.dart';
 import '../../features/workout/presentation/screens/workout_result_screen.dart';
 import 'app_routes.dart';
@@ -61,6 +62,8 @@ abstract final class AppRouter {
         return _buildRoute(const LeaderboardScreen(), settings);
       case AppRoutes.workoutList:
         return _buildRoute(const WorkoutListScreen(), settings);
+      case AppRoutes.workoutHistory:
+        return _buildRoute(const WorkoutHistoryScreen(), settings);
       case AppRoutes.startWorkout:
         return _buildRoute(const StartWorkoutScreen(), settings);
       case AppRoutes.activeWorkout:
