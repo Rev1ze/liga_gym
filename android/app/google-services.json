@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "434770627395-rk69bnf8cv5n1gpu3af8300mo1tnbt14.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.liga_gym_app",
+            "certificate_hash": "a038aeab4d5b1b0c78aad57ed61a746910e4906b"
+          }
+        },
+        {
           "client_id": "434770627395-qda0tfjam7ap3kmq1v9j0tc7ucb20cla.apps.googleusercontent.com",
           "client_type": 3
         }

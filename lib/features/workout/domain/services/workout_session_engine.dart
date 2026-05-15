@@ -49,6 +49,10 @@ class WorkoutSessionEngine {
   }
 
   void addRoutePoint(WorkoutRoutePoint point) {
+    if (!point.hasValidCoordinates) {
+      return;
+    }
+
     if (_route.isNotEmpty) {
       _distanceMeters += WorkoutMetricsCalculator.calculateDistanceBetween(
         _route.last,

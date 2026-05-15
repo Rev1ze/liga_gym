@@ -47,6 +47,8 @@ extension AppErrorCodeLocalization on AppErrorCode {
       AppErrorCode.nutritionEntrySaveFailed =>
         l10n.errorNutritionEntrySaveFailed,
       AppErrorCode.foodProductNotFound => l10n.errorFoodProductNotFound,
+      AppErrorCode.firestoreConfigurationError =>
+        l10n.errorFirestoreConfiguration,
       AppErrorCode.firebaseConfigurationMissing =>
         l10n.errorFirebaseConfigurationMissing,
       AppErrorCode.unknown => l10n.errorUnknown,

@@ -12,6 +12,7 @@ abstract final class AppRoutes {
   static const chatRoom = '/social/chat-room';
   static const leaderboard = '/social/leaderboard';
   static const workoutList = '/workouts';
+  static const workoutHistory = '/workouts/history';
   static const startWorkout = '/workouts/start';
   static const activeWorkout = '/workouts/active';
   static const workoutResult = '/workouts/result';

@@ -11,6 +11,8 @@ import '../../domain/entities/workout_save_status.dart';
 import '../controllers/workout_session_controller.dart';
 import '../providers/workout_providers.dart';
 import '../utils/workout_formatters.dart';
+import '../utils/workout_route_share.dart';
+import '../widgets/workout_route_map.dart';
 
 class WorkoutResultScreen extends ConsumerWidget {
   const WorkoutResultScreen({super.key});
@@ -74,44 +76,72 @@ class WorkoutResultScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(24),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        l10n.workoutResultSubtitle,
-                        style: Theme.of(context).textTheme.bodyLarge,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      _ResultRow(
-                        label: l10n.workoutMetricDuration,
-                        value: formatWorkoutDuration(workout.duration),
-                      ),
-                      const SizedBox(height: 12),
-                      _ResultRow(
-                        label: l10n.workoutMetricCalories,
-                        value: formatWorkoutCalories(workout.calories),
-                      ),
-                      const SizedBox(height: 12),
-                      _ResultRow(
-                        label: l10n.workoutMetricDistance,
-                        value: formatWorkoutDistance(workout.distanceMeters),
-                      ),
-                      const SizedBox(height: 24),
-                      FilledButton.icon(
-                        key: AppKeys.workoutResultSaveButton,
-                        onPressed: state.status == WorkoutSessionStatus.saving
-                            ? null
-                            : () => _saveWorkout(context, ref),
-                        icon: const Icon(Icons.save),
-                        label: Text(l10n.workoutResultSave),
-                      ),
-                    ],
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: SingleChildScrollView(
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          l10n.workoutResultSubtitle,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        _ResultRow(
+                          label: l10n.workoutMetricDuration,
+                          value: formatWorkoutDuration(workout.duration),
+                        ),
+                        const SizedBox(height: 12),
+                        _ResultRow(
+                          label: l10n.workoutMetricCalories,
+                          value: formatWorkoutCalories(workout.calories),
+                        ),
+                        const SizedBox(height: 12),
+                        _ResultRow(
+                          label: l10n.workoutMetricDistance,
+                          value: formatWorkoutDistance(workout.distanceMeters),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          l10n.workoutRouteMapTitle,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        WorkoutRouteMap(
+                          route: workout.route,
+                          emptyMessage: l10n.workoutRouteMissing,
+                          fullscreenTooltip: l10n.workoutRouteFullscreen,
+                          fullscreenTitle: l10n.workoutRouteMapTitle,
+                        ),
+                        const SizedBox(height: 16),
+                        OutlinedButton.icon(
+                          onPressed: workout.route.isEmpty
+                              ? null
+                              : () => shareWorkoutRoute(
+                                  context: context,
+                                  workout: workout,
+                                  missingRouteMessage: l10n.workoutRouteMissing,
+                                  subject: l10n.workoutRouteShareSubject,
+                                  routeTitle: l10n.workoutRouteMapTitle,
+                                ),
+                          icon: const Icon(Icons.ios_share_rounded),
+                          label: Text(l10n.workoutRouteShare),
+                        ),
+                        const SizedBox(height: 12),
+                        FilledButton.icon(
+                          key: AppKeys.workoutResultSaveButton,
+                          onPressed: state.status == WorkoutSessionStatus.saving
+                              ? null
+                              : () => _saveWorkout(context, ref),
+                          icon: const Icon(Icons.save),
+                          label: Text(l10n.workoutResultSave),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

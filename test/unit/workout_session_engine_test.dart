@@ -57,6 +57,31 @@ void main() {
       expect(engine.distanceMeters, greaterThan(80));
     });
 
+    test('ignores route points with invalid coordinates', () {
+      final engine = WorkoutSessionEngine(
+        type: WorkoutType.walking,
+        startedAt: DateTime.utc(2026, 4, 8, 10),
+      );
+
+      engine.addRoutePoint(
+        WorkoutRoutePoint(
+          latitude: double.nan,
+          longitude: 60.6057,
+          recordedAt: DateTime.utc(2026, 4, 8, 10),
+        ),
+      );
+      engine.addRoutePoint(
+        WorkoutRoutePoint(
+          latitude: 56.8389,
+          longitude: 60.6057,
+          recordedAt: DateTime.utc(2026, 4, 8, 10, 1),
+        ),
+      );
+
+      expect(engine.route, hasLength(1));
+      expect(engine.distanceMeters, 0);
+    });
+
     test('creates completed workout snapshot on stop', () {
       final startedAt = DateTime.utc(2026, 4, 8, 10, 0, 0);
       final endedAt = startedAt.add(const Duration(minutes: 15));

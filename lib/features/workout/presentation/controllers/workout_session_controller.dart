@@ -25,6 +25,8 @@ class WorkoutSessionState {
     this.route = const <WorkoutRoutePoint>[],
     this.completedWorkout,
     this.isLocationTrackingAvailable = true,
+    this.shouldAskForRouteMap = false,
+    this.shouldShowLocationEnableRequest = false,
   });
 
   final WorkoutSessionStatus status;
@@ -35,6 +37,8 @@ class WorkoutSessionState {
   final List<WorkoutRoutePoint> route;
   final Workout? completedWorkout;
   final bool isLocationTrackingAvailable;
+  final bool shouldAskForRouteMap;
+  final bool shouldShowLocationEnableRequest;
 
   WorkoutSessionState copyWith({
     WorkoutSessionStatus? status,
@@ -45,6 +49,8 @@ class WorkoutSessionState {
     List<WorkoutRoutePoint>? route,
     Object? completedWorkout = _sentinel,
     bool? isLocationTrackingAvailable,
+    bool? shouldAskForRouteMap,
+    bool? shouldShowLocationEnableRequest,
   }) {
     return WorkoutSessionState(
       status: status ?? this.status,
@@ -60,6 +66,10 @@ class WorkoutSessionState {
           : completedWorkout as Workout?,
       isLocationTrackingAvailable:
           isLocationTrackingAvailable ?? this.isLocationTrackingAvailable,
+      shouldAskForRouteMap: shouldAskForRouteMap ?? this.shouldAskForRouteMap,
+      shouldShowLocationEnableRequest:
+          shouldShowLocationEnableRequest ??
+          this.shouldShowLocationEnableRequest,
     );
   }
 }
@@ -89,15 +99,51 @@ class WorkoutSessionController extends Notifier<WorkoutSessionState> {
       status: WorkoutSessionStatus.running,
       workoutType: type,
       isLocationTrackingAvailable: locationEnabled,
+      shouldAskForRouteMap: !locationEnabled,
     );
 
     _startTicker();
     if (locationEnabled) {
-      _locationSubscription = ref
-          .read(workoutLocationDataSourceProvider)
-          .watchRoute()
-          .listen(_handleRoutePoint);
+      _startLocationSubscription();
     }
+  }
+
+  Future<void> requestRouteMap() async {
+    if (state.status != WorkoutSessionStatus.running &&
+        state.status != WorkoutSessionStatus.paused) {
+      return;
+    }
+
+    final locationEnabled = await ref
+        .read(workoutLocationDataSourceProvider)
+        .prepareTracking();
+
+    if (locationEnabled) {
+      state = state.copyWith(
+        isLocationTrackingAvailable: true,
+        shouldAskForRouteMap: false,
+        shouldShowLocationEnableRequest: false,
+      );
+      _startLocationSubscription();
+      return;
+    }
+
+    state = state.copyWith(
+      isLocationTrackingAvailable: false,
+      shouldAskForRouteMap: false,
+      shouldShowLocationEnableRequest: true,
+    );
+  }
+
+  void skipRouteMap() {
+    state = state.copyWith(
+      shouldAskForRouteMap: false,
+      shouldShowLocationEnableRequest: false,
+    );
+  }
+
+  Future<void> openLocationSettings() {
+    return ref.read(workoutLocationDataSourceProvider).openLocationSettings();
   }
 
   void pauseWorkout() {
@@ -136,6 +182,8 @@ class WorkoutSessionController extends Notifier<WorkoutSessionState> {
       distanceMeters: workout.distanceMeters,
       route: workout.route,
       completedWorkout: workout,
+      shouldAskForRouteMap: false,
+      shouldShowLocationEnableRequest: false,
     );
 
     return workout;
@@ -185,6 +233,14 @@ class WorkoutSessionController extends Notifier<WorkoutSessionState> {
 
     engine.addRoutePoint(point);
     _refreshState();
+  }
+
+  void _startLocationSubscription() {
+    _locationSubscription?.cancel();
+    _locationSubscription = ref
+        .read(workoutLocationDataSourceProvider)
+        .watchRoute()
+        .listen(_handleRoutePoint);
   }
 
   void _refreshState({WorkoutSessionStatus? status}) {

@@ -1052,6 +1052,96 @@ abstract class AppLocalizations {
   /// **'Workout saved locally. Firestore sync will complete later.'**
   String get workoutSavedLocalOnly;
 
+  /// No description provided for @workoutRouteMapTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout route'**
+  String get workoutRouteMapTitle;
+
+  /// No description provided for @workoutRouteWaitingForSignal.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for GPS signal. The route will appear here during the workout.'**
+  String get workoutRouteWaitingForSignal;
+
+  /// No description provided for @workoutRouteMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'No workout route'**
+  String get workoutRouteMissing;
+
+  /// No description provided for @workoutRouteShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share route'**
+  String get workoutRouteShare;
+
+  /// No description provided for @workoutRouteShareSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Liga Gym workout route'**
+  String get workoutRouteShareSubject;
+
+  /// No description provided for @workoutRouteFullscreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open route fullscreen'**
+  String get workoutRouteFullscreen;
+
+  /// No description provided for @workoutRouteView.
+  ///
+  /// In en, this message translates to:
+  /// **'View route'**
+  String get workoutRouteView;
+
+  /// No description provided for @workoutRoutePromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you need a route map?'**
+  String get workoutRoutePromptTitle;
+
+  /// No description provided for @workoutRoutePromptMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Location is off, so the workout can continue without a route. Turn it on if you want a live map and saved route.'**
+  String get workoutRoutePromptMessage;
+
+  /// No description provided for @workoutRoutePromptNeedMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Need map'**
+  String get workoutRoutePromptNeedMap;
+
+  /// No description provided for @workoutRoutePromptSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Without map'**
+  String get workoutRoutePromptSkip;
+
+  /// No description provided for @workoutRouteEnableLocationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable location'**
+  String get workoutRouteEnableLocationTitle;
+
+  /// No description provided for @workoutRouteEnableLocationMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on location access to record the route map for this workout.'**
+  String get workoutRouteEnableLocationMessage;
+
+  /// No description provided for @workoutRouteOpenLocationSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open location settings'**
+  String get workoutRouteOpenLocationSettings;
+
+  /// No description provided for @workoutRouteCheckAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get workoutRouteCheckAgain;
+
   /// No description provided for @mealTypeBreakfast.
   ///
   /// In en, this message translates to:
@@ -1919,7 +2009,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorGoogleSignInCancelled.
   ///
   /// In en, this message translates to:
-  /// **'Google sign-in was cancelled.'**
+  /// **'Google sign-in was cancelled or rejected by app configuration. Check the SHA-1 in Firebase.'**
   String get errorGoogleSignInCancelled;
 
   /// No description provided for @errorGoogleSignInNotSupported.
@@ -1931,7 +2021,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorGoogleSignInConfiguration.
   ///
   /// In en, this message translates to:
-  /// **'Google sign-in is not configured correctly.'**
+  /// **'Google sign-in is not enabled in Firebase Authentication or is configured incorrectly.'**
   String get errorGoogleSignInConfiguration;
 
   /// No description provided for @errorGoogleSignInFailed.
@@ -1993,6 +2083,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Product with this barcode was not found.'**
   String get errorFoodProductNotFound;
+
+  /// No description provided for @errorFirestoreConfiguration.
+  ///
+  /// In en, this message translates to:
+  /// **'Firestore is not created, enabled, or its access rules are not published.'**
+  String get errorFirestoreConfiguration;
 
   /// No description provided for @errorFirebaseConfigurationMissing.
   ///

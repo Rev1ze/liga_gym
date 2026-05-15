@@ -189,9 +189,9 @@ class FirestoreProfileRemoteDataSource implements ProfileRemoteDataSource {
 
   AppErrorCode _mapFirestoreError(String code) {
     return switch (code) {
-      'failed-precondition' => AppErrorCode.firebaseConfigurationMissing,
-      'permission-denied' => AppErrorCode.firebaseConfigurationMissing,
-      'unavailable' => AppErrorCode.firebaseConfigurationMissing,
+      'failed-precondition' => AppErrorCode.firestoreConfigurationError,
+      'permission-denied' => AppErrorCode.firestoreConfigurationError,
+      'unavailable' => AppErrorCode.networkRequestFailed,
       _ => AppErrorCode.profileSaveFailed,
     };
   }

@@ -14,6 +14,9 @@ class FakeWorkoutLocationDataSource implements WorkoutLocationDataSource {
   Future<bool> prepareTracking() async => isTrackingAvailable;
 
   @override
+  Future<void> openLocationSettings() async {}
+
+  @override
   Stream<WorkoutRoutePoint> watchRoute() => _routeController.stream;
 
   void emitRoutePoint(WorkoutRoutePoint point) {
