@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_keys.dart';
 import '../../../../core/navigation/app_routes.dart';
+import '../../../../core/theme/app_motion.dart';
+import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/services/step_tracking_service.dart';
 import '../providers/step_providers.dart';
@@ -46,7 +48,7 @@ class _StepCounterScreenState extends ConsumerState<StepCounterScreen> {
     final todayStepsState = ref.watch(todayStepCountProvider);
     final goalState = ref.watch(stepGoalProvider);
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(
         title: Text(l10n.stepCounterTitle),
         actions: [
@@ -66,28 +68,25 @@ class _StepCounterScreenState extends ConsumerState<StepCounterScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: todayStepsState.when(
-                  data: (steps) => goalState.when(
-                    data: (goal) =>
-                        _StepProgressContent(steps: steps, goal: goal),
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (_, _) => Text(l10n.errorUnknown),
-                  ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+      child: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(20),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: todayStepsState.when(
+                data: (steps) => goalState.when(
+                  data: (goal) =>
+                      _StepProgressContent(steps: steps, goal: goal),
+                  loading: () => const SkeletonCard(height: 360),
                   error: (_, _) => Text(l10n.errorUnknown),
                 ),
+                loading: () => const SkeletonCard(height: 360),
+                error: (_, _) => Text(l10n.errorUnknown),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -106,102 +105,83 @@ class _StepProgressContent extends StatelessWidget {
     final progress = goal <= 0 ? 0.0 : (steps / goal).clamp(0, 1).toDouble();
     final isGoalReached = steps >= goal;
     final colorScheme = Theme.of(context).colorScheme;
+    final accent = isGoalReached
+        ? const Color(0xFFB8FF2C)
+        : colorScheme.secondary;
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          l10n.stepCounterToday,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 24),
-        SizedBox(
-          width: 240,
-          height: 240,
-          child: Stack(
-            alignment: Alignment.center,
+        GlassCard(
+          borderRadius: 36,
+          tint: accent.withValues(alpha: 0.16),
+          child: Column(
             children: [
-              SizedBox(
-                width: 240,
-                height: 240,
-                child: CircularProgressIndicator(
-                  value: 1,
-                  strokeWidth: 18,
-                  color: colorScheme.primary.withValues(alpha: 0.12),
+              SectionHeader(
+                title: l10n.stepCounterToday,
+                subtitle: l10n.stepCounterTodayHint,
+              ),
+              const SizedBox(height: 28),
+              SizedBox.square(
+                dimension: 260,
+                child: AnimatedProgressRing(
+                  progress: progress,
+                  color: accent,
+                  strokeWidth: 16,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isGoalReached
+                            ? Icons.emoji_events_rounded
+                            : Icons.directions_walk_rounded,
+                        size: 36,
+                        color: accent,
+                      ),
+                      const SizedBox(height: 12),
+                      TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0, end: steps.toDouble()),
+                        duration: LigaMotion.slow,
+                        curve: LigaMotion.easeOut,
+                        builder: (context, value, _) {
+                          return Text(
+                            NumberFormat.decimalPattern().format(value.round()),
+                            style: Theme.of(context).textTheme.displaySmall
+                                ?.copyWith(fontWeight: FontWeight.w900),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        l10n.stepCounterGoal(goal.toString()),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(color: colorScheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              SizedBox(
-                width: 240,
-                height: 240,
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween<double>(begin: 0, end: progress),
-                  duration: const Duration(milliseconds: 900),
-                  curve: Curves.easeOutCubic,
-                  builder: (context, value, _) {
-                    return CircularProgressIndicator(
-                      value: value,
-                      strokeWidth: 18,
-                      color: isGoalReached
-                          ? const Color(0xFF16A34A)
-                          : colorScheme.primary,
-                      backgroundColor: Colors.transparent,
-                    );
-                  },
+              const SizedBox(height: 22),
+              Text(
+                isGoalReached
+                    ? l10n.stepGoalReachedInline
+                    : l10n.stepCounterRemaining(
+                        (goal - steps).clamp(0, goal).toString(),
+                      ),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: accent,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    isGoalReached
-                        ? Icons.emoji_events_rounded
-                        : Icons.directions_walk_rounded,
-                    size: 34,
-                    color: isGoalReached
-                        ? const Color(0xFF16A34A)
-                        : colorScheme.primary,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    NumberFormat.decimalPattern().format(steps),
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    l10n.stepCounterGoal(goal.toString()),
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).hintColor,
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 18),
+              HeatmapStrip(
+                values: const [0.52, 0.76, 0.31, 0.84, 0.64, 0.93, 0.71],
+                color: accent,
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 20),
-        Text(
-          isGoalReached
-              ? l10n.stepGoalReachedInline
-              : l10n.stepCounterRemaining(
-                  (goal - steps).clamp(0, goal).toString(),
-                ),
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: isGoalReached
-                ? const Color(0xFF16A34A)
-                : Theme.of(context).colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          l10n.stepCounterTodayHint,
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).hintColor),
-        ),
+        ).premiumEntrance(),
       ],
     );
   }

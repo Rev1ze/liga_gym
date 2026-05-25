@@ -6,7 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/shared_preferences_provider.dart';
 import '../../domain/entities/scheduled_workout.dart';
 import '../../domain/entities/workout.dart';
+import '../../domain/entities/workout_route_point.dart';
+import '../../domain/entities/workout_save_status.dart';
 import '../../domain/entities/workout_type.dart';
+import '../../domain/services/workout_metrics_calculator.dart';
 import '../providers/workout_providers.dart';
 
 @immutable
@@ -87,7 +90,7 @@ class WorkoutListController extends Notifier<WorkoutListState> {
     );
   }
 
-  Future<void> scheduleWorkout({
+  Future<ScheduledWorkout?> scheduleWorkout({
     required WorkoutType type,
     required DateTime scheduledAt,
     required Duration duration,
@@ -95,7 +98,7 @@ class WorkoutListController extends Notifier<WorkoutListState> {
   }) async {
     final user = ref.read(firebaseWorkoutUserProvider);
     if (user == null) {
-      return;
+      return null;
     }
 
     final createdAt = DateTime.now();
@@ -114,6 +117,55 @@ class WorkoutListController extends Notifier<WorkoutListState> {
 
     state = state.copyWith(scheduledWorkouts: nextScheduledWorkouts);
     await _saveScheduledWorkouts(user.uid, nextScheduledWorkouts);
+    return nextWorkout;
+  }
+
+  Future<WorkoutSaveStatus?> addCompletedWorkout({
+    required WorkoutType type,
+    required DateTime startedAt,
+    required Duration duration,
+    required double distanceMeters,
+  }) async {
+    final user = ref.read(firebaseWorkoutUserProvider);
+    if (user == null) {
+      return null;
+    }
+
+    final createdAt = DateTime.now();
+    final workout = Workout(
+      id: 'manual-${createdAt.microsecondsSinceEpoch}',
+      userId: user.uid,
+      type: type,
+      startedAt: startedAt,
+      endedAt: startedAt.add(duration),
+      duration: duration,
+      calories: WorkoutMetricsCalculator.calculateCaloriesBurned(
+        type: type,
+        duration: duration,
+        distanceMeters: distanceMeters,
+      ),
+      distanceMeters: distanceMeters,
+      route: const <WorkoutRoutePoint>[],
+      isSynced: false,
+    );
+    final saveStatus = await ref.read(saveWorkoutUseCaseProvider).call(workout);
+    final savedWorkout = switch (saveStatus) {
+      WorkoutSaveStatus.synced => workout.copyWith(isSynced: true),
+      WorkoutSaveStatus.savedLocally => workout,
+    };
+    final nextWorkouts = [...state.workouts, savedWorkout]
+      ..sort((left, right) => right.startedAt.compareTo(left.startedAt));
+
+    state = state.copyWith(
+      workouts: nextWorkouts,
+      filteredWorkouts: _applyFilters(
+        workouts: nextWorkouts,
+        selectedDate: state.selectedDate,
+        selectedType: state.selectedType,
+      ),
+    );
+
+    return saveStatus;
   }
 
   Future<void> deleteScheduledWorkout(String id) async {

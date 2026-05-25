@@ -7,6 +7,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/localization_extensions.dart';
+import '../../../../core/widgets/premium_components.dart';
 import '../../../auth/domain/entities/user_goal.dart';
 import '../../../auth/domain/entities/user_profile.dart';
 import '../../../auth/domain/entities/user_profile_update_data.dart';
@@ -95,7 +96,7 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
     final totalMacros = state.diary.totalMacros();
     final isToday = DateUtils.isSameDay(state.selectedDate, DateTime.now());
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(
         title: Text(l10n.foodDiaryTitle),
         actions: [
@@ -113,13 +114,13 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
           ),
         ],
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => ref
               .read(foodDiaryControllerProvider.notifier)
               .loadDailyFoodEntries(state.selectedDate),
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
               if (isToday) ...[
                 profileState.when(
@@ -135,55 +136,53 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
                     );
                   },
                   error: (_, _) => const SizedBox.shrink(),
-                  loading: () => const Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                  ),
+                  loading: () => const SkeletonCard(height: 148),
                 ),
                 const SizedBox(height: 16),
               ],
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        formatLocalizedDate(
-                          state.selectedDate,
-                          Localizations.localeOf(context),
-                        ),
-                        style: Theme.of(context).textTheme.titleLarge,
+              GlassCard(
+                tint: Theme.of(
+                  context,
+                ).colorScheme.secondary.withValues(alpha: 0.16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SectionHeader(
+                      title: formatLocalizedDate(
+                        state.selectedDate,
+                        Localizations.localeOf(context),
                       ),
-                      const SizedBox(height: 12),
-                      _MacrosSummary(macros: totalMacros),
-                    ],
-                  ),
+                      subtitle: 'Adaptive nutrition load',
+                    ),
+                    const SizedBox(height: 16),
+                    _MacrosSummary(macros: totalMacros),
+                    const SizedBox(height: 14),
+                    HeatmapStrip(
+                      values: [
+                        (totalMacros.proteins / 140).clamp(0, 1).toDouble(),
+                        (totalMacros.fats / 80).clamp(0, 1).toDouble(),
+                        (totalMacros.carbs / 260).clamp(0, 1).toDouble(),
+                        (totalMacros.calories / 2200).clamp(0, 1).toDouble(),
+                      ],
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ],
                 ),
-              ),
+              ).premiumEntrance(),
               if (state.errorCode != null) ...[
                 const SizedBox(height: 16),
-                Card(
-                  color: Theme.of(context).colorScheme.errorContainer,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      state.errorCode!.localize(l10n),
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onErrorContainer,
-                      ),
+                GlassCard(
+                  tint: Theme.of(context).colorScheme.errorContainer,
+                  child: Text(
+                    state.errorCode!.localize(l10n),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onErrorContainer,
                     ),
                   ),
                 ),
               ],
               const SizedBox(height: 16),
-              if (state.isLoading)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
+              if (state.isLoading) const SkeletonCard(height: 120),
               for (final mealType in MealType.values) ...[
                 _MealSectionCard(
                   mealType: mealType,
@@ -296,57 +295,48 @@ class _TodayWeightCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.foodDiaryTodayWeightTitle,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.foodDiaryTodayWeightSubtitle,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).hintColor,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    key: AppKeys.foodDiaryWeightField,
-                    controller: controller,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-                    ],
-                    decoration: InputDecoration(
-                      labelText: l10n.profileCurrentWeight,
-                    ),
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionHeader(
+            title: l10n.foodDiaryTodayWeightTitle,
+            subtitle: l10n.foodDiaryTodayWeightSubtitle,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  key: AppKeys.foodDiaryWeightField,
+                  controller: controller,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                  ],
+                  decoration: InputDecoration(
+                    labelText: l10n.profileCurrentWeight,
+                    prefixIcon: const Icon(Icons.monitor_weight_rounded),
                   ),
                 ),
-                const SizedBox(width: 12),
-                FilledButton(
-                  key: AppKeys.foodDiaryWeightSaveButton,
-                  onPressed: isSaving ? null : onSave,
-                  child: isSaving
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(l10n.commonSave),
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              const SizedBox(width: 12),
+              FilledButton(
+                key: AppKeys.foodDiaryWeightSaveButton,
+                onPressed: isSaving ? null : onSave,
+                child: isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l10n.commonSave),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -370,36 +360,54 @@ class _MealSectionCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final languageCode = Localizations.localeOf(context).languageCode;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    mealType.localize(l10n),
-                    style: Theme.of(context).textTheme.titleMedium,
+    return GlassCard(
+      borderRadius: 24,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  mealType.localize(l10n),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-                IconButton(
-                  onPressed: onAddPressed,
-                  icon: const Icon(Icons.add_circle_outline),
-                  tooltip: l10n.foodDiaryAddFood,
+              ),
+              IconButton.filledTonal(
+                onPressed: onAddPressed,
+                icon: const Icon(Icons.add_rounded),
+                tooltip: l10n.foodDiaryAddFood,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _MacrosSummary(macros: macros),
+          const SizedBox(height: 12),
+          if (entries.isEmpty)
+            Text(
+              l10n.foodDiaryEmptySection,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            )
+          else
+            for (final entry in entries)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(18),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            _MacrosSummary(macros: macros),
-            const SizedBox(height: 12),
-            if (entries.isEmpty)
-              Text(l10n.foodDiaryEmptySection)
-            else
-              for (final entry in entries)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 2,
+                  ),
                   title: Text(entry.localizedName(languageCode)),
                   subtitle: Text(
                     l10n.foodDiaryEntrySubtitle(
@@ -409,8 +417,8 @@ class _MealSectionCard extends StatelessWidget {
                   ),
                   trailing: Text(_formatMacrosInline(context, entry.macros)),
                 ),
-          ],
-        ),
+              ),
+        ],
       ),
     );
   }
@@ -464,6 +472,9 @@ class _MacroChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Chip(label: Text('$label: $value'));
+    return Chip(
+      avatar: const Icon(Icons.bolt_rounded, size: 16),
+      label: Text('$label: $value'),
+    );
   }
 }

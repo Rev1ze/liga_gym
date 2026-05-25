@@ -92,10 +92,33 @@ abstract final class AppRouter {
     }
   }
 
-  static MaterialPageRoute<void> _buildRoute(
+  static PageRouteBuilder<void> _buildRoute(
     Widget page,
     RouteSettings settings,
   ) {
-    return MaterialPageRoute<void>(builder: (_) => page, settings: settings);
+    return PageRouteBuilder<void>(
+      settings: settings,
+      transitionDuration: const Duration(milliseconds: 320),
+      reverseTransitionDuration: const Duration(milliseconds: 240),
+      pageBuilder: (_, _, _) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.025, 0.02),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
   }
 }

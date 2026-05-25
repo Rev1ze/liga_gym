@@ -10,7 +10,7 @@ class EnsureLeaderboardEntryUseCase {
     required String fallbackName,
     required String fallbackEmail,
   }) {
-    return _repository.ensureLeaderboardEntry(
+    return _repository.ensureSocialProfile(
       userId: userId,
       fallbackName: fallbackName,
       fallbackEmail: fallbackEmail,

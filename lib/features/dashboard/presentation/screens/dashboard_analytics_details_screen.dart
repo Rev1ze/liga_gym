@@ -365,6 +365,7 @@ class _AnalyticsDetailsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -383,7 +384,7 @@ class _AnalyticsDetailsContent extends StatelessWidget {
                 analytics.averageDailySteps.toStringAsFixed(0),
               ),
               icon: Icons.directions_walk_rounded,
-              color: const Color(0xFF2563EB),
+              color: colorScheme.primary,
             ),
             _DetailsMetricCard(
               title: l10n.dashboardAnalyticsWeeklyCalories(
@@ -393,7 +394,7 @@ class _AnalyticsDetailsContent extends StatelessWidget {
                 analytics.averageDailyCalories.toStringAsFixed(0),
               ),
               icon: Icons.local_fire_department_rounded,
-              color: const Color(0xFFF97316),
+              color: colorScheme.secondary,
             ),
             _DetailsMetricCard(
               title: l10n.dashboardAnalyticsWorkoutsCount(
@@ -403,7 +404,7 @@ class _AnalyticsDetailsContent extends StatelessWidget {
                 analytics.totalWorkoutCalories.toStringAsFixed(0),
               ),
               icon: Icons.fitness_center_rounded,
-              color: const Color(0xFF0F766E),
+              color: colorScheme.tertiary,
             ),
           ],
         ),

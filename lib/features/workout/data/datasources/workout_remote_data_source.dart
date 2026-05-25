@@ -88,9 +88,6 @@ class FirestoreWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
     final workoutReference = userReference
         .collection('workouts')
         .doc(workout.id);
-    final leaderboardReference = _firestore
-        .collection('leaderboard')
-        .doc(workout.userId);
 
     await _firestore.runTransaction((transaction) async {
       final workoutSnapshot = await transaction.get(workoutReference);
@@ -103,10 +100,6 @@ class FirestoreWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
         return;
       }
 
-      final userSnapshot = await transaction.get(userReference);
-      final userData = userSnapshot.data() ?? <String, Object?>{};
-      final rawName = (userData['name'] as String?)?.trim() ?? '';
-      final displayName = rawName.isNotEmpty ? rawName : 'Athlete';
       final scoreIncrement = _calculateSocialScore(workout);
 
       transaction.set(workoutReference, workout.toFirestore());
@@ -116,15 +109,9 @@ class FirestoreWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
         'socialCaloriesBurned': FieldValue.increment(workout.calories),
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-      transaction.set(leaderboardReference, <String, Object?>{
-        'displayName': displayName,
-        'score': FieldValue.increment(scoreIncrement),
-        'workoutsCount': FieldValue.increment(1),
-        'caloriesBurned': FieldValue.increment(workout.calories),
-        'updatedAt': FieldValue.serverTimestamp(),
-        'createdAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
     });
+
+    await _syncFriendSnapshot(workout.userId);
   }
 
   int _calculateSocialScore(WorkoutModel workout) {
@@ -132,5 +119,45 @@ class FirestoreWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
     final caloriesPoints = (workout.calories / 10).round();
     final distancePoints = (workout.distanceMeters / 1000).round() * 5;
     return (durationPoints + caloriesPoints + distancePoints).clamp(10, 500);
+  }
+
+  Future<void> _syncFriendSnapshot(String userId) async {
+    final userReference = _firestore.collection('users').doc(userId);
+    final userSnapshot = await userReference.get();
+    final userData = userSnapshot.data() ?? <String, Object?>{};
+    final friendsSnapshot = await userReference.collection('friends').get();
+    if (friendsSnapshot.docs.isEmpty) {
+      return;
+    }
+
+    final batch = _firestore.batch();
+    for (final friend in friendsSnapshot.docs) {
+      batch.set(
+        _firestore
+            .collection('users')
+            .doc(friend.id)
+            .collection('friends')
+            .doc(userId),
+        <String, Object?>{
+          'displayName':
+              ((userData['name'] as String?)?.trim().isNotEmpty == true)
+              ? (userData['name'] as String).trim()
+              : 'Athlete',
+          'email': (userData['email'] as String?)?.trim() ?? '',
+          'city': (userData['city'] as String?)?.trim(),
+          'score': (userData['socialScore'] as num?)?.toInt() ?? 0,
+          'workoutsCount':
+              (userData['socialWorkoutsCount'] as num?)?.toInt() ?? 0,
+          'caloriesBurned':
+              (userData['socialCaloriesBurned'] as num?)?.toDouble() ?? 0,
+          'stepsCount': (userData['socialStepsCount'] as num?)?.toInt() ?? 0,
+          'visibleInFriendLeaderboard':
+              userData['visibleInFriendLeaderboard'] as bool? ?? true,
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+    }
+    await batch.commit();
   }
 }

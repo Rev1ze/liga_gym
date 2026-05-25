@@ -6,6 +6,7 @@ import 'package:liga_gym_app/features/workout/domain/entities/workout.dart';
 import 'package:liga_gym_app/features/workout/domain/entities/workout_route_point.dart';
 import 'package:liga_gym_app/features/workout/domain/entities/workout_type.dart';
 import 'package:liga_gym_app/features/workout/domain/usecases/load_user_workouts_use_case.dart';
+import 'package:liga_gym_app/features/workout/domain/usecases/save_workout_use_case.dart';
 import 'package:liga_gym_app/features/workout/presentation/providers/workout_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -135,6 +136,47 @@ void main() {
       expect(scheduledWorkout.scheduledAt, DateTime(2026, 5, 18, 19));
       expect(scheduledWorkout.duration, const Duration(minutes: 50));
       expect(scheduledWorkout.note, 'Intervals');
+    });
+
+    test('adds completed workout to history', () async {
+      final firebaseAuth = buildSignedInFirebaseAuth(
+        uid: 'workout-user',
+        email: 'workout@ligagym.dev',
+      );
+      final repository = InMemoryWorkoutRepository();
+      final container = ProviderContainer(
+        overrides: [
+          firebaseAuthProvider.overrideWithValue(firebaseAuth),
+          loadUserWorkoutsUseCaseProvider.overrideWith(
+            (ref) => LoadUserWorkoutsUseCase(repository),
+          ),
+          saveWorkoutUseCaseProvider.overrideWith(
+            (ref) => SaveWorkoutUseCase(repository),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container
+          .read(workoutListControllerProvider.notifier)
+          .loadUserWorkouts();
+      await container
+          .read(workoutListControllerProvider.notifier)
+          .addCompletedWorkout(
+            type: WorkoutType.running,
+            startedAt: DateTime(2026, 5, 17, 9),
+            duration: const Duration(minutes: 30),
+            distanceMeters: 5000,
+          );
+
+      final state = container.read(workoutListControllerProvider);
+      expect(state.scheduledWorkouts, isEmpty);
+      expect(state.workouts, hasLength(1));
+      expect(state.workouts.single.type, WorkoutType.running);
+      expect(state.workouts.single.startedAt, DateTime(2026, 5, 17, 9));
+      expect(state.workouts.single.duration, const Duration(minutes: 30));
+      expect(state.workouts.single.distanceMeters, 5000);
+      expect(state.workouts.single.calories, greaterThan(0));
     });
   });
 }

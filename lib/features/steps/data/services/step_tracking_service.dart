@@ -246,7 +246,8 @@ Future<bool> _handleGoalReached({
   required String userId,
   required int todaySteps,
 }) async {
-  final stepGoal = sharedPreferences.getInt(stepTrackingGoalKey(userId)) ?? 10000;
+  final stepGoal =
+      sharedPreferences.getInt(stepTrackingGoalKey(userId)) ?? 10000;
   if (todaySteps < stepGoal) {
     return false;
   }
@@ -259,7 +260,10 @@ Future<bool> _handleGoalReached({
     return false;
   }
 
-  await sharedPreferences.setString(stepGoalCelebratedDateKey(userId), todayKey);
+  await sharedPreferences.setString(
+    stepGoalCelebratedDateKey(userId),
+    todayKey,
+  );
   await sharedPreferences.setString(
     stepGoalCelebrationPendingDateKey(userId),
     todayKey,

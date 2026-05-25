@@ -135,10 +135,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardCommunitySubtitle =>
-      'Jump into the live chat and see who is leading this week.';
+      'Chat with friends and share personal results.';
 
   @override
-  String get dashboardCommunityChat => 'Chat';
+  String get dashboardCommunityChat => 'Chats';
 
   @override
   String get dashboardCommunityLeaderboard => 'Leaderboard';
@@ -635,27 +635,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foodDiaryWeightSaved => 'Today\'s weight saved.';
 
   @override
-  String get chatTitle => 'Community chat';
+  String get chatTitle => 'Friend chat';
 
   @override
-  String get chatSubtitle => 'Real-time messages from Liga Gym members.';
+  String get chatSubtitle => 'Private messages with Liga Gym friends.';
 
   @override
-  String get chatDirectoryTitle => 'Interest chats';
+  String get chatDirectoryTitle => 'Friend chats';
 
   @override
   String get chatDirectorySubtitle =>
-      'Create your own communities, join any chat, and find like-minded people.';
+      'Choose a friend to message privately or share a result.';
 
   @override
   String get chatDirectoryEmpty =>
-      'There are no chats yet. Create the first interest chat.';
+      'There are no friends for private chats yet. Add a friend by code, link, or QR code.';
 
   @override
-  String get chatSearchHint => 'Search by interest';
+  String get chatSearchHint => 'Search friends';
 
   @override
-  String get chatSearchEmpty => 'No chats found for your search.';
+  String get chatSearchEmpty => 'No friends found for your search.';
 
   @override
   String get chatCreateAction => 'Create chat';

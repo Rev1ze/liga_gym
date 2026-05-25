@@ -22,6 +22,15 @@ abstract final class AppKeys {
     'profileBirthDateField',
   );
   static const saveProfileButton = ValueKey<String>('saveProfileButton');
+  static const profileThemePulseBlue = ValueKey<String>(
+    'profileThemePulseBlue',
+  );
+  static const profileThemeVoltCoral = ValueKey<String>(
+    'profileThemeVoltCoral',
+  );
+  static const profileThemeGraphiteEnergy = ValueKey<String>(
+    'profileThemeGraphiteEnergy',
+  );
   static const signOutButton = ValueKey<String>('signOutButton');
   static const dashboardStartWorkoutButton = ValueKey<String>(
     'dashboardStartWorkoutButton',
