@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/app_keys.dart';
 import '../../../../core/constants/russian_cities.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/providers/app_theme_provider.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/input_validators.dart';
 import '../../../../core/utils/localization_extensions.dart';
+import '../../../../core/widgets/app_language_switcher.dart';
+import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/gender.dart';
@@ -30,6 +35,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _startWeightController = TextEditingController();
   final _currentWeightController = TextEditingController();
   final _targetWeightController = TextEditingController();
+  final _friendCodeController = TextEditingController();
 
   Gender? _selectedGender;
   DateTime? _selectedBirthDate;
@@ -45,6 +51,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _startWeightController.dispose();
     _currentWeightController.dispose();
     _targetWeightController.dispose();
+    _friendCodeController.dispose();
     super.dispose();
   }
 
@@ -53,9 +60,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final l10n = AppLocalizations.of(context)!;
     final profileState = ref.watch(currentUserProfileProvider);
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(title: Text(l10n.profileScreenTitle)),
-      body: SafeArea(
+      child: SafeArea(
         child: profileState.when(
           data: (profile) {
             if (profile == null) {
@@ -79,6 +86,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                     const SizedBox(height: 20),
                     _ProfileOverviewCard(profile: profile),
+                    const SizedBox(height: 20),
+                    const _TodayProfileMetricsCard(),
+                    const SizedBox(height: 20),
+                    const _LanguagePickerCard(),
+                    const SizedBox(height: 20),
+                    const _ThemePickerCard(),
                     const SizedBox(height: 20),
                     Form(
                       key: _formKey,
@@ -171,12 +184,55 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                             _selectedCity = value;
                                           });
                                         },
-                                  validator: (value) {
-                                    if ((value ?? '').trim().isEmpty) {
-                                      return l10n.profileCityRequired;
-                                    }
-                                    return null;
-                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                TextFormField(
+                                  controller: _friendCodeController,
+                                  autovalidateMode:
+                                      AutovalidateMode.onUserInteraction,
+                                  decoration: InputDecoration(
+                                    labelText: _socialCopy(context).friendCode,
+                                    helperText: _socialCopy(
+                                      context,
+                                    ).friendCodeHint,
+                                    prefixIcon: const Icon(
+                                      Icons.alternate_email_rounded,
+                                    ),
+                                    suffixIcon: IconButton(
+                                      onPressed:
+                                          _friendCodeController.text
+                                              .trim()
+                                              .isEmpty
+                                          ? null
+                                          : () => Clipboard.setData(
+                                              ClipboardData(
+                                                text: _normalizeFriendCode(
+                                                  _friendCodeController.text,
+                                                ),
+                                              ),
+                                            ),
+                                      icon: const Icon(Icons.copy_rounded),
+                                      tooltip: _socialCopy(context).copyCode,
+                                    ),
+                                  ),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(r'[a-zA-Z0-9_-]'),
+                                    ),
+                                    LengthLimitingTextInputFormatter(24),
+                                    TextInputFormatter.withFunction((
+                                      oldValue,
+                                      newValue,
+                                    ) {
+                                      return newValue.copyWith(
+                                        text: newValue.text.toLowerCase(),
+                                        selection: newValue.selection,
+                                      );
+                                    }),
+                                  ],
+                                  validator: (value) =>
+                                      _validateFriendCode(context, value),
+                                  onChanged: (_) => setState(() {}),
                                 ),
                               ],
                             ),
@@ -307,6 +363,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               gender: _selectedGender!,
               birthDate: _selectedBirthDate!,
               city: _selectedCity,
+              friendCode: _normalizeFriendCode(_friendCodeController.text),
               heightCm: _parseDouble(_heightController.text),
               startWeightKg: profile.goalType == UserGoalType.maintainWeight
                   ? null
@@ -357,6 +414,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _selectedGender = profile.gender;
     _selectedBirthDate = profile.birthDate;
     _selectedCity = profile.city;
+    _friendCodeController.text = profile.friendCode ?? '';
     _birthDateController.text = formatLocalizedDate(
       profile.birthDate,
       Localizations.localeOf(context),
@@ -391,6 +449,98 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
     return l10n.errorUnknown;
   }
+
+  String _normalizeFriendCode(String value) {
+    return value.trim().toLowerCase();
+  }
+
+  String? _validateFriendCode(BuildContext context, String? value) {
+    final code = _normalizeFriendCode(value ?? '');
+    if (code.isEmpty) {
+      return null;
+    }
+    final copy = _socialCopy(context);
+    if (code.length < 4 || code.length > 24) {
+      return copy.friendCodeLengthError;
+    }
+    if (!RegExp(r'^[a-z0-9_-]+$').hasMatch(code)) {
+      return copy.friendCodeFormatError;
+    }
+    return null;
+  }
+}
+
+class _TodayProfileMetricsCard extends ConsumerWidget {
+  const _TodayProfileMetricsCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = Localizations.localeOf(context);
+    final isRu = locale.languageCode == 'ru';
+    final metricsState = ref.watch(
+      dailyProfileMetricsProvider(DateUtils.dateOnly(DateTime.now())),
+    );
+
+    return _SectionCard(
+      title: isRu ? 'Сегодня в профиле' : 'Today in profile',
+      child: metricsState.when(
+        data: (metrics) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                formatLocalizedDate(metrics.date, locale),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).hintColor,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  _OverviewPill(
+                    icon: Icons.directions_walk_outlined,
+                    label: isRu
+                        ? '${metrics.steps} шагов'
+                        : '${metrics.steps} steps',
+                  ),
+                  _OverviewPill(
+                    icon: Icons.restaurant_outlined,
+                    label: isRu
+                        ? '${metrics.caloriesConsumed.toStringAsFixed(0)} ккал'
+                        : '${metrics.caloriesConsumed.toStringAsFixed(0)} kcal',
+                  ),
+                  _OverviewPill(
+                    icon: Icons.local_fire_department_outlined,
+                    label: isRu
+                        ? '${metrics.caloriesBurned.toStringAsFixed(0)} ккал сожжено'
+                        : '${metrics.caloriesBurned.toStringAsFixed(0)} kcal burned',
+                  ),
+                  _OverviewPill(
+                    icon: Icons.pie_chart_outline_rounded,
+                    label: isRu
+                        ? 'БЖУ ${metrics.proteins.toStringAsFixed(0)}/${metrics.fats.toStringAsFixed(0)}/${metrics.carbs.toStringAsFixed(0)} г'
+                        : 'PFC ${metrics.proteins.toStringAsFixed(0)}/${metrics.fats.toStringAsFixed(0)}/${metrics.carbs.toStringAsFixed(0)} g',
+                  ),
+                  _OverviewPill(
+                    icon: Icons.fitness_center_outlined,
+                    label: isRu
+                        ? '${metrics.workoutsCount} тренировок'
+                        : '${metrics.workoutsCount} workouts',
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+        error: (_, _) => Text(
+          isRu ? 'Сводка пока недоступна.' : 'Summary is not available yet.',
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+      ),
+    );
+  }
 }
 
 class _ProfileOverviewCard extends StatelessWidget {
@@ -403,68 +553,300 @@ class _ProfileOverviewCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
+    return GlassCard(
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          _OverviewPill(
+            icon: Icons.flag_outlined,
+            label: profile.goalType.localize(l10n),
+          ),
+          if (profile.currentWeightKg != null)
             _OverviewPill(
-              icon: Icons.flag_outlined,
-              label: profile.goalType.localize(l10n),
-            ),
-            if (profile.currentWeightKg != null)
-              _OverviewPill(
-                icon: Icons.monitor_weight_outlined,
-                label:
-                    '${l10n.profileCurrentWeightShort} ${profile.currentWeightKg!.toStringAsFixed(1)} ${l10n.profileKgUnit}',
-              ),
-            if (profile.goalType != UserGoalType.maintainWeight &&
-                profile.startWeightKg != null)
-              _OverviewPill(
-                icon: Icons.play_arrow_outlined,
-                label:
-                    '${l10n.profileStartWeightShort} ${profile.startWeightKg!.toStringAsFixed(1)} ${l10n.profileKgUnit}',
-              ),
-            if (profile.goalType != UserGoalType.maintainWeight &&
-                profile.targetWeightKg != null)
-              _OverviewPill(
-                icon: Icons.track_changes_outlined,
-                label:
-                    '${l10n.profileTargetWeightShort} ${profile.targetWeightKg!.toStringAsFixed(1)} ${l10n.profileKgUnit}',
-              ),
-            if (profile.heightCm != null)
-              _OverviewPill(
-                icon: Icons.height_outlined,
-                label:
-                    '${l10n.profileHeightShort} ${profile.heightCm!.toStringAsFixed(0)} ${l10n.profileCmUnit}',
-              ),
-            if ((profile.city ?? '').isNotEmpty)
-              _OverviewPill(
-                icon: Icons.location_city_outlined,
-                label: profile.city!,
-              ),
-            _OverviewPill(
-              icon: Icons.directions_walk_outlined,
-              label: '${profile.dailyStepGoal} ${l10n.dashboardAnalyticsSteps}',
-            ),
-            _OverviewPill(
-              icon: Icons.local_fire_department_outlined,
+              icon: Icons.monitor_weight_outlined,
               label:
-                  '${profile.dailyCalorieGoal.toStringAsFixed(0)} ${l10n.profileCaloriesUnit}',
+                  '${l10n.profileCurrentWeightShort} ${profile.currentWeightKg!.toStringAsFixed(1)} ${l10n.profileKgUnit}',
             ),
-            Text(
-              profile.email,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.hintColor,
+          if (profile.goalType != UserGoalType.maintainWeight &&
+              profile.startWeightKg != null)
+            _OverviewPill(
+              icon: Icons.play_arrow_outlined,
+              label:
+                  '${l10n.profileStartWeightShort} ${profile.startWeightKg!.toStringAsFixed(1)} ${l10n.profileKgUnit}',
+            ),
+          if (profile.goalType != UserGoalType.maintainWeight &&
+              profile.targetWeightKg != null)
+            _OverviewPill(
+              icon: Icons.track_changes_outlined,
+              label:
+                  '${l10n.profileTargetWeightShort} ${profile.targetWeightKg!.toStringAsFixed(1)} ${l10n.profileKgUnit}',
+            ),
+          if (profile.heightCm != null)
+            _OverviewPill(
+              icon: Icons.height_outlined,
+              label:
+                  '${l10n.profileHeightShort} ${profile.heightCm!.toStringAsFixed(0)} ${l10n.profileCmUnit}',
+            ),
+          if ((profile.city ?? '').isNotEmpty)
+            _OverviewPill(
+              icon: Icons.location_city_outlined,
+              label: profile.city!,
+            ),
+          if ((profile.friendCode ?? '').isNotEmpty)
+            _OverviewPill(
+              icon: Icons.alternate_email_rounded,
+              label:
+                  '${_socialCopy(context).friendCode}: ${profile.friendCode!}',
+            ),
+          _OverviewPill(
+            icon: Icons.directions_walk_outlined,
+            label: '${profile.dailyStepGoal} ${l10n.dashboardAnalyticsSteps}',
+          ),
+          _OverviewPill(
+            icon: Icons.local_fire_department_outlined,
+            label:
+                '${profile.dailyCalorieGoal.toStringAsFixed(0)} ${l10n.profileCaloriesUnit}',
+          ),
+          Text(
+            profile.email,
+            style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LanguagePickerCard extends StatelessWidget {
+  const _LanguagePickerCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final isRu = Localizations.localeOf(context).languageCode == 'ru';
+
+    return _SectionCard(
+      title: isRu ? 'Язык' : 'Language',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            isRu
+                ? 'Выберите язык интерфейса приложения.'
+                : 'Choose the app interface language.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).hintColor,
+            ),
+          ),
+          const SizedBox(height: 16),
+          const AppLanguageSwitcher(),
+        ],
+      ),
+    );
+  }
+}
+
+class _ThemePickerCard extends ConsumerWidget {
+  const _ThemePickerCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = Localizations.localeOf(context);
+    final activePalette = ref.watch(appThemeProvider);
+    final isRu = locale.languageCode == 'ru';
+
+    return _SectionCard(
+      title: isRu ? 'Оформление' : 'Appearance',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            isRu
+                ? 'Выберите одну из трех цветовых тем. Логотип и основные анимации подстроятся под выбранные цвета.'
+                : 'Choose one of three color themes. The logo and main animations adapt to the selected colors.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).hintColor,
+            ),
+          ),
+          const SizedBox(height: 16),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 640;
+              final children = AppThemePalettes.all
+                  .map((palette) {
+                    return _ThemeOptionTile(
+                      key: _paletteKey(palette),
+                      palette: palette,
+                      locale: locale,
+                      isSelected: palette.id == activePalette.id,
+                      onTap: () => ref
+                          .read(appThemeProvider.notifier)
+                          .setPalette(palette),
+                    );
+                  })
+                  .toList(growable: false);
+
+              if (!isWide) {
+                return Column(
+                  children: [
+                    for (final child in children) ...[
+                      child,
+                      if (child != children.last) const SizedBox(height: 12),
+                    ],
+                  ],
+                );
+              }
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final child in children) ...[
+                    Expanded(child: child),
+                    if (child != children.last) const SizedBox(width: 12),
+                  ],
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Key _paletteKey(AppThemePalette palette) {
+    return switch (palette.id) {
+      'volt_coral' => AppKeys.profileThemeVoltCoral,
+      'graphite_energy' => AppKeys.profileThemeGraphiteEnergy,
+      _ => AppKeys.profileThemePulseBlue,
+    };
+  }
+}
+
+class _ThemeOptionTile extends StatelessWidget {
+  const _ThemeOptionTile({
+    required super.key,
+    required this.palette,
+    required this.locale,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final AppThemePalette palette;
+  final Locale locale;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? colorScheme.primary.withValues(alpha: 0.10)
+                : colorScheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: isSelected
+                  ? colorScheme.primary
+                  : colorScheme.outlineVariant,
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  _ThemeSwatch(color: palette.primary),
+                  const SizedBox(width: 6),
+                  _ThemeSwatch(color: palette.secondary),
+                  const SizedBox(width: 6),
+                  _ThemeSwatch(color: palette.tertiary),
+                  const Spacer(),
+                  AnimatedScale(
+                    duration: const Duration(milliseconds: 180),
+                    scale: isSelected ? 1 : 0,
+                    child: Icon(
+                      Icons.check_circle_rounded,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 14),
+              Text(
+                palette.name(locale),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                palette.description(locale),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+class _ThemeSwatch extends StatelessWidget {
+  const _ThemeSwatch({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.18),
+        ),
+      ),
+    );
+  }
+}
+
+_ProfileSocialCopy _socialCopy(BuildContext context) {
+  return _ProfileSocialCopy(
+    Localizations.localeOf(context).languageCode == 'ru',
+  );
+}
+
+class _ProfileSocialCopy {
+  const _ProfileSocialCopy(this.isRu);
+
+  final bool isRu;
+
+  String get friendCode => isRu ? 'Код друга' : 'Friend code';
+  String get friendCodeHint => isRu
+      ? 'По этому коду вас смогут найти друзья. 4-24 символа: a-z, 0-9, _ или -.'
+      : 'Friends can find you by this code. 4-24 chars: a-z, 0-9, _ or -.';
+  String get copyCode => isRu ? 'Скопировать код' : 'Copy code';
+  String get friendCodeLengthError => isRu
+      ? 'Код должен быть от 4 до 24 символов'
+      : 'Code must be 4 to 24 characters';
+  String get friendCodeFormatError => isRu
+      ? 'Используйте только латиницу, цифры, _ или -'
+      : 'Use only letters, numbers, _ or -';
 }
 
 class _OverviewPill extends StatelessWidget {
@@ -503,17 +885,14 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            child,
-          ],
-        ),
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 16),
+          child,
+        ],
       ),
     );
   }

@@ -1,8 +1,11 @@
 import '../../domain/entities/chat_member_role.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/chat_participant.dart';
+import '../../domain/entities/friend_profile.dart';
+import '../../domain/entities/friend_request.dart';
 import '../../domain/entities/interest_chat_room.dart';
 import '../../domain/entities/leaderboard_user.dart';
+import '../../domain/entities/social_privacy.dart';
 import '../../domain/repositories/social_repository.dart';
 import '../datasources/social_remote_data_source.dart';
 
@@ -30,6 +33,23 @@ class SocialRepositoryImpl implements SocialRepository {
   }
 
   @override
+  Future<String> openFriendChat({
+    required String userId,
+    required String friendId,
+    required String friendName,
+    required String fallbackName,
+    required String fallbackEmail,
+  }) {
+    return _remoteDataSource.openFriendChat(
+      userId: userId,
+      friendId: friendId,
+      friendName: friendName,
+      fallbackName: fallbackName,
+      fallbackEmail: fallbackEmail,
+    );
+  }
+
+  @override
   Future<void> deleteMessage({
     required String chatId,
     required String messageId,
@@ -41,15 +61,50 @@ class SocialRepositoryImpl implements SocialRepository {
   }
 
   @override
-  Future<void> ensureLeaderboardEntry({
+  Future<void> ensureSocialProfile({
     required String userId,
     required String fallbackName,
     required String fallbackEmail,
   }) {
-    return _remoteDataSource.ensureLeaderboardEntry(
+    return _remoteDataSource.ensureSocialProfile(
       userId: userId,
       fallbackName: fallbackName,
       fallbackEmail: fallbackEmail,
+    );
+  }
+
+  @override
+  Future<void> acceptFriendRequest({
+    required String requestId,
+    required String userId,
+  }) {
+    return _remoteDataSource.acceptFriendRequest(
+      requestId: requestId,
+      userId: userId,
+    );
+  }
+
+  @override
+  Future<String> createFriendInvite({
+    required String userId,
+    required String fallbackName,
+    required String fallbackEmail,
+  }) {
+    return _remoteDataSource.createFriendInvite(
+      userId: userId,
+      fallbackName: fallbackName,
+      fallbackEmail: fallbackEmail,
+    );
+  }
+
+  @override
+  Future<void> declineFriendRequest({
+    required String requestId,
+    required String userId,
+  }) {
+    return _remoteDataSource.declineFriendRequest(
+      requestId: requestId,
+      userId: userId,
     );
   }
 
@@ -79,6 +134,16 @@ class SocialRepositoryImpl implements SocialRepository {
   @override
   Stream<List<InterestChatRoom>> listenInterestChats({int limit = 100}) {
     return _remoteDataSource.listenInterestChats(limit: limit);
+  }
+
+  @override
+  Stream<List<FriendProfile>> listenFriends(String userId) {
+    return _remoteDataSource.listenFriends(userId);
+  }
+
+  @override
+  Stream<List<FriendRequest>> listenIncomingFriendRequests(String userId) {
+    return _remoteDataSource.listenIncomingFriendRequests(userId);
   }
 
   @override
@@ -113,6 +178,40 @@ class SocialRepositoryImpl implements SocialRepository {
   }
 
   @override
+  Future<void> removeFriend({
+    required String userId,
+    required String friendId,
+  }) {
+    return _remoteDataSource.removeFriend(userId: userId, friendId: friendId);
+  }
+
+  @override
+  Future<void> savePrivacySettings({
+    required String userId,
+    required SocialPrivacySettings settings,
+  }) {
+    return _remoteDataSource.savePrivacySettings(
+      userId: userId,
+      settings: settings,
+    );
+  }
+
+  @override
+  Future<void> sendFriendRequest({
+    required String fromUserId,
+    required String inviteCodeOrLink,
+    required String fallbackName,
+    required String fallbackEmail,
+  }) {
+    return _remoteDataSource.sendFriendRequest(
+      fromUserId: fromUserId,
+      inviteCodeOrLink: inviteCodeOrLink,
+      fallbackName: fallbackName,
+      fallbackEmail: fallbackEmail,
+    );
+  }
+
+  @override
   Future<void> sendMessage({
     required String chatId,
     required String userId,
@@ -130,11 +229,11 @@ class SocialRepositoryImpl implements SocialRepository {
   }
 
   @override
-  Future<void> updateLeaderboardSteps({
+  Future<void> updateFriendSharedSteps({
     required String userId,
     required int stepsCount,
   }) {
-    return _remoteDataSource.updateLeaderboardSteps(
+    return _remoteDataSource.updateFriendSharedSteps(
       userId: userId,
       stepsCount: stepsCount,
     );
@@ -168,5 +267,10 @@ class SocialRepositoryImpl implements SocialRepository {
     required String userId,
   }) {
     return _remoteDataSource.watchParticipant(chatId: chatId, userId: userId);
+  }
+
+  @override
+  Stream<SocialPrivacySettings> watchPrivacySettings(String userId) {
+    return _remoteDataSource.watchPrivacySettings(userId);
   }
 }

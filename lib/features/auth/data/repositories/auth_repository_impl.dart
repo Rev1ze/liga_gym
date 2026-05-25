@@ -131,6 +131,7 @@ class AuthRepositoryImpl implements AuthRepository {
         gender: profile.gender,
         birthDate: profile.birthDate,
         city: profile.city,
+        friendCode: profile.friendCode ?? existingProfile?.friendCode,
         heightCm: profile.heightCm,
         startWeightKg: startWeightKg,
         currentWeightKg: profile.currentWeightKg,

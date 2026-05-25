@@ -12,6 +12,7 @@ class UserProfileUpdateData {
     required this.dailyStepGoal,
     required this.dailyCalorieGoal,
     this.city,
+    this.friendCode,
     this.heightCm,
     this.startWeightKg,
     this.currentWeightKg,
@@ -24,6 +25,7 @@ class UserProfileUpdateData {
   final Gender gender;
   final DateTime birthDate;
   final String? city;
+  final String? friendCode;
   final double? heightCm;
   final double? startWeightKg;
   final double? currentWeightKg;

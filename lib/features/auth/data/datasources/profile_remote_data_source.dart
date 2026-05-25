@@ -55,7 +55,7 @@ class FirestoreProfileRemoteDataSource implements ProfileRemoteDataSource {
   final FirebaseFirestore _firestore;
 
   static const String _usersCollection = 'users';
-  static const String _leaderboardCollection = 'leaderboard';
+  static const String _friendInvitesCollection = 'friend_invites';
   static const String _weightHistoryCollection = 'weight_history';
   static const Duration _requestTimeout = Duration(seconds: 15);
 
@@ -106,32 +106,68 @@ class FirestoreProfileRemoteDataSource implements ProfileRemoteDataSource {
   Future<void> saveUserProfile(UserProfileModel profile) async {
     try {
       final now = DateUtils.dateOnly(DateTime.now());
+      final userReference = _firestore
+          .collection(_usersCollection)
+          .doc(profile.userId);
+      final existingProfileSnapshot = await userReference.get().timeout(
+        _requestTimeout,
+      );
+      final existingFriendCode =
+          (existingProfileSnapshot.data()?['friendCode'] as String?)?.trim() ??
+          '';
+      final normalizedFriendCode = _normalizeFriendCode(profile.friendCode);
+      if (normalizedFriendCode.isNotEmpty) {
+        final inviteSnapshot = await _firestore
+            .collection(_friendInvitesCollection)
+            .doc(normalizedFriendCode)
+            .get()
+            .timeout(_requestTimeout);
+        final ownerUserId = inviteSnapshot.data()?['ownerUserId'] as String?;
+        if (inviteSnapshot.exists && ownerUserId != profile.userId) {
+          throw const ProfileException(AppErrorCode.profileSaveFailed);
+        }
+      }
+      final shouldDeleteExistingCode =
+          existingFriendCode.isNotEmpty &&
+          existingFriendCode != normalizedFriendCode &&
+          await _firestore
+              .collection(_friendInvitesCollection)
+              .doc(existingFriendCode)
+              .get()
+              .timeout(_requestTimeout)
+              .then((snapshot) => snapshot.exists);
+
       final batch = _firestore.batch();
-      batch.set(
-        _firestore.collection(_usersCollection).doc(profile.userId),
-        profile.toFirestore(),
-        SetOptions(merge: true),
-      );
-      batch.set(
-        _firestore.collection(_leaderboardCollection).doc(profile.userId),
-        <String, Object?>{
-          'displayName': profile.name,
-          'city': profile.city,
-          'countryCode': 'RU',
-          'score': FieldValue.increment(0),
-          'workoutsCount': FieldValue.increment(0),
-          'caloriesBurned': FieldValue.increment(0),
-          'stepsCount': FieldValue.increment(0),
-          'updatedAt': FieldValue.serverTimestamp(),
-          'createdAt': FieldValue.serverTimestamp(),
-        },
-        SetOptions(merge: true),
-      );
-      if (profile.currentWeightKg != null) {
+      final profileData = profile.toFirestore();
+      profileData['friendCode'] = normalizedFriendCode.isEmpty
+          ? null
+          : normalizedFriendCode;
+      batch.set(userReference, profileData, SetOptions(merge: true));
+      if (shouldDeleteExistingCode) {
+        batch.delete(
+          _firestore
+              .collection(_friendInvitesCollection)
+              .doc(existingFriendCode),
+        );
+      }
+      if (normalizedFriendCode.isNotEmpty) {
         batch.set(
           _firestore
-              .collection(_usersCollection)
-              .doc(profile.userId)
+              .collection(_friendInvitesCollection)
+              .doc(normalizedFriendCode),
+          <String, Object?>{
+            'ownerUserId': profile.userId,
+            'ownerDisplayName': profile.name,
+            'ownerEmail': profile.email,
+            'updatedAt': FieldValue.serverTimestamp(),
+            'createdAt': FieldValue.serverTimestamp(),
+          },
+          SetOptions(merge: true),
+        );
+      }
+      if (profile.currentWeightKg != null) {
+        batch.set(
+          userReference
               .collection(_weightHistoryCollection)
               .doc(_weightHistoryDocId(now)),
           WeightHistoryEntryModel(
@@ -144,12 +180,58 @@ class FirestoreProfileRemoteDataSource implements ProfileRemoteDataSource {
       }
 
       await batch.commit().timeout(_requestTimeout);
+      await _syncFriendSnapshot(profile);
     } on FirebaseException catch (error) {
       // Любую ошибку Firestore поднимаем выше как доменную, чтобы UI не зависел от SDK.
       throw ProfileException(_mapFirestoreError(error.code));
     } on TimeoutException {
       throw const ProfileException(AppErrorCode.firebaseConfigurationMissing);
     }
+  }
+
+  Future<void> _syncFriendSnapshot(UserProfileModel profile) async {
+    final friendsSnapshot = await _firestore
+        .collection(_usersCollection)
+        .doc(profile.userId)
+        .collection('friends')
+        .get()
+        .timeout(_requestTimeout);
+    if (friendsSnapshot.docs.isEmpty) {
+      return;
+    }
+
+    final userSnapshot = await _firestore
+        .collection(_usersCollection)
+        .doc(profile.userId)
+        .get()
+        .timeout(_requestTimeout);
+    final userData = userSnapshot.data() ?? <String, Object?>{};
+    final batch = _firestore.batch();
+    for (final friend in friendsSnapshot.docs) {
+      batch.set(
+        _firestore
+            .collection(_usersCollection)
+            .doc(friend.id)
+            .collection('friends')
+            .doc(profile.userId),
+        <String, Object?>{
+          'displayName': profile.name,
+          'email': profile.email,
+          'city': profile.city,
+          'score': (userData['socialScore'] as num?)?.toInt() ?? 0,
+          'workoutsCount':
+              (userData['socialWorkoutsCount'] as num?)?.toInt() ?? 0,
+          'caloriesBurned':
+              (userData['socialCaloriesBurned'] as num?)?.toDouble() ?? 0,
+          'stepsCount': (userData['socialStepsCount'] as num?)?.toInt() ?? 0,
+          'visibleInFriendLeaderboard':
+              userData['visibleInFriendLeaderboard'] as bool? ?? true,
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+    }
+    await batch.commit().timeout(_requestTimeout);
   }
 
   @override
@@ -201,5 +283,9 @@ class FirestoreProfileRemoteDataSource implements ProfileRemoteDataSource {
     final month = normalized.month.toString().padLeft(2, '0');
     final day = normalized.day.toString().padLeft(2, '0');
     return '${normalized.year}$month$day';
+  }
+
+  String _normalizeFriendCode(String? value) {
+    return (value ?? '').trim().toLowerCase();
   }
 }

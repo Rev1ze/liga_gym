@@ -6,6 +6,8 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/localization_extensions.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../dashboard/domain/entities/daily_profile_metrics.dart';
+import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/chat_member_role.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/chat_participant.dart';
@@ -51,12 +53,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     try {
       final email = currentUser.email ?? '';
-      await ref.read(socialRepositoryProvider).joinInterestChat(
-        chatId: widget.arguments.chatId,
-        userId: currentUser.uid,
-        fallbackName: currentUser.displayName ?? email.split('@').first,
-        fallbackEmail: email,
-      );
+      await ref
+          .read(socialRepositoryProvider)
+          .joinInterestChat(
+            chatId: widget.arguments.chatId,
+            userId: currentUser.uid,
+            fallbackName: currentUser.displayName ?? email.split('@').first,
+            fallbackEmail: email,
+          );
     } on AppException catch (error) {
       if (!mounted) {
         return;
@@ -74,6 +78,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _sendMessage() async {
+    await _sendText(_messageController.text, clearComposer: true);
+  }
+
+  Future<void> _sendText(String message, {required bool clearComposer}) async {
     if (_isSending) {
       return;
     }
@@ -90,14 +98,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     try {
       final email = currentUser.email ?? '';
-      await ref.read(sendMessageUseCaseProvider).call(
-        chatId: widget.arguments.chatId,
-        userId: currentUser.uid,
-        fallbackName: currentUser.displayName ?? email.split('@').first,
-        fallbackEmail: email,
-        message: _messageController.text,
-      );
-      _messageController.clear();
+      await ref
+          .read(sendMessageUseCaseProvider)
+          .call(
+            chatId: widget.arguments.chatId,
+            userId: currentUser.uid,
+            fallbackName: currentUser.displayName ?? email.split('@').first,
+            fallbackEmail: email,
+            message: message,
+          );
+      if (clearComposer) {
+        _messageController.clear();
+      }
     } on AppException catch (error) {
       if (!mounted) {
         return;
@@ -114,13 +126,161 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     }
   }
 
+  void _appendEmoji(String emoji) {
+    final selection = _messageController.selection;
+    final text = _messageController.text;
+    final start = selection.isValid ? selection.start : text.length;
+    final end = selection.isValid ? selection.end : text.length;
+    final nextText = text.replaceRange(start, end, emoji);
+    final nextOffset = start + emoji.length;
+    _messageController.value = TextEditingValue(
+      text: nextText,
+      selection: TextSelection.collapsed(offset: nextOffset),
+    );
+  }
+
+  Future<void> _showShareResultSheet() async {
+    final l10n = AppLocalizations.of(context)!;
+    final isRu = Localizations.localeOf(context).languageCode == 'ru';
+    final metricsProvider = dailyProfileMetricsProvider(
+      DateUtils.dateOnly(DateTime.now()),
+    );
+
+    try {
+      final metrics = await ref.read(metricsProvider.future);
+      if (!mounted) {
+        return;
+      }
+      final options = _buildResultShareOptions(metrics, isRu: isRu);
+      await showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (bottomSheetContext) {
+          return SafeArea(
+            child: ListView.separated(
+              shrinkWrap: true,
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+              itemCount: options.length,
+              separatorBuilder: (_, _) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                final option = options[index];
+                return ListTile(
+                  leading: Icon(option.icon),
+                  title: Text(option.title),
+                  subtitle: Text(option.message),
+                  onTap: () {
+                    Navigator.of(bottomSheetContext).pop();
+                    _sendText(option.message, clearComposer: false);
+                  },
+                );
+              },
+            ),
+          );
+        },
+      );
+    } on AppException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.code.localize(l10n))));
+    } on Object {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isRu
+                ? 'Не получилось подготовить результаты.'
+                : 'Could not prepare your results.',
+          ),
+        ),
+      );
+    }
+  }
+
+  List<_ResultShareOption> _buildResultShareOptions(
+    DailyProfileMetrics metrics, {
+    required bool isRu,
+  }) {
+    final progressPercent = (metrics.progress.overall * 100).round();
+    final minutes = metrics.totalWorkoutDuration.inMinutes;
+
+    if (isRu) {
+      return <_ResultShareOption>[
+        _ResultShareOption(
+          icon: Icons.directions_walk_rounded,
+          title: 'Шаги сегодня',
+          message: '💪 Мой результат сегодня: ${metrics.steps} шагов',
+        ),
+        _ResultShareOption(
+          icon: Icons.local_fire_department_rounded,
+          title: 'Калории',
+          message:
+              '🔥 Сегодня: ${metrics.caloriesBurned.round()} ккал сожжено, ${metrics.caloriesConsumed.round()} ккал в питании',
+        ),
+        _ResultShareOption(
+          icon: Icons.fitness_center_rounded,
+          title: 'Тренировки',
+          message:
+              '🏋️ Сегодня: ${metrics.workoutsCount} тренировок, $minutes мин',
+        ),
+        _ResultShareOption(
+          icon: Icons.flag_rounded,
+          title: 'Цели',
+          message: '🎯 Выполнение целей сегодня: $progressPercent%',
+        ),
+        _ResultShareOption(
+          icon: Icons.restaurant_rounded,
+          title: 'БЖУ',
+          message:
+              '🍽️ БЖУ сегодня: белки ${metrics.proteins.round()} г, жиры ${metrics.fats.round()} г, углеводы ${metrics.carbs.round()} г',
+        ),
+      ];
+    }
+
+    return <_ResultShareOption>[
+      _ResultShareOption(
+        icon: Icons.directions_walk_rounded,
+        title: 'Steps today',
+        message: '💪 My result today: ${metrics.steps} steps',
+      ),
+      _ResultShareOption(
+        icon: Icons.local_fire_department_rounded,
+        title: 'Calories',
+        message:
+            '🔥 Today: ${metrics.caloriesBurned.round()} kcal burned, ${metrics.caloriesConsumed.round()} kcal eaten',
+      ),
+      _ResultShareOption(
+        icon: Icons.fitness_center_rounded,
+        title: 'Workouts',
+        message: '🏋️ Today: ${metrics.workoutsCount} workouts, $minutes min',
+      ),
+      _ResultShareOption(
+        icon: Icons.flag_rounded,
+        title: 'Goals',
+        message: '🎯 Goal progress today: $progressPercent%',
+      ),
+      _ResultShareOption(
+        icon: Icons.restaurant_rounded,
+        title: 'Macros',
+        message:
+            '🍽️ Macros today: protein ${metrics.proteins.round()} g, fat ${metrics.fats.round()} g, carbs ${metrics.carbs.round()} g',
+      ),
+    ];
+  }
+
   Future<void> _deleteMessage(ChatMessage message) async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      await ref.read(socialRepositoryProvider).deleteMessage(
-        chatId: widget.arguments.chatId,
-        messageId: message.id,
-      );
+      await ref
+          .read(socialRepositoryProvider)
+          .deleteMessage(
+            chatId: widget.arguments.chatId,
+            messageId: message.id,
+          );
     } on AppException catch (error) {
       if (!mounted) {
         return;
@@ -151,9 +311,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 separatorBuilder: (_, _) => const Divider(),
                 itemBuilder: (context, index) {
                   final participant = participants[index];
-                  final canManage = currentParticipant.isAdmin &&
+                  final canManage =
+                      currentParticipant.isAdmin &&
                       participant.userId != currentParticipant.userId;
-                  final canRemove = (currentParticipant.isAdmin ||
+                  final canRemove =
+                      (currentParticipant.isAdmin ||
                           currentParticipant.canRemoveUsers) &&
                       participant.userId != currentParticipant.userId &&
                       !participant.isAdmin;
@@ -202,7 +364,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text(l10n.chatManageParticipantTitle(participant.displayName)),
+              title: Text(
+                l10n.chatManageParticipantTitle(participant.displayName),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -270,13 +434,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     }
 
     try {
-      await ref.read(socialRepositoryProvider).updateParticipantPermissions(
-        chatId: widget.arguments.chatId,
-        targetUserId: participant.userId,
-        role: role,
-        canRemoveMessages: canRemoveMessages,
-        canRemoveUsers: canRemoveUsers,
-      );
+      await ref
+          .read(socialRepositoryProvider)
+          .updateParticipantPermissions(
+            chatId: widget.arguments.chatId,
+            targetUserId: participant.userId,
+            role: role,
+            canRemoveMessages: canRemoveMessages,
+            canRemoveUsers: canRemoveUsers,
+          );
     } on AppException catch (error) {
       if (!mounted) {
         return;
@@ -296,7 +462,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         context: context,
         builder: (dialogContext) {
           return AlertDialog(
-            title: Text(l10n.chatRemoveParticipantTitle(participant.displayName)),
+            title: Text(
+              l10n.chatRemoveParticipantTitle(participant.displayName),
+            ),
             content: TextField(
               controller: reasonController,
               minLines: 1,
@@ -323,11 +491,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         return;
       }
 
-      await ref.read(socialRepositoryProvider).removeParticipant(
-        chatId: widget.arguments.chatId,
-        targetUserId: participant.userId,
-        reason: reasonController.text,
-      );
+      await ref
+          .read(socialRepositoryProvider)
+          .removeParticipant(
+            chatId: widget.arguments.chatId,
+            targetUserId: participant.userId,
+            reason: reasonController.text,
+          );
     } on AppException catch (error) {
       if (!mounted) {
         return;
@@ -369,14 +539,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final participantsState = ref.watch(
       chatParticipantsProvider(widget.arguments.chatId),
     );
-    final messagesState = ref.watch(chatMessagesProvider(widget.arguments.chatId));
+    final messagesState = ref.watch(
+      chatMessagesProvider(widget.arguments.chatId),
+    );
 
     return Scaffold(
       appBar: AppBar(
         title: roomState.when(
-          data: (room) => Text(room?.title ?? l10n.chatTitle),
-          error: (_, _) => Text(l10n.chatTitle),
-          loading: () => Text(l10n.chatTitle),
+          data: (room) =>
+              Text(widget.arguments.title ?? room?.title ?? l10n.chatTitle),
+          error: (_, _) => Text(widget.arguments.title ?? l10n.chatTitle),
+          loading: () => Text(widget.arguments.title ?? l10n.chatTitle),
         ),
         actions: [
           participantsState.when(
@@ -416,9 +589,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           '${room.description}\n${l10n.chatMembersCount('${room.memberCount}')}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).hintColor,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Theme.of(context).hintColor),
                         ),
                       ),
                     ),
@@ -479,7 +651,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         separatorBuilder: (_, _) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final message = messages[index];
-                          final canDelete = currentParticipant.isAdmin ||
+                          final canDelete =
+                              currentParticipant.isAdmin ||
                               currentParticipant.canRemoveMessages ||
                               message.senderId == currentUserId;
                           return GestureDetector(
@@ -521,28 +694,50 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _messageController,
-                          minLines: 1,
-                          maxLines: 4,
-                          decoration:
-                              InputDecoration(hintText: l10n.chatInputHint),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      FilledButton(
-                        onPressed: _isSending ? null : _sendMessage,
-                        child: _isSending
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : Text(l10n.chatSend),
+                      _EmojiBar(onEmojiSelected: _appendEmoji),
+                      const SizedBox(height: 8),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          IconButton.filledTonal(
+                            onPressed: _isSending
+                                ? null
+                                : _showShareResultSheet,
+                            icon: const Icon(Icons.ios_share_rounded),
+                            tooltip:
+                                Localizations.localeOf(context).languageCode ==
+                                    'ru'
+                                ? 'Поделиться результатом'
+                                : 'Share a result',
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextField(
+                              controller: _messageController,
+                              minLines: 1,
+                              maxLines: 4,
+                              decoration: InputDecoration(
+                                hintText: l10n.chatInputHint,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          FilledButton(
+                            onPressed: _isSending ? null : _sendMessage,
+                            child: _isSending
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(l10n.chatSend),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -556,6 +751,45 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       ),
     );
   }
+}
+
+class _EmojiBar extends StatelessWidget {
+  const _EmojiBar({required this.onEmojiSelected});
+
+  final ValueChanged<String> onEmojiSelected;
+
+  static const _emojis = <String>['💪', '🔥', '🎯', '👏', '😄', '❤️'];
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _emojis.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final emoji = _emojis[index];
+          return ActionChip(
+            label: Text(emoji, style: Theme.of(context).textTheme.titleMedium),
+            onPressed: () => onEmojiSelected(emoji),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ResultShareOption {
+  const _ResultShareOption({
+    required this.icon,
+    required this.title,
+    required this.message,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
 }
 
 class _MessageBubble extends StatelessWidget {

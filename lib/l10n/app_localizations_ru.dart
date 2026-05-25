@@ -135,10 +135,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get dashboardCommunitySubtitle =>
-      'Общайтесь в реальном времени и смотрите, кто лидирует на этой неделе.';
+      'Общайтесь с друзьями и делитесь личными результатами.';
 
   @override
-  String get dashboardCommunityChat => 'Чат';
+  String get dashboardCommunityChat => 'Чаты';
 
   @override
   String get dashboardCommunityLeaderboard => 'Лидерборд';
@@ -635,28 +635,27 @@ class AppLocalizationsRu extends AppLocalizations {
   String get foodDiaryWeightSaved => 'Вес за сегодня сохранён.';
 
   @override
-  String get chatTitle => 'Чат сообщества';
+  String get chatTitle => 'Чат с другом';
 
   @override
-  String get chatSubtitle =>
-      'Сообщения участников Liga Gym в реальном времени.';
+  String get chatSubtitle => 'Личные сообщения с друзьями Liga Gym.';
 
   @override
-  String get chatDirectoryTitle => 'Чаты по интересам';
+  String get chatDirectoryTitle => 'Чаты с друзьями';
 
   @override
   String get chatDirectorySubtitle =>
-      'Создавайте свои сообщества, вступайте в любые чаты и находите единомышленников.';
+      'Выберите друга, чтобы написать лично или поделиться результатом.';
 
   @override
   String get chatDirectoryEmpty =>
-      'Пока нет ни одного чата. Создайте первый чат по интересам.';
+      'Пока нет друзей для личных чатов. Добавьте друга по коду, ссылке или QR-коду.';
 
   @override
-  String get chatSearchHint => 'Поиск по интересу';
+  String get chatSearchHint => 'Поиск друга';
 
   @override
-  String get chatSearchEmpty => 'По вашему запросу чаты не найдены.';
+  String get chatSearchEmpty => 'По вашему запросу друзья не найдены.';
 
   @override
   String get chatCreateAction => 'Создать чат';

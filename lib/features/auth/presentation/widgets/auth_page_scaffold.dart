@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/providers/locale_provider.dart';
+import '../../../../core/widgets/app_language_switcher.dart';
+import '../../../../core/widgets/app_loading_indicator.dart';
+import '../../../../core/widgets/premium_components.dart';
+import '../../../../core/widgets/themed_liga_logo.dart';
 
 class AuthPageScaffold extends ConsumerWidget {
   const AuthPageScaffold({
@@ -19,25 +22,31 @@ class AuthPageScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeLocale =
-        ref.watch(appLocaleProvider) ?? Localizations.localeOf(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      body: SafeArea(
+    return LigaPremiumScaffold(
+      child: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
-              child: Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  side: BorderSide(
-                    color: Theme.of(context).colorScheme.outlineVariant,
-                  ),
-                ),
-                child: Padding(
+              constraints: const BoxConstraints(maxWidth: 460),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: 1),
+                duration: const Duration(milliseconds: 620),
+                curve: Curves.easeOutCubic,
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: Transform.translate(
+                      offset: Offset(0, 24 * (1 - value)),
+                      child: child,
+                    ),
+                  );
+                },
+                child: GlassCard(
+                  borderRadius: 32,
+                  tint: colorScheme.primary.withValues(alpha: 0.18),
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -45,120 +54,57 @@ class AuthPageScaffold extends ConsumerWidget {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          SizedBox(
+                            width: 56,
+                            height: 56,
+                            child: const ThemedLigaLogo(),
+                          ),
+                          const SizedBox(width: 14),
                           Expanded(
-                            child: Text(
-                              title,
-                              style: Theme.of(context).textTheme.headlineMedium,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(fontWeight: FontWeight.w800),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  subtitle,
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          _LanguageSwitcher(activeLocale: activeLocale),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        subtitle,
-                        style: Theme.of(context).textTheme.bodyLarge,
+                      const SizedBox(height: 24),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 240),
+                        child: isLoading
+                            ? const Padding(
+                                padding: EdgeInsets.only(bottom: 20),
+                                child: AppLoadingIndicator(size: 34),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                      AnimatedOpacity(
+                        duration: const Duration(milliseconds: 180),
+                        opacity: isLoading ? 0.62 : 1,
+                        child: IgnorePointer(ignoring: isLoading, child: child),
                       ),
                       const SizedBox(height: 24),
-                      if (isLoading) const LinearProgressIndicator(),
-                      if (isLoading) const SizedBox(height: 20),
-                      child,
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: AppLanguageSwitcher(),
+                      ),
                     ],
                   ),
                 ),
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LanguageSwitcher extends ConsumerWidget {
-  const _LanguageSwitcher({required this.activeLocale});
-
-  final Locale activeLocale;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _LocaleOption(
-              label: 'RU',
-              isSelected: activeLocale.languageCode == 'ru',
-              onTap: () => ref
-                  .read(appLocaleProvider.notifier)
-                  .setLocale(const Locale('ru')),
-            ),
-            const SizedBox(width: 4),
-            _LocaleOption(
-              label: 'EN',
-              isSelected: activeLocale.languageCode == 'en',
-              onTap: () => ref
-                  .read(appLocaleProvider.notifier)
-                  .setLocale(const Locale('en')),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LocaleOption extends StatelessWidget {
-  const _LocaleOption({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-          decoration: BoxDecoration(
-            color: isSelected ? colorScheme.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: colorScheme.primary.withValues(alpha: 0.22),
-                      blurRadius: 14,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.4,
             ),
           ),
         ),

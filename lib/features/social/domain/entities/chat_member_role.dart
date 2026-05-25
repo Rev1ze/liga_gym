@@ -1,5 +1,1 @@
-enum ChatMemberRole {
-  admin,
-  moderator,
-  member,
-}
+enum ChatMemberRole { admin, moderator, member }

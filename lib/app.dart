@@ -9,16 +9,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pedometer/pedometer.dart';
 
-import 'core/constants/russian_cities.dart';
+import 'core/firebase/firebase_bootstrap.dart';
 import 'core/notifications/app_notification_service.dart';
 import 'core/navigation/app_router.dart';
 import 'core/navigation/app_routes.dart';
 import 'core/offline/offline_sync_providers.dart';
+import 'core/providers/app_theme_provider.dart';
 import 'core/providers/locale_provider.dart';
 import 'core/providers/shared_preferences_provider.dart';
-import 'features/auth/presentation/providers/auth_providers.dart';
+import 'core/theme/app_theme.dart';
 import 'features/auth/domain/entities/user_profile.dart';
-import 'features/auth/domain/entities/user_profile_update_data.dart';
+import 'features/auth/presentation/providers/auth_providers.dart';
 import 'features/dashboard/presentation/providers/dashboard_providers.dart';
 import 'features/social/presentation/providers/social_providers.dart';
 import 'features/steps/data/datasources/step_local_data_source.dart';
@@ -46,7 +47,6 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
   late final ConfettiController _confettiController;
   final StepLocalDataSource _stepLocalDataSource = SqfliteStepLocalDataSource();
   bool _isCelebrationOpen = false;
-  bool _isCityPromptOpen = false;
   String? _activeUserId;
 
   @override
@@ -57,55 +57,57 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
     );
     WidgetsBinding.instance.addObserver(this);
 
-    _authSubscription = ref
-        .read(firebaseAuthProvider)
-        .authStateChanges()
-        .listen((user) async {
-          final previousUserId = _activeUserId;
-          _activeUserId = user?.uid;
-          await ref
-              .read(stepTrackingServiceProvider)
-              .resetUserSession(
-                previousUserId: previousUserId,
-                nextUserId: user?.uid,
-              );
-          ref.invalidate(currentAuthUserProvider);
-          ref.invalidate(currentUserProfileProvider);
-          ref.invalidate(dashboardAnalyticsProvider);
-          ref.invalidate(todayStepCountProvider);
-          ref.invalidate(stepGoalProvider);
-          ref.invalidate(stepGoalCelebrationPendingProvider);
-          ref.invalidate(stepTrackingStatusProvider);
-
-          if (user == null) {
-            unawaited(ref.read(stepTrackingServiceProvider).stopTracking());
-            unawaited(_stopForegroundStepSync());
-            return;
-          }
-
-          unawaited(
-            ref
+    if (ref.read(firebaseBootstrapProvider).isConfigured) {
+      _authSubscription = ref
+          .read(firebaseAuthProvider)
+          .authStateChanges()
+          .listen((user) async {
+            final previousUserId = _activeUserId;
+            _activeUserId = user?.uid;
+            await ref
                 .read(stepTrackingServiceProvider)
-                .ensureTracking(userId: user.uid),
-          );
-          final email = user.email ?? '';
-          unawaited(
-            ref
-                .read(ensureLeaderboardEntryUseCaseProvider)
-                .call(
-                  userId: user.uid,
-                  fallbackName: user.displayName ?? email.split('@').first,
-                  fallbackEmail: email,
-                ),
-          );
-          unawaited(_startForegroundStepSync(user.uid));
-          unawaited(
-            ref
-                .read(appOfflineSyncCoordinatorProvider)
-                .syncDataWithServer(userId: user.uid),
-          );
-          unawaited(_refreshUserScopedState(userId: user.uid));
-        });
+                .resetUserSession(
+                  previousUserId: previousUserId,
+                  nextUserId: user?.uid,
+                );
+            ref.invalidate(currentAuthUserProvider);
+            ref.invalidate(currentUserProfileProvider);
+            ref.invalidate(dashboardAnalyticsProvider);
+            ref.invalidate(todayStepCountProvider);
+            ref.invalidate(stepGoalProvider);
+            ref.invalidate(stepGoalCelebrationPendingProvider);
+            ref.invalidate(stepTrackingStatusProvider);
+
+            if (user == null) {
+              unawaited(ref.read(stepTrackingServiceProvider).stopTracking());
+              unawaited(_stopForegroundStepSync());
+              return;
+            }
+
+            unawaited(
+              ref
+                  .read(stepTrackingServiceProvider)
+                  .ensureTracking(userId: user.uid),
+            );
+            final email = user.email ?? '';
+            unawaited(
+              ref
+                  .read(ensureLeaderboardEntryUseCaseProvider)
+                  .call(
+                    userId: user.uid,
+                    fallbackName: user.displayName ?? email.split('@').first,
+                    fallbackEmail: email,
+                  ),
+            );
+            unawaited(_startForegroundStepSync(user.uid));
+            unawaited(
+              ref
+                  .read(appOfflineSyncCoordinatorProvider)
+                  .syncDataWithServer(userId: user.uid),
+            );
+            unawaited(_refreshUserScopedState(userId: user.uid));
+          });
+    }
 
     _profileSubscription = ref.listenManual<AsyncValue<UserProfile?>>(
       currentUserProfileProvider,
@@ -254,9 +256,7 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
       userId: userId,
       date: DateTime.now(),
     );
-    await ref
-        .read(updateLeaderboardStepsUseCaseProvider)
-        .call(userId: userId, stepsCount: todaySteps);
+    await _syncFriendSteps(userId: userId, stepsCount: todaySteps);
 
     await _foregroundPedometerSubscription?.cancel();
     _foregroundPedometerSubscription = Pedometer.stepCountStream.listen((
@@ -272,14 +272,25 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
         userId: userId,
         date: event.timeStamp,
       );
-      await ref
-          .read(updateLeaderboardStepsUseCaseProvider)
-          .call(userId: userId, stepsCount: todaySteps);
+      await _syncFriendSteps(userId: userId, stepsCount: todaySteps);
       await _handleGoalReachedOnMain(todaySteps);
 
       ref.invalidate(todayStepCountProvider);
       ref.invalidate(dashboardAnalyticsProvider);
     });
+  }
+
+  Future<void> _syncFriendSteps({
+    required String userId,
+    required int stepsCount,
+  }) async {
+    try {
+      await ref
+          .read(updateLeaderboardStepsUseCaseProvider)
+          .call(userId: userId, stepsCount: stepsCount);
+    } on Object {
+      // Social step sharing should not interrupt local step tracking.
+    }
   }
 
   Future<void> _stopForegroundStepSync() async {
@@ -294,7 +305,8 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
       return;
     }
 
-    final stepGoal = sharedPreferences.getInt(stepTrackingGoalKey(userId)) ?? 10000;
+    final stepGoal =
+        sharedPreferences.getInt(stepTrackingGoalKey(userId)) ?? 10000;
     if (todaySteps < stepGoal) {
       return;
     }
@@ -307,7 +319,10 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
       return;
     }
 
-    await sharedPreferences.setString(stepGoalCelebratedDateKey(userId), todayKey);
+    await sharedPreferences.setString(
+      stepGoalCelebratedDateKey(userId),
+      todayKey,
+    );
     await sharedPreferences.setString(
       stepGoalCelebrationPendingDateKey(userId),
       todayKey,
@@ -326,23 +341,16 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
   @override
   Widget build(BuildContext context) {
     final locale = ref.watch(appLocaleProvider) ?? widget.locale;
+    final appPalette = ref.watch(appThemeProvider);
 
     return MaterialApp(
       navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: false,
       locale: locale,
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1D4ED8),
-          brightness: Brightness.light,
-        ),
-        scaffoldBackgroundColor: const Color(0xFFF6F7FB),
-        inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(),
-        ),
-      ),
+      theme: buildLigaGymTheme(appPalette),
+      themeAnimationDuration: const Duration(milliseconds: 450),
+      themeAnimationCurve: Curves.easeOutCubic,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -380,102 +388,5 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
             fallbackEmail: email,
           );
     }
-
-    if ((profile.city ?? '').trim().isEmpty) {
-      await _showCityRequiredDialog(profile);
-    }
-  }
-
-  Future<void> _showCityRequiredDialog(UserProfile profile) async {
-    if (_isCityPromptOpen) {
-      return;
-    }
-
-    final dialogContext = _navigatorKey.currentContext;
-    if (dialogContext == null) {
-      return;
-    }
-
-    _isCityPromptOpen = true;
-    String? selectedCity = profile.city;
-    final l10n = AppLocalizations.of(dialogContext)!;
-
-    await showDialog<void>(
-      context: dialogContext,
-      barrierDismissible: false,
-      builder: (context) {
-        return PopScope(
-          canPop: false,
-          child: StatefulBuilder(
-            builder: (context, setState) {
-              return AlertDialog(
-                title: Text(l10n.profileCityDialogTitle),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(l10n.profileCityDialogMessage),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      initialValue: selectedCity,
-                      decoration: InputDecoration(
-                        labelText: l10n.profileCity,
-                      ),
-                      items: russianCities
-                          .map(
-                            (city) => DropdownMenuItem<String>(
-                              value: city,
-                              child: Text(city),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCity = value;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                actions: [
-                  FilledButton(
-                    onPressed: selectedCity == null
-                        ? null
-                        : () async {
-                            await ref
-                                .read(updateUserProfileUseCaseProvider)
-                                .call(
-                                  UserProfileUpdateData(
-                                    userId: profile.userId,
-                                    email: profile.email,
-                                    name: profile.name,
-                                    gender: profile.gender,
-                                    birthDate: profile.birthDate,
-                                    city: selectedCity,
-                                    heightCm: profile.heightCm,
-                                    startWeightKg: profile.startWeightKg,
-                                    currentWeightKg: profile.currentWeightKg,
-                                    targetWeightKg: profile.targetWeightKg,
-                                    goalType: profile.goalType,
-                                    dailyStepGoal: profile.dailyStepGoal,
-                                    dailyCalorieGoal: profile.dailyCalorieGoal,
-                                  ),
-                                );
-                            ref.invalidate(currentUserProfileProvider);
-                            if (context.mounted) {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                    child: Text(l10n.commonSave),
-                  ),
-                ],
-              );
-            },
-          ),
-        );
-      },
-    );
-
-    _isCityPromptOpen = false;
   }
 }

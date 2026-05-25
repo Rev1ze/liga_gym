@@ -6,7 +6,7 @@ import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/utils/localization_extensions.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
-import '../../domain/entities/interest_chat_room.dart';
+import '../../domain/entities/friend_profile.dart';
 import '../providers/social_providers.dart';
 import '../utils/chat_room_route_arguments.dart';
 
@@ -20,6 +20,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  String? _openingFriendId;
 
   @override
   void dispose() {
@@ -27,93 +28,37 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.dispose();
   }
 
-  Future<void> _showCreateChatDialog() async {
-    final l10n = AppLocalizations.of(context)!;
-    final titleController = TextEditingController();
-    final descriptionController = TextEditingController();
+  Future<void> _openFriendChat(FriendProfile friend) async {
     final currentUser = ref.read(firebaseAuthProvider).currentUser;
-
-    if (currentUser == null) {
+    final l10n = AppLocalizations.of(context)!;
+    if (currentUser == null || _openingFriendId != null) {
       return;
     }
 
-    try {
-      final createdChatId = await showDialog<String>(
-        context: context,
-        builder: (context) {
-          bool isSaving = false;
-          return StatefulBuilder(
-            builder: (context, setState) {
-              return AlertDialog(
-                title: Text(l10n.chatCreateTitle),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: titleController,
-                      decoration: InputDecoration(
-                        labelText: l10n.chatInterestName,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: descriptionController,
-                      minLines: 2,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        labelText: l10n.chatInterestDescription,
-                      ),
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: isSaving ? null : () => Navigator.of(context).pop(),
-                    child: Text(l10n.commonCancel),
-                  ),
-                  FilledButton(
-                    onPressed: isSaving
-                        ? null
-                        : () async {
-                            if (titleController.text.trim().isEmpty) {
-                              return;
-                            }
-                            setState(() {
-                              isSaving = true;
-                            });
-                            final email = currentUser.email ?? '';
-                            final chatId = await ref
-                                .read(socialRepositoryProvider)
-                                .createInterestChat(
-                                  userId: currentUser.uid,
-                                  fallbackName:
-                                      currentUser.displayName ??
-                                      email.split('@').first,
-                                  fallbackEmail: email,
-                                  title: titleController.text,
-                                  description: descriptionController.text,
-                                );
-                            if (context.mounted) {
-                              Navigator.of(context).pop(chatId);
-                            }
-                          },
-                    child: Text(l10n.commonSave),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      );
+    setState(() {
+      _openingFriendId = friend.userId;
+    });
 
-      if (!mounted || createdChatId == null) {
+    try {
+      final email = currentUser.email ?? '';
+      final chatId = await ref
+          .read(socialRepositoryProvider)
+          .openFriendChat(
+            userId: currentUser.uid,
+            friendId: friend.userId,
+            friendName: friend.displayName,
+            fallbackName: currentUser.displayName ?? email.split('@').first,
+            fallbackEmail: email,
+          );
+      if (!mounted) {
         return;
       }
-
-      ref.invalidate(interestChatsProvider);
       await Navigator.of(context).pushNamed(
         AppRoutes.chatRoom,
-        arguments: ChatRoomRouteArguments(chatId: createdChatId),
+        arguments: ChatRoomRouteArguments(
+          chatId: chatId,
+          title: friend.displayName,
+        ),
       );
     } on AppException catch (error) {
       if (!mounted) {
@@ -123,15 +68,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text(error.code.localize(l10n))));
     } finally {
-      titleController.dispose();
-      descriptionController.dispose();
+      if (mounted) {
+        setState(() {
+          _openingFriendId = null;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final chatsState = ref.watch(interestChatsProvider);
+    final friendsState = ref.watch(friendsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -169,42 +117,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showCreateChatDialog,
-        icon: const Icon(Icons.add_comment_outlined),
-        label: Text(l10n.chatCreateAction),
-      ),
       body: SafeArea(
-        child: chatsState.when(
-          data: (rooms) {
-            final filteredRooms = _filterRooms(rooms);
-            if (filteredRooms.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    _searchQuery.isEmpty
-                        ? l10n.chatDirectoryEmpty
-                        : l10n.chatSearchEmpty,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                ),
+        child: friendsState.when(
+          data: (friends) {
+            final filteredFriends = _filterFriends(friends);
+            if (filteredFriends.isEmpty) {
+              return _EmptyFriendChats(
+                message: _searchQuery.isEmpty
+                    ? l10n.chatDirectoryEmpty
+                    : l10n.chatSearchEmpty,
+                showAddFriendsAction: _searchQuery.isEmpty,
               );
             }
 
             return ListView.separated(
               padding: const EdgeInsets.all(16),
-              itemCount: filteredRooms.length,
+              itemCount: filteredFriends.length,
               separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                final room = filteredRooms[index];
-                return _ChatRoomTile(
-                  room: room,
-                  onTap: () => Navigator.of(context).pushNamed(
-                    AppRoutes.chatRoom,
-                    arguments: ChatRoomRouteArguments(chatId: room.id),
-                  ),
+                final friend = filteredFriends[index];
+                return _FriendChatTile(
+                  friend: friend,
+                  isOpening: _openingFriendId == friend.userId,
+                  onTap: () => _openFriendChat(friend),
                 );
               },
             );
@@ -226,49 +161,117 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  List<InterestChatRoom> _filterRooms(List<InterestChatRoom> rooms) {
+  List<FriendProfile> _filterFriends(List<FriendProfile> friends) {
     if (_searchQuery.isEmpty) {
-      return rooms;
+      return friends;
     }
 
-    return rooms.where((room) {
-      final haystack = '${room.title} ${room.description}'.toLowerCase();
-      return haystack.contains(_searchQuery);
-    }).toList(growable: false);
+    return friends
+        .where((friend) {
+          final haystack =
+              '${friend.displayName} ${friend.email} ${friend.city ?? ''}'
+                  .toLowerCase();
+          return haystack.contains(_searchQuery);
+        })
+        .toList(growable: false);
   }
 }
 
-class _ChatRoomTile extends StatelessWidget {
-  const _ChatRoomTile({required this.room, required this.onTap});
+class _EmptyFriendChats extends StatelessWidget {
+  const _EmptyFriendChats({
+    required this.message,
+    required this.showAddFriendsAction,
+  });
 
-  final InterestChatRoom room;
+  final String message;
+  final bool showAddFriendsAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final isRu = Localizations.localeOf(context).languageCode == 'ru';
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.mark_chat_unread_outlined,
+              size: 48,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            if (showAddFriendsAction) ...[
+              const SizedBox(height: 18),
+              FilledButton.icon(
+                onPressed: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.friends),
+                icon: const Icon(Icons.person_add_alt_1_outlined),
+                label: Text(isRu ? 'Добавить друзей' : 'Add friends'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FriendChatTile extends StatelessWidget {
+  const _FriendChatTile({
+    required this.friend,
+    required this.isOpening,
+    required this.onTap,
+  });
+
+  final FriendProfile friend;
+  final bool isOpening;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final isRu = Localizations.localeOf(context).languageCode == 'ru';
+    final subtitle = [
+      if ((friend.city ?? '').isNotEmpty) friend.city!,
+      isRu ? 'Личный чат' : 'Private chat',
+    ].join(' - ');
 
     return Card(
       child: ListTile(
-        onTap: onTap,
-        leading: const CircleAvatar(
-          child: Icon(Icons.forum_outlined),
-        ),
+        onTap: isOpening ? null : onTap,
+        leading: CircleAvatar(child: Text(_avatarLabel(friend.displayName))),
         title: Text(
-          room.title,
+          friend.displayName,
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 6),
-          child: Text(room.description),
+          child: Text(subtitle),
         ),
-        trailing: Text(
-          l10n.chatMembersCount('${room.memberCount}'),
-          textAlign: TextAlign.end,
-        ),
+        trailing: isOpening
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.chevron_right_rounded),
       ),
     );
+  }
+
+  String _avatarLabel(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return '?';
+    }
+    return trimmed.characters.first.toUpperCase();
   }
 }

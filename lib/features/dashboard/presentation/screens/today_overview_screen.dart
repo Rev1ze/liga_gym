@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/utils/localization_extensions.dart';
+import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../providers/dashboard_providers.dart';
 import '../utils/goal_settings_route_arguments.dart';
@@ -28,22 +29,23 @@ class TodayOverviewScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final analyticsState = ref.watch(dashboardAnalyticsProvider);
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(title: Text(l10n.todayOverviewTitle)),
-      body: SafeArea(
+      child: SafeArea(
         child: Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1080),
             child: ListView(
-              padding: const EdgeInsets.all(24),
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
               children: [
                 Text(
                   l10n.todayOverviewSubtitle,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).hintColor,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                ),
+                ).premiumEntrance(),
                 const SizedBox(height: 20),
                 analyticsState.when(
                   data: (analytics) {
@@ -52,63 +54,40 @@ class TodayOverviewScreen extends ConsumerWidget {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        l10n.dashboardGoalsTitle,
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.titleLarge,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        l10n.dashboardGoalsSummary(
-                                          analytics.goals.goalType.localize(
-                                            l10n,
-                                          ),
-                                          NumberFormat.decimalPattern().format(
-                                            analytics.goals.stepGoal,
-                                          ),
-                                          analytics.goals.calorieGoal
-                                              .toStringAsFixed(0),
-                                        ),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                              color: Theme.of(
-                                                context,
-                                              ).hintColor,
-                                            ),
-                                      ),
-                                    ],
+                        GlassCard(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: SectionHeader(
+                                  title: l10n.dashboardGoalsTitle,
+                                  subtitle: l10n.dashboardGoalsSummary(
+                                    analytics.goals.goalType.localize(l10n),
+                                    NumberFormat.decimalPattern().format(
+                                      analytics.goals.stepGoal,
+                                    ),
+                                    analytics.goals.calorieGoal.toStringAsFixed(
+                                      0,
+                                    ),
                                   ),
                                 ),
-                                FilledButton.icon(
-                                  onPressed: () => _openGoalSettings(
-                                    context,
-                                    ref,
-                                    GoalSettingsSection.progress,
-                                  ),
-                                  icon: const Icon(Icons.tune_rounded),
-                                  label: Text(l10n.dashboardGoalsAction),
+                              ),
+                              const SizedBox(width: 12),
+                              FilledButton.icon(
+                                onPressed: () => _openGoalSettings(
+                                  context,
+                                  ref,
+                                  GoalSettingsSection.progress,
                                 ),
-                              ],
-                            ),
+                                icon: const Icon(Icons.tune_rounded),
+                                label: Text(l10n.dashboardGoalsAction),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 20),
+                        ).premiumEntrance(delayMs: 80),
+                        const SizedBox(height: 18),
                         Wrap(
-                          spacing: 16,
-                          runSpacing: 16,
+                          spacing: 12,
+                          runSpacing: 12,
                           children: [
                             _OverviewMetricCard(
                               title: l10n.dashboardAnalyticsSteps,
@@ -120,9 +99,9 @@ class TodayOverviewScreen extends ConsumerWidget {
                                   analytics.goals.stepGoal,
                                 ),
                               ),
-                              color: const Color(0xFF2563EB),
+                              color: Theme.of(context).colorScheme.primary,
                               progress: analytics.progress.steps,
-                              icon: Icons.directions_walk,
+                              icon: Icons.directions_walk_rounded,
                               onTap: () => _openGoalSettings(
                                 context,
                                 ref,
@@ -135,9 +114,9 @@ class TodayOverviewScreen extends ConsumerWidget {
                               subtitle: l10n.dashboardAnalyticsCalorieGoal(
                                 analytics.goals.calorieGoal.toStringAsFixed(0),
                               ),
-                              color: const Color(0xFFF97316),
+                              color: Theme.of(context).colorScheme.secondary,
                               progress: analytics.progress.calories,
-                              icon: Icons.local_fire_department,
+                              icon: Icons.local_fire_department_rounded,
                               onTap: () => _openGoalSettings(
                                 context,
                                 ref,
@@ -156,9 +135,9 @@ class TodayOverviewScreen extends ConsumerWidget {
                                           .toStringAsFixed(1),
                                     )
                                   : l10n.dashboardAnalyticsOverallGoal,
-                              color: const Color(0xFF0F766E),
+                              color: Theme.of(context).colorScheme.tertiary,
                               progress: analytics.progress.overall,
-                              icon: Icons.track_changes,
+                              icon: Icons.track_changes_rounded,
                               onTap: () => _openGoalSettings(
                                 context,
                                 ref,
@@ -166,51 +145,58 @@ class TodayOverviewScreen extends ConsumerWidget {
                               ),
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 20),
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  l10n.dashboardNutritionTitle,
-                                  style: Theme.of(context).textTheme.titleLarge,
-                                ),
-                                const SizedBox(height: 16),
-                                Wrap(
-                                  spacing: 12,
-                                  runSpacing: 12,
-                                  children: [
-                                    _NutritionChip(
-                                      label: l10n.foodProteins,
-                                      value: analytics.proteins.toStringAsFixed(
-                                        1,
-                                      ),
+                        ).premiumEntrance(delayMs: 140),
+                        const SizedBox(height: 18),
+                        GlassCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SectionHeader(
+                                title: l10n.dashboardNutritionTitle,
+                                subtitle: 'Macro balance for today',
+                              ),
+                              const SizedBox(height: 16),
+                              Wrap(
+                                spacing: 12,
+                                runSpacing: 12,
+                                children: [
+                                  _NutritionChip(
+                                    label: l10n.foodProteins,
+                                    value: analytics.proteins.toStringAsFixed(
+                                      1,
                                     ),
-                                    _NutritionChip(
-                                      label: l10n.foodFats,
-                                      value: analytics.fats.toStringAsFixed(1),
-                                    ),
-                                    _NutritionChip(
-                                      label: l10n.foodCarbs,
-                                      value: analytics.carbs.toStringAsFixed(1),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                  ),
+                                  _NutritionChip(
+                                    label: l10n.foodFats,
+                                    value: analytics.fats.toStringAsFixed(1),
+                                  ),
+                                  _NutritionChip(
+                                    label: l10n.foodCarbs,
+                                    value: analytics.carbs.toStringAsFixed(1),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              HeatmapStrip(
+                                values: [
+                                  (analytics.proteins / 140)
+                                      .clamp(0, 1)
+                                      .toDouble(),
+                                  (analytics.fats / 80).clamp(0, 1).toDouble(),
+                                  (analytics.carbs / 260)
+                                      .clamp(0, 1)
+                                      .toDouble(),
+                                ],
+                                color: Theme.of(context).colorScheme.secondary,
+                              ),
+                            ],
                           ),
-                        ),
+                        ).premiumEntrance(delayMs: 200),
                       ],
                     );
                   },
                   error: (_, _) => Center(child: Text(l10n.errorUnknown)),
-                  loading: () => const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 48),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
+                  loading: () => const SkeletonCard(height: 280),
                 ),
               ],
             ),
@@ -247,108 +233,18 @@ class _OverviewMetricCard extends StatelessWidget {
         ? 320.0
         : width > 700
         ? 280.0
-        : (width - 80).clamp(260.0, 520.0).toDouble();
+        : (width - 52).clamp(260.0, 520.0).toDouble();
 
     return SizedBox(
       width: cardWidth,
-      child: Card(
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                _OverviewProgressRing(
-                  progress: progress,
-                  color: color,
-                  child: Icon(icon, color: color),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        value,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        subtitle,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).hintColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _OverviewProgressRing extends StatelessWidget {
-  const _OverviewProgressRing({
-    required this.progress,
-    required this.color,
-    required this.child,
-  });
-
-  final double progress;
-  final Color color;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 74,
-      height: 74,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          SizedBox(
-            width: 74,
-            height: 74,
-            child: CircularProgressIndicator(
-              value: 1,
-              strokeWidth: 8,
-              color: color.withValues(alpha: 0.14),
-            ),
-          ),
-          SizedBox(
-            width: 74,
-            height: 74,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: 0, end: progress),
-              duration: const Duration(milliseconds: 700),
-              curve: Curves.easeOutCubic,
-              builder: (context, value, _) {
-                return CircularProgressIndicator(
-                  value: value,
-                  strokeWidth: 8,
-                  color: color,
-                  backgroundColor: Colors.transparent,
-                );
-              },
-            ),
-          ),
-          child,
-        ],
+      child: KineticMetricCard(
+        label: title,
+        value: value,
+        subtitle: subtitle,
+        icon: icon,
+        color: color,
+        progress: progress,
+        onTap: onTap,
       ),
     );
   }
@@ -362,26 +258,9 @@ class _NutritionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: RichText(
-          text: TextSpan(
-            style: Theme.of(context).textTheme.bodyMedium,
-            children: [
-              TextSpan(
-                text: '$label: ',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              TextSpan(text: value),
-            ],
-          ),
-        ),
-      ),
+    return Chip(
+      avatar: const Icon(Icons.bolt_rounded, size: 16),
+      label: Text('$label: $value'),
     );
   }
 }

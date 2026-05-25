@@ -5,11 +5,8 @@ class UpdateLeaderboardStepsUseCase {
 
   final SocialRepository _repository;
 
-  Future<void> call({
-    required String userId,
-    required int stepsCount,
-  }) {
-    return _repository.updateLeaderboardSteps(
+  Future<void> call({required String userId, required int stepsCount}) {
+    return _repository.updateFriendSharedSteps(
       userId: userId,
       stepsCount: stepsCount,
     );

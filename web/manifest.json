@@ -1,11 +1,11 @@
 {
-    "name": "liga_gym_app",
-    "short_name": "liga_gym_app",
+    "name": "Liga Gym",
+    "short_name": "Liga Gym",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#1D4ED8",
+    "theme_color": "#1D4ED8",
+    "description": "Liga Gym fitness tracker.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

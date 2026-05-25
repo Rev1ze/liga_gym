@@ -335,13 +335,13 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardCommunitySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Jump into the live chat and see who is leading this week.'**
+  /// **'Chat with friends and share personal results.'**
   String get dashboardCommunitySubtitle;
 
   /// No description provided for @dashboardCommunityChat.
   ///
   /// In en, this message translates to:
-  /// **'Chat'**
+  /// **'Chats'**
   String get dashboardCommunityChat;
 
   /// No description provided for @dashboardCommunityLeaderboard.
@@ -1205,43 +1205,43 @@ abstract class AppLocalizations {
   /// No description provided for @chatTitle.
   ///
   /// In en, this message translates to:
-  /// **'Community chat'**
+  /// **'Friend chat'**
   String get chatTitle;
 
   /// No description provided for @chatSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Real-time messages from Liga Gym members.'**
+  /// **'Private messages with Liga Gym friends.'**
   String get chatSubtitle;
 
   /// No description provided for @chatDirectoryTitle.
   ///
   /// In en, this message translates to:
-  /// **'Interest chats'**
+  /// **'Friend chats'**
   String get chatDirectoryTitle;
 
   /// No description provided for @chatDirectorySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Create your own communities, join any chat, and find like-minded people.'**
+  /// **'Choose a friend to message privately or share a result.'**
   String get chatDirectorySubtitle;
 
   /// No description provided for @chatDirectoryEmpty.
   ///
   /// In en, this message translates to:
-  /// **'There are no chats yet. Create the first interest chat.'**
+  /// **'There are no friends for private chats yet. Add a friend by code, link, or QR code.'**
   String get chatDirectoryEmpty;
 
   /// No description provided for @chatSearchHint.
   ///
   /// In en, this message translates to:
-  /// **'Search by interest'**
+  /// **'Search friends'**
   String get chatSearchHint;
 
   /// No description provided for @chatSearchEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No chats found for your search.'**
+  /// **'No friends found for your search.'**
   String get chatSearchEmpty;
 
   /// No description provided for @chatCreateAction.

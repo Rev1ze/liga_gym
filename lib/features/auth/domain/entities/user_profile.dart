@@ -9,6 +9,7 @@ class UserProfile {
     required this.gender,
     required this.birthDate,
     this.city,
+    this.friendCode,
     this.heightCm,
     this.startWeightKg,
     this.currentWeightKg,
@@ -24,6 +25,7 @@ class UserProfile {
   final Gender gender;
   final DateTime birthDate;
   final String? city;
+  final String? friendCode;
   final double? heightCm;
   final double? startWeightKg;
   final double? currentWeightKg;

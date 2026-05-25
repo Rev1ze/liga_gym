@@ -41,7 +41,9 @@ class StepScreenController extends Notifier<AsyncValue<void>> {
       return;
     }
     final sharedPreferences = ref.read(sharedPreferencesProvider);
-    await sharedPreferences?.remove(stepGoalCelebrationPendingDateKey(user.uid));
+    await sharedPreferences?.remove(
+      stepGoalCelebrationPendingDateKey(user.uid),
+    );
     ref.invalidate(stepGoalCelebrationPendingProvider);
   }
 }
