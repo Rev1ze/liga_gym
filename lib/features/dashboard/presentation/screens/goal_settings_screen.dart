@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/localization_extensions.dart';
+import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/domain/entities/user_goal.dart';
 import '../../../auth/domain/entities/user_profile.dart';
@@ -49,9 +50,9 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
     final l10n = AppLocalizations.of(context)!;
     final profileState = ref.watch(currentUserProfileProvider);
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(title: Text(l10n.goalSettingsTitle)),
-      body: SafeArea(
+      child: SafeArea(
         child: profileState.when(
           data: (profile) {
             if (profile == null) {
@@ -65,7 +66,7 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 840),
                 child: ListView(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(16),
                   children: [
                     Text(
                       _subtitleForSection(l10n, widget.arguments.section),
@@ -73,7 +74,7 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
                         color: Theme.of(context).hintColor,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     Form(
                       key: _formKey,
                       child: Column(
@@ -112,7 +113,7 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
                                   GoalSettingsSection.steps ||
                               widget.arguments.section ==
                                   GoalSettingsSection.progress)
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
                           if (widget.arguments.section ==
                                   GoalSettingsSection.calories ||
                               widget.arguments.section ==
@@ -133,7 +134,7 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
                                   GoalSettingsSection.calories ||
                               widget.arguments.section ==
                                   GoalSettingsSection.progress)
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
                           _GoalSectionCard(
                             title: l10n.dashboardAnalyticsProgress,
                             highlighted:
@@ -166,7 +167,7 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
                                           });
                                         },
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
                                 _DecimalGoalField(
                                   controller: _currentWeightController,
                                   label: l10n.profileCurrentWeight,
@@ -175,14 +176,14 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
                                 ),
                                 if (_selectedGoalType !=
                                     UserGoalType.maintainWeight) ...[
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 12),
                                   _DecimalGoalField(
                                     controller: _startWeightController,
                                     label: l10n.profileStartWeight,
                                     validatorMessage:
                                         l10n.validationInvalidCurrentWeight,
                                   ),
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 12),
                                   _DecimalGoalField(
                                     controller: _targetWeightController,
                                     label: l10n.profileTargetWeight,
@@ -193,7 +194,7 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 16),
                           FilledButton.icon(
                             onPressed: _isSaving ? null : () => _save(profile),
                             icon: _isSaving
@@ -217,7 +218,7 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
           },
           error: (error, _) => Center(
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               child: Text(
                 error is AppException
                     ? error.code.localize(l10n)
@@ -368,23 +369,29 @@ class _GoalSectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Card(
-      color: highlighted ? colorScheme.primary.withValues(alpha: 0.06) : null,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: highlighted
-              ? colorScheme.primary.withValues(alpha: 0.28)
-              : colorScheme.outlineVariant.withValues(alpha: 0.4),
-        ),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(14),
+      tint: highlighted ? colorScheme.primary.withValues(alpha: 0.12) : null,
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
+            Row(
+              children: [
+                if (highlighted) ...[
+                  Icon(Icons.radio_button_checked, color: colorScheme.primary),
+                  const SizedBox(width: 8),
+                ],
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             child,
           ],
         ),

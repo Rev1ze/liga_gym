@@ -21,6 +21,7 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/domain/entities/user_profile.dart';
 import 'features/auth/presentation/providers/auth_providers.dart';
 import 'features/dashboard/presentation/providers/dashboard_providers.dart';
+import 'features/social/domain/entities/friend_request.dart';
 import 'features/social/presentation/providers/social_providers.dart';
 import 'features/steps/data/datasources/step_local_data_source.dart';
 import 'features/steps/data/models/daily_step_count_model.dart';
@@ -44,10 +45,14 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
   StreamSubscription<Map<String, dynamic>?>? _stepUpdateSubscription;
   StreamSubscription<StepCount>? _foregroundPedometerSubscription;
   ProviderSubscription<AsyncValue<UserProfile?>>? _profileSubscription;
+  ProviderSubscription<AsyncValue<List<FriendRequest>>>?
+  _friendRequestsSubscription;
   late final ConfettiController _confettiController;
   final StepLocalDataSource _stepLocalDataSource = SqfliteStepLocalDataSource();
   bool _isCelebrationOpen = false;
   String? _activeUserId;
+  Set<String> _knownIncomingFriendRequestIds = const <String>{};
+  bool _hasLoadedIncomingFriendRequests = false;
 
   @override
   void initState() {
@@ -64,6 +69,8 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
           .listen((user) async {
             final previousUserId = _activeUserId;
             _activeUserId = user?.uid;
+            _knownIncomingFriendRequestIds = const <String>{};
+            _hasLoadedIncomingFriendRequests = false;
             await ref
                 .read(stepTrackingServiceProvider)
                 .resetUserSession(
@@ -77,6 +84,7 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
             ref.invalidate(stepGoalProvider);
             ref.invalidate(stepGoalCelebrationPendingProvider);
             ref.invalidate(stepTrackingStatusProvider);
+            ref.invalidate(incomingFriendRequestsProvider);
 
             if (user == null) {
               unawaited(ref.read(stepTrackingServiceProvider).stopTracking());
@@ -129,6 +137,14 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
       },
     );
 
+    _friendRequestsSubscription = ref
+        .listenManual<AsyncValue<List<FriendRequest>>>(
+          incomingFriendRequestsProvider,
+          (_, next) {
+            next.whenData(_handleIncomingFriendRequests);
+          },
+        );
+
     if (isStepTrackingSupportedPlatform) {
       _stepUpdateSubscription = FlutterBackgroundService()
           .on(stepTrackingUpdateEvent)
@@ -162,6 +178,7 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
     _stepUpdateSubscription?.cancel();
     _foregroundPedometerSubscription?.cancel();
     _profileSubscription?.close();
+    _friendRequestsSubscription?.close();
     _confettiController.dispose();
     super.dispose();
   }
@@ -240,6 +257,49 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
         .read(stepScreenControllerProvider.notifier)
         .markGoalCelebrationSeen();
     _isCelebrationOpen = false;
+  }
+
+  void _handleIncomingFriendRequests(List<FriendRequest> requests) {
+    if (_activeUserId == null) {
+      _knownIncomingFriendRequestIds = const <String>{};
+      _hasLoadedIncomingFriendRequests = false;
+      return;
+    }
+
+    final requestIds = requests.map((request) => request.id).toSet();
+    if (!_hasLoadedIncomingFriendRequests) {
+      _knownIncomingFriendRequestIds = requestIds;
+      _hasLoadedIncomingFriendRequests = true;
+      return;
+    }
+
+    final newRequests = requests
+        .where(
+          (request) => !_knownIncomingFriendRequestIds.contains(request.id),
+        )
+        .toList(growable: false);
+    _knownIncomingFriendRequestIds = requestIds;
+    if (newRequests.isEmpty) {
+      return;
+    }
+
+    final context = _navigatorKey.currentContext;
+    final isRu = context == null
+        ? false
+        : Localizations.localeOf(context).languageCode == 'ru';
+    final newestRequest = newRequests.first;
+    final baseBody = isRu
+        ? 'Вам пришел запрос в друзья'
+        : 'You received a friend request';
+    final requesterName = newestRequest.fromDisplayName.trim();
+    final body = requesterName.isEmpty ? baseBody : '$baseBody: $requesterName';
+
+    unawaited(
+      AppNotificationService.showFriendRequestReceived(
+        title: 'Liga Gym',
+        body: body,
+      ),
+    );
   }
 
   Future<void> _startForegroundStepSync(String userId) async {
@@ -371,6 +431,7 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
     ref.invalidate(stepGoalProvider);
     ref.invalidate(stepGoalCelebrationPendingProvider);
     ref.invalidate(stepTrackingStatusProvider);
+    ref.invalidate(incomingFriendRequestsProvider);
 
     final profile = await ref.read(loadUserProfileUseCaseProvider).call(userId);
     await ref

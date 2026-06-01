@@ -4,7 +4,10 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/notifications/app_notification_service.dart';
 import '../../../../core/navigation/app_routes.dart';
+import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../coach/domain/entities/student_workout_assignment.dart';
+import '../../../coach/presentation/providers/coach_providers.dart';
 import '../../../dashboard/domain/entities/daily_profile_metrics.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/scheduled_workout.dart';
@@ -131,6 +134,7 @@ class _WorkoutListScreenState extends ConsumerState<WorkoutListScreen> {
     final l10n = AppLocalizations.of(context)!;
     final copy = _WorkoutPageCopy(l10n);
     final state = ref.watch(workoutListControllerProvider);
+    final assignedWorkoutsState = ref.watch(assignedTrainerWorkoutsProvider);
     final selectedDate =
         state.selectedDate ?? DateUtils.dateOnly(DateTime.now());
     final visibleMonth =
@@ -139,13 +143,13 @@ class _WorkoutListScreenState extends ConsumerState<WorkoutListScreen> {
         .where((plan) => DateUtils.isSameDay(plan.scheduledAt, selectedDate))
         .toList(growable: false);
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(title: Text(l10n.workoutListTitle)),
-      body: SafeArea(
+      child: SafeArea(
         child: RefreshIndicator(
           onRefresh: _loadUserWorkouts,
           child: ListView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(16),
             children: [
               _PrimaryActionsCard(
                 copy: copy,
@@ -156,7 +160,16 @@ class _WorkoutListScreenState extends ConsumerState<WorkoutListScreen> {
                 onOpenHistory: () =>
                     Navigator.of(context).pushNamed(AppRoutes.workoutHistory),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+              assignedWorkoutsState.when(
+                data: (assignments) => _TrainerAssignmentsCard(
+                  assignments: assignments,
+                  copy: copy,
+                ),
+                loading: () => const SkeletonCard(height: 120),
+                error: (_, _) => const SizedBox.shrink(),
+              ),
+              const SizedBox(height: 12),
               _WorkoutCalendarCard(
                 copy: copy,
                 selectedDate: selectedDate,
@@ -178,7 +191,7 @@ class _WorkoutListScreenState extends ConsumerState<WorkoutListScreen> {
                     .selectDate(date),
                 onOpenDaySummary: _showDaySummary,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _SelectedDayPlansCard(
                 copy: copy,
                 l10n: l10n,
@@ -219,9 +232,10 @@ class _PrimaryActionsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return GlassCard(
+      padding: const EdgeInsets.all(14),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -229,24 +243,77 @@ class _PrimaryActionsCard extends StatelessWidget {
               copy.actionsTitle,
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             FilledButton.icon(
               onPressed: onStartWorkout,
               icon: const Icon(Icons.play_arrow_rounded),
               label: Text(copy.startWorkoutButton),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             OutlinedButton.icon(
               onPressed: onPlanWorkout,
               icon: const Icon(Icons.add_task_rounded),
               label: Text(copy.workoutEntryButton(selectedDate)),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             OutlinedButton.icon(
               onPressed: onOpenHistory,
               icon: const Icon(Icons.format_list_bulleted_rounded),
               label: Text(copy.historyButton),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TrainerAssignmentsCard extends StatelessWidget {
+  const _TrainerAssignmentsCard({
+    required this.assignments,
+    required this.copy,
+  });
+
+  final List<StudentWorkoutAssignment> assignments;
+  final _WorkoutPageCopy copy;
+
+  @override
+  Widget build(BuildContext context) {
+    if (assignments.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return GlassCard(
+      padding: const EdgeInsets.all(14),
+      child: Padding(
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              copy.trainerAssignmentsTitle,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 10),
+            for (final assignment in assignments.take(4))
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.workspace_premium_rounded),
+                title: Text(assignment.title),
+                subtitle: Text(
+                  [
+                    DateFormat(
+                      'dd.MM.yyyy HH:mm',
+                    ).format(assignment.scheduledAt),
+                    if (assignment.goal.isNotEmpty) assignment.goal,
+                    if (assignment.instructions.isNotEmpty)
+                      assignment.instructions,
+                  ].join('\n'),
+                ),
+                isThreeLine:
+                    assignment.goal.isNotEmpty ||
+                    assignment.instructions.isNotEmpty,
+              ),
           ],
         ),
       ),
@@ -282,9 +349,10 @@ class _WorkoutCalendarCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final days = _buildCalendarDays(visibleMonth);
 
-    return Card(
+    return GlassCard(
+      padding: const EdgeInsets.all(14),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -312,7 +380,7 @@ class _WorkoutCalendarCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Row(
               children: copy.weekdays
                   .map(
@@ -326,14 +394,14 @@ class _WorkoutCalendarCard extends StatelessWidget {
                   )
                   .toList(),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 7,
-                mainAxisSpacing: 6,
-                crossAxisSpacing: 6,
+                mainAxisSpacing: 5,
+                crossAxisSpacing: 5,
               ),
               itemCount: days.length,
               itemBuilder: (context, index) {
@@ -359,7 +427,7 @@ class _WorkoutCalendarCard extends StatelessWidget {
                 );
               },
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Wrap(
               spacing: 16,
               runSpacing: 8,
@@ -492,9 +560,10 @@ class _SelectedDayPlansCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return GlassCard(
+      padding: const EdgeInsets.all(14),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -502,13 +571,13 @@ class _SelectedDayPlansCard extends StatelessWidget {
               copy.plansForDate(_formatWorkoutDate(selectedDate)),
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             OutlinedButton.icon(
               onPressed: onOpenDaySummary,
               icon: const Icon(Icons.calendar_month_rounded),
               label: Text(copy.daySummaryButton),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             if (isLoading)
               const Center(child: CircularProgressIndicator())
             else if (plans.isEmpty)
@@ -516,7 +585,7 @@ class _SelectedDayPlansCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(copy.noPlansForDate),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   OutlinedButton.icon(
                     onPressed: onPlanWorkout,
                     icon: const Icon(Icons.add_task_rounded),
@@ -1068,6 +1137,8 @@ class _WorkoutPageCopy {
       : const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   String get actionsTitle => _isRu ? 'Действия' : 'Actions';
+  String get trainerAssignmentsTitle =>
+      _isRu ? 'Тренировки от тренера' : 'Coach workouts';
   String get planWorkoutButton =>
       _isRu ? 'Запланировать тренировку' : 'Plan workout';
   String get addPastWorkoutButton =>

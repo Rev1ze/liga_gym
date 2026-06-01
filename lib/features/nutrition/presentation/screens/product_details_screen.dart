@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_keys.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/localization_extensions.dart';
+import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/food_entry_draft.dart';
@@ -72,16 +73,17 @@ class ProductDetailsScreen extends ConsumerWidget {
       (total, item) => total + item.macros,
     );
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(title: Text(l10n.productDetailsTitle)),
-      body: SafeArea(
+      child: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             if (!arguments.isMultiple) ...[
-              Card(
+              GlassCard(
+                padding: const EdgeInsets.all(14),
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.zero,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -89,13 +91,13 @@ class ProductDetailsScreen extends ConsumerWidget {
                         items.single.product.localizedName(languageCode),
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
                         l10n.productDetailsMeal(
                           arguments.mealType.localize(l10n),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
                         l10n.productDetailsPortion(
                           items.single.grams.toStringAsFixed(0),
@@ -116,9 +118,10 @@ class ProductDetailsScreen extends ConsumerWidget {
                 macros: items.single.macros,
               ),
             ] else ...[
-              Card(
+              GlassCard(
+                padding: const EdgeInsets.all(14),
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.zero,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -126,13 +129,13 @@ class ProductDetailsScreen extends ConsumerWidget {
                         l10n.productDetailsSelectedProductsTitle,
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
                         l10n.productDetailsMeal(
                           arguments.mealType.localize(l10n),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
                         l10n.productDetailsSelectedProductsCount(items.length),
                       ),
@@ -142,7 +145,8 @@ class ProductDetailsScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               for (final item in items) ...[
-                Card(
+                GlassCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
                     title: Text(item.product.localizedName(languageCode)),
                     subtitle: Text(
@@ -162,7 +166,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                 macros: totalMacros,
               ),
             ],
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             FilledButton(
               key: AppKeys.productDetailsSaveButton,
               onPressed: state.isLoading ? null : () => _save(context, ref),
@@ -197,21 +201,55 @@ class _MacrosCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
+    return GlassCard(
+      padding: const EdgeInsets.all(14),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            Text('${l10n.foodCalories}: ${macros.calories.toStringAsFixed(0)}'),
-            Text('${l10n.foodProteins}: ${macros.proteins.toStringAsFixed(1)}'),
-            Text('${l10n.foodFats}: ${macros.fats.toStringAsFixed(1)}'),
-            Text('${l10n.foodCarbs}: ${macros.carbs.toStringAsFixed(1)}'),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _MacroPill(
+                  label: l10n.foodCalories,
+                  value: macros.calories.toStringAsFixed(0),
+                ),
+                _MacroPill(
+                  label: l10n.foodProteins,
+                  value: macros.proteins.toStringAsFixed(1),
+                ),
+                _MacroPill(
+                  label: l10n.foodFats,
+                  value: macros.fats.toStringAsFixed(1),
+                ),
+                _MacroPill(
+                  label: l10n.foodCarbs,
+                  value: macros.carbs.toStringAsFixed(1),
+                ),
+              ],
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _MacroPill extends StatelessWidget {
+  const _MacroPill({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Chip(
+      avatar: const Icon(Icons.bolt_rounded, size: 16),
+      label: Text('$label: $value'),
     );
   }
 }

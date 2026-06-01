@@ -21,7 +21,18 @@ class SplashController extends _$SplashController {
       final authStatus = await ref
           .read(checkUserAuthStateUseCaseProvider)
           .call();
-      final route = mapAuthStatusToRoute(authStatus);
+      var route = mapAuthStatusToRoute(authStatus);
+      if (route == AppRoutes.dashboard) {
+        final currentUser = await ref.read(currentAuthUserProvider.future);
+        if (currentUser != null) {
+          final profile = await ref
+              .read(loadUserProfileUseCaseProvider)
+              .call(currentUser.id);
+          if (profile.isTrainer) {
+            route = AppRoutes.coachDashboard;
+          }
+        }
+      }
       state = AsyncData(route);
 
       return route;

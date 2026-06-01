@@ -57,6 +57,11 @@ abstract final class AppKeys {
   static const dashboardLeaderboardButton = ValueKey<String>(
     'dashboardLeaderboardButton',
   );
+  static const dashboardAiCoachButton = ValueKey<String>(
+    'dashboardAiCoachButton',
+  );
+  static const aiCoachMessageField = ValueKey<String>('aiCoachMessageField');
+  static const aiCoachSendButton = ValueKey<String>('aiCoachSendButton');
   static const chatMessageField = ValueKey<String>('chatMessageField');
   static const chatSendButton = ValueKey<String>('chatSendButton');
   static const foodDiaryAddButton = ValueKey<String>('foodDiaryAddButton');

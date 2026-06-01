@@ -9,6 +9,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/dashboard_analytics.dart';
 import '../providers/dashboard_providers.dart';
@@ -46,7 +47,7 @@ class _DashboardAnalyticsDetailsScreenState
       ),
     );
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(
         title: Text(l10n.dashboardAnalyticsRangeTitle),
         actions: [
@@ -66,17 +67,18 @@ class _DashboardAnalyticsDetailsScreenState
           ),
         ],
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1080),
             child: ListView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               children: [
-                Card(
+                GlassCard(
+                  padding: const EdgeInsets.all(14),
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.zero,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -84,10 +86,10 @@ class _DashboardAnalyticsDetailsScreenState
                           l10n.dashboardAnalyticsRangeSubtitle,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
+                          spacing: 10,
+                          runSpacing: 10,
                           children: [
                             OutlinedButton.icon(
                               onPressed: _pickStartDate,
@@ -105,7 +107,7 @@ class _DashboardAnalyticsDetailsScreenState
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         Text(
                           l10n.dashboardAnalyticsMaxRangeHint,
                           style: Theme.of(context).textTheme.bodyMedium
@@ -115,16 +117,16 @@ class _DashboardAnalyticsDetailsScreenState
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
                 analyticsState.when(
                   data: (analytics) => _AnalyticsDetailsContent(
                     analytics: analytics,
                     isExporting: _isExporting,
                     onExportPdf: () => _savePdf(analytics),
                   ),
-                  error: (_, _) => Card(
+                  error: (_, _) => GlassCard(
                     child: Padding(
-                      padding: const EdgeInsets.all(24),
+                      padding: EdgeInsets.zero,
                       child: Text(l10n.errorUnknown),
                     ),
                   ),
@@ -371,8 +373,8 @@ class _AnalyticsDetailsContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Wrap(
-          spacing: 16,
-          runSpacing: 16,
+          spacing: 10,
+          runSpacing: 10,
           children: [
             _DetailsMetricCard(
               title: l10n.dashboardAnalyticsWeeklySteps(
@@ -408,10 +410,11 @@ class _AnalyticsDetailsContent extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 20),
-        Card(
+        const SizedBox(height: 12),
+        GlassCard(
+          padding: const EdgeInsets.all(14),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.zero,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -419,11 +422,11 @@ class _AnalyticsDetailsContent extends StatelessWidget {
                   l10n.dashboardWeightTitle,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 if (analytics.weightAnalytics.hasData)
                   Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
                       if (analytics.weightAnalytics.periodStartWeightKg != null)
                         _ResultPill(
@@ -476,10 +479,11 @@ class _AnalyticsDetailsContent extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 20),
-        Card(
+        const SizedBox(height: 12),
+        GlassCard(
+          padding: const EdgeInsets.all(14),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.zero,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -487,7 +491,7 @@ class _AnalyticsDetailsContent extends StatelessWidget {
                   l10n.dashboardAnalyticsResultsByDay,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Column(
                   children: analytics.stats.days
                       .map((day) => _AnalyticsDayTile(day: day))
@@ -497,7 +501,7 @@ class _AnalyticsDetailsContent extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 12),
         FilledButton.icon(
           onPressed: isExporting ? null : onExportPdf,
           icon: isExporting
@@ -536,23 +540,28 @@ class _DetailsMetricCard extends StatelessWidget {
 
     return SizedBox(
       width: cardWidth,
-      child: Card(
+      child: GlassCard(
+        padding: const EdgeInsets.all(14),
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.zero,
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 26,
-                backgroundColor: color.withValues(alpha: 0.14),
-                child: Icon(icon, color: color),
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: color, size: 22),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title, style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Text(
                       subtitle,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -580,10 +589,10 @@ class _ResultPill extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         child: Text(label),
       ),
     );
@@ -601,14 +610,14 @@ class _AnalyticsDayTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 10),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Row(
             children: [
               Expanded(child: Text(formatLocalizedDate(day.date, locale))),

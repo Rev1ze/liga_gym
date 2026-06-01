@@ -38,7 +38,7 @@ class TodayOverviewScreen extends ConsumerWidget {
             constraints: const BoxConstraints(maxWidth: 1080),
             child: ListView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               children: [
                 Text(
                   l10n.todayOverviewSubtitle,
@@ -46,7 +46,7 @@ class TodayOverviewScreen extends ConsumerWidget {
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ).premiumEntrance(),
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
                 analyticsState.when(
                   data: (analytics) {
                     final today = analytics.weeklyStats.today;
@@ -84,7 +84,7 @@ class TodayOverviewScreen extends ConsumerWidget {
                             ],
                           ),
                         ).premiumEntrance(delayMs: 80),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 12),
                         Wrap(
                           spacing: 12,
                           runSpacing: 12,
@@ -146,7 +146,7 @@ class TodayOverviewScreen extends ConsumerWidget {
                             ),
                           ],
                         ).premiumEntrance(delayMs: 140),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 12),
                         GlassCard(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +155,7 @@ class TodayOverviewScreen extends ConsumerWidget {
                                 title: l10n.dashboardNutritionTitle,
                                 subtitle: 'Macro balance for today',
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 12),
                               Wrap(
                                 spacing: 12,
                                 runSpacing: 12,
@@ -176,7 +176,7 @@ class TodayOverviewScreen extends ConsumerWidget {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 10),
                               HeatmapStrip(
                                 values: [
                                   (analytics.proteins / 140)
@@ -196,7 +196,7 @@ class TodayOverviewScreen extends ConsumerWidget {
                     );
                   },
                   error: (_, _) => Center(child: Text(l10n.errorUnknown)),
-                  loading: () => const SkeletonCard(height: 280),
+                  loading: () => const SkeletonCard(height: 220),
                 ),
               ],
             ),

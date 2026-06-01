@@ -32,6 +32,28 @@ void main() {
       },
     );
 
+    test('returns coach dashboard route for a trainer profile', () async {
+      final repository = InMemoryAuthRepository()
+        ..seedUser(
+          email: 'coach@ligagym.dev',
+          password: 'password123',
+          hasProfile: true,
+          role: 'trainer',
+        );
+      final container = ProviderContainer(
+        overrides: [authRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+      addTearDown(repository.dispose);
+
+      final route = await container
+          .read(authActionControllerProvider.notifier)
+          .loginWithEmail(email: 'coach@ligagym.dev', password: 'password123');
+
+      expect(route, AppRoutes.coachDashboard);
+      expect(container.read(authActionControllerProvider).hasError, isFalse);
+    });
+
     test('returns profile setup route after registering a new user', () async {
       final repository = InMemoryAuthRepository();
       final container = ProviderContainer(

@@ -39,8 +39,8 @@ class LigaPremiumScaffold extends StatelessWidget {
 class GlassCard extends StatelessWidget {
   const GlassCard({
     required this.child,
-    this.padding = const EdgeInsets.all(20),
-    this.borderRadius = 28,
+    this.padding = const EdgeInsets.all(16),
+    this.borderRadius = 18,
     this.tint,
     this.onTap,
     this.heroTag,
@@ -77,20 +77,22 @@ class GlassCard extends StatelessWidget {
           ),
           border: Border.all(
             color: isDark
-                ? Colors.white.withValues(alpha: 0.1)
-                : colorScheme.outlineVariant.withValues(alpha: 0.55),
+                ? Colors.white.withValues(alpha: 0.08)
+                : colorScheme.outlineVariant.withValues(alpha: 0.62),
           ),
           boxShadow: [
             BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: isDark ? 0.22 : 0.06),
-              blurRadius: isDark ? 28 : 18,
-              offset: const Offset(0, 14),
+              color: colorScheme.shadow.withValues(
+                alpha: isDark ? 0.18 : 0.045,
+              ),
+              blurRadius: isDark ? 22 : 14,
+              offset: const Offset(0, 10),
             ),
             if (isDark)
               BoxShadow(
-                color: colorScheme.primary.withValues(alpha: 0.05),
-                blurRadius: 24,
-                offset: const Offset(0, -6),
+                color: colorScheme.primary.withValues(alpha: 0.035),
+                blurRadius: 18,
+                offset: const Offset(0, -4),
               ),
           ],
         ),
@@ -203,12 +205,14 @@ class SectionHeader extends StatelessWidget {
                 title,
                 style: Theme.of(
                   context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
               ),
               if (subtitle != null) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   subtitle!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -249,46 +253,48 @@ class KineticMetricCard extends StatelessWidget {
 
     return GlassCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(12),
                   gradient: RadialGradient(
                     colors: [
                       color.withValues(alpha: 0.95),
                       color.withValues(alpha: 0.14),
                     ],
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: color.withValues(alpha: isDark ? 0.24 : 0.12),
-                      blurRadius: isDark ? 18 : 10,
-                    ),
-                  ],
+                  boxShadow: isDark
+                      ? [
+                          BoxShadow(
+                            color: color.withValues(alpha: 0.18),
+                            blurRadius: 12,
+                          ),
+                        ]
+                      : null,
                 ),
-                child: Icon(icon, color: Colors.white, size: 22),
+                child: Icon(icon, color: Colors.white, size: 20),
               ),
               const Spacer(),
               if (progress != null)
                 SizedBox.square(
-                  dimension: 42,
+                  dimension: 38,
                   child: AnimatedProgressRing(
                     progress: progress!,
                     color: color,
-                    strokeWidth: 5,
+                    strokeWidth: 4,
                     child: const SizedBox.shrink(),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 13),
           Text(
             value,
             maxLines: 1,
@@ -297,7 +303,7 @@ class KineticMetricCard extends StatelessWidget {
               context,
             ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             label,
             maxLines: 1,
@@ -308,7 +314,7 @@ class KineticMetricCard extends StatelessWidget {
             ),
           ),
           if (subtitle != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               subtitle!,
               maxLines: 2,
@@ -436,9 +442,9 @@ class HeatmapStrip extends StatelessWidget {
               curve: LigaMotion.easeOut,
               builder: (context, value, _) {
                 return Container(
-                  height: 42,
+                  height: 32,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
@@ -468,7 +474,7 @@ class HeatmapStrip extends StatelessWidget {
 }
 
 class SkeletonCard extends StatelessWidget {
-  const SkeletonCard({this.height = 160, super.key});
+  const SkeletonCard({this.height = 132, super.key});
 
   final double height;
 
@@ -481,7 +487,7 @@ class SkeletonCard extends StatelessWidget {
         height: height,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(14),
             gradient: LinearGradient(
               colors: [
                 colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
@@ -505,7 +511,7 @@ extension PremiumEntrance on Widget {
           curve: LigaMotion.easeOut,
         )
         .slideY(
-          begin: 0.08,
+          begin: 0.045,
           end: 0,
           delay: Duration(milliseconds: delayMs),
           duration: LigaMotion.medium,

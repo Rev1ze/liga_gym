@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_keys.dart';
 import '../../../../core/constants/russian_cities.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/providers/app_theme_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_formatter.dart';
@@ -13,11 +14,14 @@ import '../../../../core/utils/localization_extensions.dart';
 import '../../../../core/widgets/app_language_switcher.dart';
 import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../coach/domain/entities/coach_request.dart';
+import '../../../coach/presentation/providers/coach_providers.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/gender.dart';
 import '../../domain/entities/user_goal.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/entities/user_profile_update_data.dart';
+import '../controllers/auth_action_controller.dart';
 import '../providers/auth_providers.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -59,6 +63,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final profileState = ref.watch(currentUserProfileProvider);
+    final isSigningOut = ref.watch(authActionControllerProvider).isLoading;
 
     return LigaPremiumScaffold(
       appBar: AppBar(title: Text(l10n.profileScreenTitle)),
@@ -76,7 +81,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 920),
                 child: ListView(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(16),
                   children: [
                     Text(
                       l10n.profileScreenSubtitle,
@@ -84,15 +89,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         color: Theme.of(context).hintColor,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     _ProfileOverviewCard(profile: profile),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     const _TodayProfileMetricsCard(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     const _LanguagePickerCard(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     const _ThemePickerCard(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
+                    const _IncomingCoachRequestsCard(),
+                    const SizedBox(height: 12),
+                    _AccountActionsCard(
+                      isBusy: isSigningOut,
+                      onSignOut: () => _handleSignOut(context),
+                    ),
+                    const SizedBox(height: 12),
                     Form(
                       key: _formKey,
                       child: Column(
@@ -115,7 +127,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     return errorCode?.localize(l10n);
                                   },
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
                                 DropdownButtonFormField<Gender>(
                                   initialValue: _selectedGender,
                                   decoration: InputDecoration(
@@ -144,7 +156,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                         : null;
                                   },
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
                                 TextFormField(
                                   controller: _birthDateController,
                                   readOnly: true,
@@ -163,7 +175,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     return errorCode?.localize(l10n);
                                   },
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
                                 DropdownButtonFormField<String>(
                                   initialValue: _selectedCity,
                                   decoration: InputDecoration(
@@ -185,7 +197,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                           });
                                         },
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
                                 TextFormField(
                                   controller: _friendCodeController,
                                   autovalidateMode:
@@ -237,7 +249,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
                           _SectionCard(
                             title: l10n.profileBodySection,
                             child: Column(
@@ -248,7 +260,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   validatorMessage:
                                       l10n.validationInvalidHeight,
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
                                 _DecimalFormField(
                                   controller: _currentWeightController,
                                   label: l10n.profileCurrentWeight,
@@ -257,14 +269,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 ),
                                 if (profile.goalType !=
                                     UserGoalType.maintainWeight) ...[
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 12),
                                   _DecimalFormField(
                                     controller: _startWeightController,
                                     label: l10n.profileStartWeight,
                                     validatorMessage:
                                         l10n.validationInvalidCurrentWeight,
                                   ),
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 12),
                                   _DecimalFormField(
                                     controller: _targetWeightController,
                                     label: l10n.profileTargetWeight,
@@ -275,7 +287,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 16),
                           FilledButton.icon(
                             onPressed: _isSaving
                                 ? null
@@ -301,7 +313,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           },
           error: (error, _) => Center(
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               child: Text(_profileErrorMessage(error, l10n)),
             ),
           ),
@@ -404,6 +416,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
+  Future<void> _handleSignOut(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    try {
+      await ref.read(authActionControllerProvider.notifier).signOut();
+      if (!context.mounted) {
+        return;
+      }
+
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+    } on AppException catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.code.localize(l10n))));
+    }
+  }
+
   void _populateFormIfNeeded(UserProfile profile) {
     if (_didPopulateForm) {
       return;
@@ -494,10 +529,10 @@ class _TodayProfileMetricsCard extends ConsumerWidget {
                   color: Theme.of(context).hintColor,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Wrap(
-                spacing: 12,
-                runSpacing: 12,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   _OverviewPill(
                     icon: Icons.directions_walk_outlined,
@@ -638,7 +673,7 @@ class _LanguagePickerCard extends StatelessWidget {
               color: Theme.of(context).hintColor,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           const AppLanguageSwitcher(),
         ],
       ),
@@ -668,7 +703,7 @@ class _ThemePickerCard extends ConsumerWidget {
               color: Theme.of(context).hintColor,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth >= 640;
@@ -691,7 +726,7 @@ class _ThemePickerCard extends ConsumerWidget {
                   children: [
                     for (final child in children) ...[
                       child,
-                      if (child != children.last) const SizedBox(height: 12),
+                      if (child != children.last) const SizedBox(height: 10),
                     ],
                   ],
                 );
@@ -702,7 +737,7 @@ class _ThemePickerCard extends ConsumerWidget {
                 children: [
                   for (final child in children) ...[
                     Expanded(child: child),
-                    if (child != children.last) const SizedBox(width: 12),
+                    if (child != children.last) const SizedBox(width: 10),
                   ],
                 ],
               );
@@ -743,12 +778,12 @@ class _ThemeOptionTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 240),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: isSelected
                 ? colorScheme.primary.withValues(alpha: 0.10)
@@ -782,14 +817,14 @@ class _ThemeOptionTile extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               Text(
                 palette.name(locale),
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Text(
                 palette.description(locale),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -812,15 +847,122 @@ class _ThemeSwatch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 24,
-      height: 24,
+      width: 20,
+      height: 20,
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(
           color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.18),
         ),
       ),
+    );
+  }
+}
+
+class _AccountActionsCard extends StatelessWidget {
+  const _AccountActionsCard({required this.isBusy, required this.onSignOut});
+
+  final bool isBusy;
+  final VoidCallback onSignOut;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isRu = Localizations.localeOf(context).languageCode == 'ru';
+
+    return _SectionCard(
+      title: isRu ? 'Аккаунт' : 'Account',
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: OutlinedButton.icon(
+          key: AppKeys.signOutButton,
+          onPressed: isBusy ? null : onSignOut,
+          icon: isBusy
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.logout_rounded),
+          label: Text(l10n.dashboardSignOut),
+        ),
+      ),
+    );
+  }
+}
+
+class _IncomingCoachRequestsCard extends ConsumerWidget {
+  const _IncomingCoachRequestsCard();
+
+  Future<void> _accept(WidgetRef ref, CoachRequest request) async {
+    await ref
+        .read(coachRepositoryProvider)
+        .acceptCoachRequest(
+          requestId: request.id,
+          studentId: request.studentId,
+        );
+    ref.invalidate(incomingCoachRequestsProvider);
+  }
+
+  Future<void> _decline(WidgetRef ref, CoachRequest request) async {
+    await ref
+        .read(coachRepositoryProvider)
+        .declineCoachRequest(
+          requestId: request.id,
+          studentId: request.studentId,
+        );
+    ref.invalidate(incomingCoachRequestsProvider);
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final requestsState = ref.watch(incomingCoachRequestsProvider);
+    final isRu = Localizations.localeOf(context).languageCode == 'ru';
+
+    return requestsState.when(
+      data: (requests) {
+        if (requests.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return _SectionCard(
+          title: isRu ? 'Приглашения от тренеров' : 'Coach invitations',
+          child: Column(
+            children: [
+              for (final request in requests)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.workspace_premium_rounded),
+                  title: Text(request.trainerName),
+                  subtitle: Text(
+                    request.trainerEmail.isEmpty
+                        ? (isRu
+                              ? 'Хочет стать вашим тренером'
+                              : 'Wants to become your coach')
+                        : request.trainerEmail,
+                  ),
+                  trailing: Wrap(
+                    spacing: 4,
+                    children: [
+                      IconButton(
+                        tooltip: isRu ? 'Отклонить' : 'Decline',
+                        onPressed: () => _decline(ref, request),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                      IconButton(
+                        tooltip: isRu ? 'Принять' : 'Accept',
+                        onPressed: () => _accept(ref, request),
+                        icon: const Icon(Icons.check_rounded),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }
@@ -863,7 +1005,7 @@ class _OverviewPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -886,11 +1028,12 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GlassCard(
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(title, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 16),
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
           child,
         ],
       ),

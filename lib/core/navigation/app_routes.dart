@@ -5,12 +5,16 @@ abstract final class AppRoutes {
   static const profileSetup = '/profile-setup';
   static const profile = '/profile';
   static const dashboard = '/dashboard';
+  static const aiCoach = '/ai/fitness-coach';
+  static const coachDashboard = '/coach';
   static const todayOverview = '/dashboard/today-overview';
   static const goalSettings = '/dashboard/goal-settings';
   static const dashboardAnalyticsDetails = '/dashboard/analytics-details';
   static const chat = '/social/chat';
   static const chatRoom = '/social/chat-room';
   static const friends = '/social/friends';
+  static const trainerMaterials = '/social/trainer-materials';
+  static const trainerMaterialDetails = '/social/trainer-material-details';
   static const leaderboard = friends;
   static const workoutList = '/workouts';
   static const workoutHistory = '/workouts/history';

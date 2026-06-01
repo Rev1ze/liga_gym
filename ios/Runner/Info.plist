@@ -28,6 +28,8 @@
 	<string>Liga Gym uses your location to show a live workout map and save your route.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Liga Gym uses your location to show a live workout map and save your route.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Liga Gym lets coaches attach training photos and videos from the gallery.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

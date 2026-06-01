@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liga_gym_app/core/constants/app_keys.dart';
 import 'package:liga_gym_app/core/navigation/app_router.dart';
+import 'package:liga_gym_app/features/coach/domain/entities/trainer_recipe.dart';
+import 'package:liga_gym_app/features/coach/presentation/providers/coach_providers.dart';
 import 'package:liga_gym_app/features/nutrition/domain/entities/food_macros.dart';
 import 'package:liga_gym_app/features/nutrition/domain/entities/food_product.dart';
 import 'package:liga_gym_app/features/nutrition/presentation/providers/nutrition_providers.dart';
@@ -145,6 +147,82 @@ void main() {
       expect(find.text('Selected products: 2'), findsOneWidget);
       expect(find.text('Greek Yogurt'), findsOneWidget);
       expect(find.text('Oatmeal'), findsOneWidget);
+
+      await authRepository.dispose();
+    });
+
+    testWidgets('разделяет мои блюда и блюда тренера в быстром доступе', (
+      tester,
+    ) async {
+      final authRepository = InMemoryAuthRepository();
+      final nutritionRepository = InMemoryNutritionRepository();
+      const savedProduct = FoodProduct(
+        id: 'my-rice',
+        nameEn: 'Rice',
+        nameRu: 'Рис',
+        macrosPer100Grams: FoodMacros(
+          calories: 130,
+          proteins: 2.7,
+          fats: 0.3,
+          carbs: 28,
+        ),
+      );
+      final trainerRecipe = TrainerRecipe(
+        id: 'coach-chicken',
+        nameEn: 'Coach Chicken',
+        nameRu: 'Курица тренера',
+        macrosPer100Grams: const FoodMacros(
+          calories: 165,
+          proteins: 31,
+          fats: 3.6,
+          carbs: 0,
+        ),
+        trainerId: 'trainer-1',
+        trainerName: 'Coach',
+        description: 'Dinner',
+        ingredientsText: 'Chicken',
+        proportionsText: '200 g chicken',
+        guideText: 'Bake until ready',
+        videoUrl: '',
+        media: const [],
+        servingGrams: 200,
+        createdAt: DateTime(2026, 5, 26),
+      );
+
+      await tester.pumpWidget(
+        buildTestApp(
+          repository: authRepository,
+          overrides: [
+            nutritionRepositoryProvider.overrideWithValue(nutritionRepository),
+            savedFoodProductsProvider.overrideWith(
+              (ref) async => const [savedProduct],
+            ),
+            assignedTrainerRecipesProvider.overrideWith(
+              (ref) async => [trainerRecipe],
+            ),
+          ],
+          onGenerateRoute: AppRouter.onGenerateRoute,
+          home: AddFoodScreen(
+            arguments: AddFoodRouteArguments(date: DateTime(2026, 4, 9)),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Quick access'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Rice'), findsOneWidget);
+      expect(find.text('Coach Chicken'), findsOneWidget);
+
+      await tester.tap(find.text('Мои'));
+      await tester.pumpAndSettle();
+      expect(find.text('Rice'), findsOneWidget);
+      expect(find.text('Coach Chicken'), findsNothing);
+
+      await tester.tap(find.text('От тренера'));
+      await tester.pumpAndSettle();
+      expect(find.text('Rice'), findsNothing);
+      expect(find.text('Coach Chicken'), findsOneWidget);
 
       await authRepository.dispose();
     });

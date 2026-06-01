@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/navigation/app_routes.dart';
+import '../../domain/entities/auth_status.dart';
 import '../../domain/entities/gender.dart';
 import '../providers/auth_providers.dart';
 import '../utils/auth_status_route_mapper.dart';
@@ -26,7 +28,7 @@ class AuthActionController extends _$AuthActionController {
           .call(email: email, password: password);
 
       state = const AsyncData(null);
-      return mapAuthStatusToRoute(authStatus);
+      return _mapAuthStatusToRoleAwareRoute(authStatus);
     } on AppException catch (error, stackTrace) {
       state = AsyncError(error, stackTrace);
       rethrow;
@@ -40,7 +42,7 @@ class AuthActionController extends _$AuthActionController {
       final authStatus = await ref.read(signInWithGoogleUseCaseProvider).call();
 
       state = const AsyncData(null);
-      return mapAuthStatusToRoute(authStatus);
+      return _mapAuthStatusToRoleAwareRoute(authStatus);
     } on AppException catch (error, stackTrace) {
       state = AsyncError(error, stackTrace);
       rethrow;
@@ -79,7 +81,7 @@ class AuthActionController extends _$AuthActionController {
           .call(name: name, gender: gender, birthDate: birthDate);
 
       state = const AsyncData(null);
-      return mapAuthStatusToRoute(authStatus);
+      return _mapAuthStatusToRoleAwareRoute(authStatus);
     } on AppException catch (error, stackTrace) {
       state = AsyncError(error, stackTrace);
       rethrow;
@@ -96,5 +98,22 @@ class AuthActionController extends _$AuthActionController {
       state = AsyncError(error, stackTrace);
       rethrow;
     }
+  }
+
+  Future<String> _mapAuthStatusToRoleAwareRoute(AuthStatus authStatus) async {
+    final route = mapAuthStatusToRoute(authStatus);
+    if (route != AppRoutes.dashboard) {
+      return route;
+    }
+
+    final currentUser = await ref.read(authRepositoryProvider).getCurrentUser();
+    if (currentUser == null) {
+      return route;
+    }
+
+    final profile = await ref
+        .read(loadUserProfileUseCaseProvider)
+        .call(currentUser.id);
+    return profile.isTrainer ? AppRoutes.coachDashboard : route;
   }
 }
