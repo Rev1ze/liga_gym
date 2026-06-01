@@ -72,17 +72,17 @@ class _StepCounterScreenState extends ConsumerState<StepCounterScreen> {
         child: Center(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 560),
               child: todayStepsState.when(
                 data: (steps) => goalState.when(
                   data: (goal) =>
                       _StepProgressContent(steps: steps, goal: goal),
-                  loading: () => const SkeletonCard(height: 360),
+                  loading: () => const SkeletonCard(height: 300),
                   error: (_, _) => Text(l10n.errorUnknown),
                 ),
-                loading: () => const SkeletonCard(height: 360),
+                loading: () => const SkeletonCard(height: 300),
                 error: (_, _) => Text(l10n.errorUnknown),
               ),
             ),
@@ -113,21 +113,21 @@ class _StepProgressContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         GlassCard(
-          borderRadius: 36,
-          tint: accent.withValues(alpha: 0.16),
+          borderRadius: 22,
+          tint: accent.withValues(alpha: 0.13),
           child: Column(
             children: [
               SectionHeader(
                 title: l10n.stepCounterToday,
                 subtitle: l10n.stepCounterTodayHint,
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 20),
               SizedBox.square(
-                dimension: 260,
+                dimension: 220,
                 child: AnimatedProgressRing(
                   progress: progress,
                   color: accent,
-                  strokeWidth: 16,
+                  strokeWidth: 12,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -135,10 +135,10 @@ class _StepProgressContent extends StatelessWidget {
                         isGoalReached
                             ? Icons.emoji_events_rounded
                             : Icons.directions_walk_rounded,
-                        size: 36,
+                        size: 30,
                         color: accent,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
                       TweenAnimationBuilder<double>(
                         tween: Tween<double>(begin: 0, end: steps.toDouble()),
                         duration: LigaMotion.slow,
@@ -151,7 +151,7 @@ class _StepProgressContent extends StatelessWidget {
                           );
                         },
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
                         l10n.stepCounterGoal(goal.toString()),
                         style: Theme.of(context).textTheme.titleMedium
@@ -161,7 +161,7 @@ class _StepProgressContent extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 16),
               Text(
                 isGoalReached
                     ? l10n.stepGoalReachedInline
@@ -174,7 +174,7 @@ class _StepProgressContent extends StatelessWidget {
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 12),
               HeatmapStrip(
                 values: const [0.52, 0.76, 0.31, 0.84, 0.64, 0.93, 0.71],
                 color: accent,

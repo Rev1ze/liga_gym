@@ -5,6 +5,7 @@ import '../../../../core/constants/app_keys.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/utils/localization_extensions.dart';
+import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
 import '../../domain/entities/workout_save_status.dart';
@@ -63,24 +64,25 @@ class WorkoutResultScreen extends ConsumerWidget {
     final workout = state.completedWorkout;
 
     if (workout == null) {
-      return Scaffold(
+      return LigaPremiumScaffold(
         appBar: AppBar(title: Text(l10n.workoutResultTitle)),
-        body: Center(child: Text(l10n.workoutNoResult)),
+        child: Center(child: Text(l10n.workoutNoResult)),
       );
     }
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(title: Text(l10n.workoutResultTitle)),
-      body: SafeArea(
+      child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 560),
               child: SingleChildScrollView(
-                child: Card(
+                child: GlassCard(
+                  padding: const EdgeInsets.all(16),
                   child: Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.zero,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -90,22 +92,22 @@ class WorkoutResultScreen extends ConsumerWidget {
                           style: Theme.of(context).textTheme.bodyLarge,
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
                         _ResultRow(
                           label: l10n.workoutMetricDuration,
                           value: formatWorkoutDuration(workout.duration),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         _ResultRow(
                           label: l10n.workoutMetricCalories,
                           value: formatWorkoutCalories(workout.calories),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         _ResultRow(
                           label: l10n.workoutMetricDistance,
                           value: formatWorkoutDistance(workout.distanceMeters),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
                         Text(
                           l10n.workoutRouteMapTitle,
                           style: Theme.of(context).textTheme.titleMedium,
@@ -117,7 +119,7 @@ class WorkoutResultScreen extends ConsumerWidget {
                           fullscreenTooltip: l10n.workoutRouteFullscreen,
                           fullscreenTitle: l10n.workoutRouteMapTitle,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         OutlinedButton.icon(
                           onPressed: workout.route.isEmpty
                               ? null
@@ -131,7 +133,7 @@ class WorkoutResultScreen extends ConsumerWidget {
                           icon: const Icon(Icons.ios_share_rounded),
                           label: Text(l10n.workoutRouteShare),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         FilledButton.icon(
                           key: AppKeys.workoutResultSaveButton,
                           onPressed: state.status == WorkoutSessionStatus.saving

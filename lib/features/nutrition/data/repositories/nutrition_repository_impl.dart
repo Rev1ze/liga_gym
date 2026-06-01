@@ -105,7 +105,9 @@ class NutritionRepositoryImpl implements NutritionRepository {
     }
 
     try {
-      await saveSavedProduct(userId: userId, product: draft.product);
+      if (!draft.product.isTrainerProvided) {
+        await saveSavedProduct(userId: userId, product: draft.product);
+      }
     } catch (_) {
       // The diary entry should stay saved even if quick access refresh fails.
     }

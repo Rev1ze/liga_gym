@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/utils/localization_extensions.dart';
+import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../domain/entities/friend_profile.dart';
@@ -81,7 +82,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final l10n = AppLocalizations.of(context)!;
     final friendsState = ref.watch(friendsProvider);
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(
         title: Text(l10n.chatDirectoryTitle),
         bottom: PreferredSize(
@@ -117,7 +118,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
         ),
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: friendsState.when(
           data: (friends) {
             final filteredFriends = _filterFriends(friends);
@@ -150,7 +151,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 : l10n.errorUnknown;
             return Center(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(16),
                 child: Text(message, textAlign: TextAlign.center),
               ),
             );
@@ -192,7 +193,7 @@ class _EmptyFriendChats extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -242,7 +243,8 @@ class _FriendChatTile extends StatelessWidget {
       isRu ? 'Личный чат' : 'Private chat',
     ].join(' - ');
 
-    return Card(
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: ListTile(
         onTap: isOpening ? null : onTap,
         leading: CircleAvatar(child: Text(_avatarLabel(friend.displayName))),

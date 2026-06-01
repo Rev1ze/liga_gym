@@ -77,7 +77,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         child: SafeArea(
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               child: FadeTransition(
                 opacity: CurvedAnimation(
                   parent: _introController,
@@ -106,8 +106,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                               color: colorScheme.primary.withValues(
                                 alpha: 0.22,
                               ),
-                              blurRadius: 20,
-                              offset: const Offset(0, 12),
+                              blurRadius: 14,
+                              offset: const Offset(0, 8),
                             ),
                           ],
                         ),
@@ -115,8 +115,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           padding: const EdgeInsets.all(14),
                           child: ThemedLigaLogo(
                             key: AppKeys.splashLogo,
-                            width: 180,
-                            height: 180,
+                            width: 156,
+                            height: 156,
                             repeat: true,
                           ),
                         ),

@@ -1371,10 +1371,10 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
     if (error is FirebaseException) {
       return switch (error.code) {
         'permission-denied' => const SocialException(
-          AppErrorCode.firebaseConfigurationMissing,
+          AppErrorCode.firestoreConfigurationError,
         ),
         'failed-precondition' => const SocialException(
-          AppErrorCode.firebaseConfigurationMissing,
+          AppErrorCode.firestoreConfigurationError,
         ),
         'unavailable' => SocialException(fallbackCode),
         _ => SocialException(fallbackCode),

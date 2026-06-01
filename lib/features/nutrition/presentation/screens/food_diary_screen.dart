@@ -120,7 +120,7 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
               .read(foodDiaryControllerProvider.notifier)
               .loadDailyFoodEntries(state.selectedDate),
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
               if (isToday) ...[
                 profileState.when(
@@ -136,9 +136,9 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
                     );
                   },
                   error: (_, _) => const SizedBox.shrink(),
-                  loading: () => const SkeletonCard(height: 148),
+                  loading: () => const SkeletonCard(height: 118),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
               ],
               GlassCard(
                 tint: Theme.of(
@@ -154,9 +154,9 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
                       ),
                       subtitle: 'Adaptive nutrition load',
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     _MacrosSummary(macros: totalMacros),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 10),
                     HeatmapStrip(
                       values: [
                         (totalMacros.proteins / 140).clamp(0, 1).toDouble(),
@@ -170,7 +170,7 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
                 ),
               ).premiumEntrance(),
               if (state.errorCode != null) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 GlassCard(
                   tint: Theme.of(context).colorScheme.errorContainer,
                   child: Text(
@@ -181,8 +181,8 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
                   ),
                 ),
               ],
-              const SizedBox(height: 16),
-              if (state.isLoading) const SkeletonCard(height: 120),
+              const SizedBox(height: 12),
+              if (state.isLoading) const SkeletonCard(height: 104),
               for (final mealType in MealType.values) ...[
                 _MealSectionCard(
                   mealType: mealType,
@@ -190,7 +190,7 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
                   macros: state.diary.mealMacros(mealType),
                   onAddPressed: () => _openAddFood(mealType),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
               ],
             ],
           ),
@@ -303,7 +303,7 @@ class _TodayWeightCard extends StatelessWidget {
             title: l10n.foodDiaryTodayWeightTitle,
             subtitle: l10n.foodDiaryTodayWeightSubtitle,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -322,7 +322,7 @@ class _TodayWeightCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               FilledButton(
                 key: AppKeys.foodDiaryWeightSaveButton,
                 onPressed: isSaving ? null : onSave,
@@ -361,8 +361,8 @@ class _MealSectionCard extends StatelessWidget {
     final languageCode = Localizations.localeOf(context).languageCode;
 
     return GlassCard(
-      borderRadius: 24,
-      padding: const EdgeInsets.all(16),
+      borderRadius: 16,
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -383,9 +383,9 @@ class _MealSectionCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           _MacrosSummary(macros: macros),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           if (entries.isEmpty)
             Text(
               l10n.foodDiaryEmptySection,
@@ -405,9 +405,10 @@ class _MealSectionCard extends StatelessWidget {
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 2,
+                    horizontal: 10,
+                    vertical: 0,
                   ),
+                  dense: true,
                   title: Text(entry.localizedName(languageCode)),
                   subtitle: Text(
                     l10n.foodDiaryEntrySubtitle(
@@ -444,7 +445,7 @@ class _MacrosSummary extends StatelessWidget {
 
     return Wrap(
       spacing: 12,
-      runSpacing: 12,
+      runSpacing: 8,
       children: [
         _MacroChip(
           label: l10n.foodCalories,

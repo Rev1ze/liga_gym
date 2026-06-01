@@ -20,6 +20,11 @@ class AppNotificationService {
   static const String workoutReminderChannelName = 'Workout reminders';
   static const String workoutReminderChannelDescription =
       'Notifications before planned workouts';
+  static const String friendRequestChannelId = 'friend_request_channel';
+  static const String friendRequestChannelName = 'Friend requests';
+  static const String friendRequestChannelDescription =
+      'Notifications when a friend request arrives';
+  static const int friendRequestNotificationId = 3001;
   static const Duration workoutReminderLeadTime = Duration(hours: 1);
   static bool _timeZoneConfigured = false;
 
@@ -67,6 +72,16 @@ class AppNotificationService {
       ),
     );
     await _ignoreMissingPlugin(
+      () => androidPlugin?.createNotificationChannel(
+        const AndroidNotificationChannel(
+          friendRequestChannelId,
+          friendRequestChannelName,
+          description: friendRequestChannelDescription,
+          importance: Importance.high,
+        ),
+      ),
+    );
+    await _ignoreMissingPlugin(
       () => _plugin
           .resolvePlatformSpecificImplementation<
             IOSFlutterLocalNotificationsPlugin
@@ -102,6 +117,30 @@ class AppNotificationService {
           priority: Priority.high,
         ),
       ),
+    );
+  }
+
+  static Future<void> showFriendRequestReceived({
+    required String title,
+    required String body,
+  }) async {
+    await initialize();
+    await _plugin.show(
+      friendRequestNotificationId,
+      title,
+      body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          friendRequestChannelId,
+          friendRequestChannelName,
+          channelDescription: friendRequestChannelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(),
+        macOS: DarwinNotificationDetails(),
+      ),
+      payload: 'friends:requests',
     );
   }
 

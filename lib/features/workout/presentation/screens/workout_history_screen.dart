@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/workout.dart';
 import '../../domain/entities/workout_type.dart';
@@ -83,15 +84,15 @@ class _WorkoutHistoryScreenState extends ConsumerState<WorkoutHistoryScreen> {
     final workouts = _filteredWorkouts(state.workouts);
     final summary = _WorkoutHistorySummary.fromWorkouts(workouts);
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(title: Text(copy.title)),
-      body: SafeArea(
+      child: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => ref
               .read(workoutListControllerProvider.notifier)
               .loadUserWorkouts(),
           child: ListView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(16),
             children: [
               _HistoryFiltersCard(
                 copy: copy,
@@ -103,15 +104,15 @@ class _WorkoutHistoryScreenState extends ConsumerState<WorkoutHistoryScreen> {
                 onTypeChanged: (type) => setState(() => _selectedType = type),
                 onClear: _clearFilters,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _HistorySummaryCard(copy: copy, summary: summary),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               if (state.isLoading)
                 const Center(child: CircularProgressIndicator())
               else if (workouts.isEmpty)
-                Card(
+                GlassCard(
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.zero,
                     child: Text(copy.empty),
                   ),
                 )
@@ -160,9 +161,10 @@ class _HistoryFiltersCard extends StatelessWidget {
         ? copy.periodButton
         : '${DateFormat('dd.MM.yyyy').format(startDate!)} - ${DateFormat('dd.MM.yyyy').format(endDate!)}';
 
-    return Card(
+    return GlassCard(
+      padding: const EdgeInsets.all(14),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -170,13 +172,13 @@ class _HistoryFiltersCard extends StatelessWidget {
               copy.filtersTitle,
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             OutlinedButton.icon(
               onPressed: onPickRange,
               icon: const Icon(Icons.date_range_rounded),
               label: Text(rangeLabel),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             DropdownButtonFormField<WorkoutType?>(
               initialValue: selectedType,
               decoration: InputDecoration(labelText: l10n.workoutFilterType),
@@ -194,7 +196,7 @@ class _HistoryFiltersCard extends StatelessWidget {
               ],
               onChanged: onTypeChanged,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
@@ -218,12 +220,13 @@ class _HistorySummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return GlassCard(
+      padding: const EdgeInsets.all(14),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.zero,
         child: Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 10,
+          runSpacing: 10,
           children: [
             _SummaryTile(label: copy.workouts, value: '${summary.count}'),
             _SummaryTile(
@@ -277,7 +280,8 @@ class _WorkoutHistoryListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasRoute = workout.route.isNotEmpty;
 
-    return Card(
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: ListTile(
         onTap: () => _showWorkoutRouteDetails(context, workout, l10n),
         leading: Icon(

@@ -135,7 +135,7 @@ ThemeData buildLigaGymTheme(AppThemePalette palette) {
     brightness: palette.brightness,
     colorScheme: scheme,
     scaffoldBackgroundColor: palette.background,
-    visualDensity: VisualDensity.adaptivePlatformDensity,
+    visualDensity: VisualDensity.compact,
     splashFactory: InkRipple.splashFactory,
     textTheme: textTheme.copyWith(
       displaySmall: textTheme.displaySmall?.copyWith(
@@ -151,7 +151,9 @@ ThemeData buildLigaGymTheme(AppThemePalette palette) {
       centerTitle: false,
       elevation: 0,
       scrolledUnderElevation: 0,
-      backgroundColor: palette.background.withValues(alpha: 0.92),
+      toolbarHeight: 58,
+      actionsPadding: const EdgeInsetsDirectional.only(end: 8),
+      backgroundColor: palette.background.withValues(alpha: 0.94),
       foregroundColor: scheme.onSurface,
       titleTextStyle: textTheme.titleLarge?.copyWith(
         color: scheme.onSurface,
@@ -160,9 +162,10 @@ ThemeData buildLigaGymTheme(AppThemePalette palette) {
     ),
     cardTheme: CardThemeData(
       elevation: 0,
-      color: scheme.surface.withValues(alpha: isDark ? 0.66 : 0.94),
+      margin: EdgeInsets.zero,
+      color: scheme.surface.withValues(alpha: isDark ? 0.7 : 0.96),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(18),
         side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
       ),
     ),
@@ -170,49 +173,80 @@ ThemeData buildLigaGymTheme(AppThemePalette palette) {
       backgroundColor: scheme.surfaceContainerHighest.withValues(alpha: 0.68),
       side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.46)),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       labelStyle: textTheme.labelMedium,
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        minimumSize: const Size(0, 52),
+        minimumSize: const Size(0, 46),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         backgroundColor: scheme.primary,
         foregroundColor: isDark ? Colors.black : Colors.white,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        minimumSize: const Size(0, 52),
+        minimumSize: const Size(0, 46),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         foregroundColor: scheme.onSurface,
         side: BorderSide(color: scheme.outlineVariant),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: scheme.primary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(
           color: scheme.outlineVariant.withValues(alpha: 0.7),
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(color: scheme.secondary, width: 1.6),
       ),
       filled: true,
       fillColor: scheme.surfaceContainerLowest.withValues(alpha: 0.88),
     ),
+    iconButtonTheme: IconButtonThemeData(
+      style: IconButton.styleFrom(
+        minimumSize: const Size.square(44),
+        padding: const EdgeInsets.all(8),
+        tapTargetSize: MaterialTapTargetSize.padded,
+        visualDensity: VisualDensity.standard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+    listTileTheme: ListTileThemeData(
+      dense: true,
+      minLeadingWidth: 28,
+      horizontalTitleGap: 10,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    ),
+    dividerTheme: DividerThemeData(
+      color: scheme.outlineVariant.withValues(alpha: 0.55),
+      space: 18,
+      thickness: 1,
+    ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: scheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     ),
     bottomAppBarTheme: BottomAppBarThemeData(
       color: scheme.surface.withValues(alpha: isDark ? 0.72 : 0.92),

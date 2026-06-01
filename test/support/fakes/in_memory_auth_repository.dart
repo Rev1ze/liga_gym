@@ -156,6 +156,7 @@ class InMemoryAuthRepository implements AuthRepository {
       goalType: profile.goalType,
       dailyStepGoal: profile.dailyStepGoal,
       dailyCalorieGoal: profile.dailyCalorieGoal,
+      role: existingProfile.role,
     );
 
     if (profile.currentWeightKg != null) {
@@ -199,6 +200,7 @@ class InMemoryAuthRepository implements AuthRepository {
     required String email,
     required String password,
     bool hasProfile = true,
+    String role = 'student',
   }) {
     final userId = _userIdsByEmail.putIfAbsent(
       email,
@@ -217,6 +219,7 @@ class InMemoryAuthRepository implements AuthRepository {
         goalType: UserGoalType.maintainWeight,
         dailyStepGoal: 10000,
         dailyCalorieGoal: 2200,
+        role: role,
       );
     }
   }

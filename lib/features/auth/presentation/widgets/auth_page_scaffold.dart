@@ -28,7 +28,7 @@ class AuthPageScaffold extends ConsumerWidget {
       child: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(16),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 460),
               child: TweenAnimationBuilder<double>(
@@ -45,9 +45,9 @@ class AuthPageScaffold extends ConsumerWidget {
                   );
                 },
                 child: GlassCard(
-                  borderRadius: 32,
-                  tint: colorScheme.primary.withValues(alpha: 0.18),
-                  padding: const EdgeInsets.all(24),
+                  borderRadius: 22,
+                  tint: colorScheme.primary.withValues(alpha: 0.14),
+                  padding: const EdgeInsets.all(18),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -55,11 +55,11 @@ class AuthPageScaffold extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(
-                            width: 56,
-                            height: 56,
+                            width: 48,
+                            height: 48,
                             child: const ThemedLigaLogo(),
                           ),
-                          const SizedBox(width: 14),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,9 +71,11 @@ class AuthPageScaffold extends ConsumerWidget {
                                       .headlineSmall
                                       ?.copyWith(fontWeight: FontWeight.w800),
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 5),
                                 Text(
                                   subtitle,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context).textTheme.bodyLarge,
                                 ),
                               ],
@@ -81,12 +83,12 @@ class AuthPageScaffold extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 18),
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 240),
                         child: isLoading
                             ? const Padding(
-                                padding: EdgeInsets.only(bottom: 20),
+                                padding: EdgeInsets.only(bottom: 14),
                                 child: AppLoadingIndicator(size: 34),
                               )
                             : const SizedBox.shrink(),
@@ -96,7 +98,7 @@ class AuthPageScaffold extends ConsumerWidget {
                         opacity: isLoading ? 0.62 : 1,
                         child: IgnorePointer(ignoring: isLoading, child: child),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 18),
                       const Align(
                         alignment: Alignment.centerLeft,
                         child: AppLanguageSwitcher(),

@@ -5,7 +5,9 @@ import '../../../../core/constants/app_keys.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/utils/localization_extensions.dart';
+import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../coach/presentation/providers/coach_providers.dart';
 import '../../domain/entities/food_input_method.dart';
 import '../../domain/entities/food_macros.dart';
 import '../../domain/entities/food_product.dart';
@@ -34,6 +36,7 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
   final Set<String> _selectedQuickAccessProductIds = <String>{};
   final Map<String, TextEditingController> _quickAccessGramControllers =
       <String, TextEditingController>{};
+  _QuickAccessFilter _quickAccessFilter = _QuickAccessFilter.all;
 
   late MealType _selectedMealType;
 
@@ -107,7 +110,18 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
           final savedProducts = await ref.read(
             savedFoodProductsProvider.future,
           );
-          final selectedItems = _buildSelectedQuickAccessItems(savedProducts);
+          var trainerRecipes = const <FoodProduct>[];
+          try {
+            trainerRecipes = await ref.read(
+              assignedTrainerRecipesProvider.future,
+            );
+          } catch (_) {
+            // Coach recipes are optional; personal quick access must keep working.
+          }
+          final selectedItems = _buildSelectedQuickAccessItems([
+            ...savedProducts,
+            ...trainerRecipes,
+          ]);
           if (selectedItems.isEmpty) {
             _showSnackBar(l10n.addFoodQuickAccessChooseProducts);
             return;
@@ -248,10 +262,11 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(addFoodControllerProvider);
     final savedProductsAsync = ref.watch(savedFoodProductsProvider);
+    final trainerRecipesAsync = ref.watch(assignedTrainerRecipesProvider);
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(title: Text(l10n.addFoodTitle)),
-      body: SafeArea(
+      child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Form(
@@ -290,7 +305,7 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                         .setInputMethod(selection.first);
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 DropdownButtonFormField<MealType>(
                   key: AppKeys.addFoodMealTypeField,
                   initialValue: _selectedMealType,
@@ -315,12 +330,13 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                     });
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 if (state.inputMethod == FoodInputMethod.manual) ...[
                   if (state.editingProduct != null) ...[
-                    Card(
+                    GlassCard(
+                      padding: const EdgeInsets.all(14),
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.zero,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -334,7 +350,7 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                                 Localizations.localeOf(context).languageCode,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 10),
                             TextButton(
                               onPressed: _resetManualDraft,
                               child: Text(l10n.addFoodCreateNewProduct),
@@ -343,7 +359,7 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                   ],
                   TextFormField(
                     key: AppKeys.addFoodNameField,
@@ -351,7 +367,7 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                     decoration: InputDecoration(labelText: l10n.addFoodName),
                     validator: (_) => _validateName(context),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _NutritionNumberField(
                     fieldKey: AppKeys.addFoodCaloriesField,
                     controller: _caloriesController,
@@ -359,7 +375,7 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                     errorCode: AppErrorCode.invalidCalories,
                     allowZero: true,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _NutritionNumberField(
                     fieldKey: AppKeys.addFoodProteinsField,
                     controller: _proteinsController,
@@ -367,7 +383,7 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                     errorCode: AppErrorCode.invalidProteins,
                     allowZero: true,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _NutritionNumberField(
                     fieldKey: AppKeys.addFoodFatsField,
                     controller: _fatsController,
@@ -375,7 +391,7 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                     errorCode: AppErrorCode.invalidFats,
                     allowZero: true,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _NutritionNumberField(
                     fieldKey: AppKeys.addFoodCarbsField,
                     controller: _carbsController,
@@ -394,76 +410,35 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                     validator: (_) => _validateBarcode(context),
                   ),
                 ] else ...[
-                  savedProductsAsync.when(
-                    data: (products) {
-                      if (products.isEmpty) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Text(l10n.addFoodQuickAccessEmpty),
-                        );
-                      }
-
-                      return Column(
-                        children: [
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              l10n.addFoodQuickAccessSelectedCount(
-                                _selectedQuickAccessProductIds.length,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          for (final product in products) ...[
-                            _QuickAccessProductTile(
-                              product: product,
-                              selected: _selectedQuickAccessProductIds.contains(
-                                product.id,
-                              ),
-                              gramsController: _quickAccessGramsController(
-                                product,
-                              ),
-                              onSelected: (selected) {
-                                setState(() {
-                                  if (selected) {
-                                    _selectedQuickAccessProductIds.add(
-                                      product.id,
-                                    );
-                                  } else {
-                                    _selectedQuickAccessProductIds.remove(
-                                      product.id,
-                                    );
-                                  }
-                                });
-                              },
-                              onEdit: () => _startEditingProduct(product),
-                            ),
-                            const SizedBox(height: 12),
-                          ],
-                        ],
-                      );
+                  _QuickAccessProductsSection(
+                    savedProductsAsync: savedProductsAsync,
+                    trainerRecipesAsync: trainerRecipesAsync,
+                    selectedFilter: _quickAccessFilter,
+                    selectedProductIds: _selectedQuickAccessProductIds,
+                    gramsControllerBuilder: _quickAccessGramsController,
+                    onFilterChanged: (filter) {
+                      setState(() {
+                        _quickAccessFilter = filter;
+                      });
                     },
-                    loading: () => const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                    error: (_, _) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(l10n.errorNutritionDiaryLoadFailed),
-                        const SizedBox(height: 8),
-                        TextButton(
-                          onPressed: () {
-                            ref.invalidate(savedFoodProductsProvider);
-                          },
-                          child: Text(l10n.commonRetry),
-                        ),
-                      ],
-                    ),
+                    onSelected: (product, selected) {
+                      setState(() {
+                        if (selected) {
+                          _selectedQuickAccessProductIds.add(product.id);
+                        } else {
+                          _selectedQuickAccessProductIds.remove(product.id);
+                        }
+                      });
+                    },
+                    onEdit: _startEditingProduct,
+                    onRetry: () {
+                      ref.invalidate(savedFoodProductsProvider);
+                      ref.invalidate(assignedTrainerRecipesProvider);
+                    },
                   ),
                 ],
                 if (state.inputMethod != FoodInputMethod.quickAccess) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _NutritionNumberField(
                     fieldKey: AppKeys.addFoodGramsField,
                     controller: _gramsController,
@@ -471,7 +446,7 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
                     errorCode: AppErrorCode.invalidFoodWeight,
                   ),
                 ],
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 FilledButton(
                   key: AppKeys.addFoodContinueButton,
                   onPressed: state.isLoading ? null : _continue,
@@ -504,6 +479,139 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
   }
 }
 
+enum _QuickAccessFilter { all, mine, trainer }
+
+class _QuickAccessProductsSection extends StatelessWidget {
+  const _QuickAccessProductsSection({
+    required this.savedProductsAsync,
+    required this.trainerRecipesAsync,
+    required this.selectedFilter,
+    required this.onFilterChanged,
+    required this.selectedProductIds,
+    required this.gramsControllerBuilder,
+    required this.onSelected,
+    required this.onEdit,
+    required this.onRetry,
+  });
+
+  final AsyncValue<List<FoodProduct>> savedProductsAsync;
+  final AsyncValue<List<FoodProduct>> trainerRecipesAsync;
+  final _QuickAccessFilter selectedFilter;
+  final ValueChanged<_QuickAccessFilter> onFilterChanged;
+  final Set<String> selectedProductIds;
+  final TextEditingController Function(FoodProduct product)
+  gramsControllerBuilder;
+  final void Function(FoodProduct product, bool selected) onSelected;
+  final ValueChanged<FoodProduct> onEdit;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final savedProducts = savedProductsAsync.asData?.value;
+    final trainerRecipes = trainerRecipesAsync.asData?.value;
+    final isInitialLoading =
+        savedProductsAsync.isLoading && savedProducts == null;
+    final hasError = savedProductsAsync.hasError && savedProducts == null;
+
+    if (isInitialLoading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (hasError) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.errorNutritionDiaryLoadFailed),
+          const SizedBox(height: 8),
+          TextButton(onPressed: onRetry, child: Text(l10n.commonRetry)),
+        ],
+      );
+    }
+
+    final products = _filterProducts(
+      savedProducts: savedProducts ?? const <FoodProduct>[],
+      trainerRecipes: trainerRecipes ?? const <FoodProduct>[],
+      filter: selectedFilter,
+    );
+
+    return Column(
+      children: [
+        _QuickAccessFilterBar(
+          selectedFilter: selectedFilter,
+          onChanged: onFilterChanged,
+        ),
+        const SizedBox(height: 10),
+        if (products.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(l10n.addFoodQuickAccessEmpty),
+          )
+        else ...[
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              l10n.addFoodQuickAccessSelectedCount(selectedProductIds.length),
+            ),
+          ),
+          const SizedBox(height: 10),
+          for (final product in products) ...[
+            _QuickAccessProductTile(
+              product: product,
+              selected: selectedProductIds.contains(product.id),
+              gramsController: gramsControllerBuilder(product),
+              onSelected: (selected) => onSelected(product, selected),
+              onEdit: product.isTrainerProvided ? null : () => onEdit(product),
+            ),
+            const SizedBox(height: 10),
+          ],
+        ],
+      ],
+    );
+  }
+
+  List<FoodProduct> _filterProducts({
+    required List<FoodProduct> savedProducts,
+    required List<FoodProduct> trainerRecipes,
+    required _QuickAccessFilter filter,
+  }) {
+    return switch (filter) {
+      _QuickAccessFilter.mine => savedProducts,
+      _QuickAccessFilter.trainer => trainerRecipes,
+      _QuickAccessFilter.all => [...trainerRecipes, ...savedProducts],
+    };
+  }
+}
+
+class _QuickAccessFilterBar extends StatelessWidget {
+  const _QuickAccessFilterBar({
+    required this.selectedFilter,
+    required this.onChanged,
+  });
+
+  final _QuickAccessFilter selectedFilter;
+  final ValueChanged<_QuickAccessFilter> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SegmentedButton<_QuickAccessFilter>(
+      segments: const [
+        ButtonSegment(value: _QuickAccessFilter.all, label: Text('Все')),
+        ButtonSegment(value: _QuickAccessFilter.mine, label: Text('Мои')),
+        ButtonSegment(
+          value: _QuickAccessFilter.trainer,
+          label: Text('От тренера'),
+        ),
+      ],
+      selected: {selectedFilter},
+      onSelectionChanged: (selection) => onChanged(selection.first),
+    );
+  }
+}
+
 class _QuickAccessProductTile extends StatelessWidget {
   const _QuickAccessProductTile({
     required this.product,
@@ -517,7 +625,7 @@ class _QuickAccessProductTile extends StatelessWidget {
   final bool selected;
   final TextEditingController gramsController;
   final ValueChanged<bool> onSelected;
-  final VoidCallback onEdit;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -525,10 +633,11 @@ class _QuickAccessProductTile extends StatelessWidget {
     final languageCode = Localizations.localeOf(context).languageCode;
     final theme = Theme.of(context);
 
-    return Card(
-      color: selected ? theme.colorScheme.secondaryContainer : null,
+    return GlassCard(
+      padding: const EdgeInsets.all(12),
+      tint: selected ? theme.colorScheme.secondaryContainer : null,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.zero,
         child: Column(
           children: [
             Row(
@@ -547,6 +656,21 @@ class _QuickAccessProductTile extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(product.localizedName(languageCode)),
+                          if (product.isTrainerProvided) ...[
+                            const SizedBox(height: 4),
+                            Chip(
+                              visualDensity: VisualDensity.compact,
+                              avatar: const Icon(
+                                Icons.workspace_premium_rounded,
+                                size: 16,
+                              ),
+                              label: Text(
+                                product.sourceTrainerName?.isNotEmpty == true
+                                    ? 'От тренера: ${product.sourceTrainerName}'
+                                    : 'От тренера',
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 4),
                           Text(
                             '${l10n.foodCalories}: ${product.macrosPer100Grams.calories.toStringAsFixed(0)} • '
@@ -554,16 +678,34 @@ class _QuickAccessProductTile extends StatelessWidget {
                             '${l10n.foodFats}: ${product.macrosPer100Grams.fats.toStringAsFixed(1)} • '
                             '${l10n.foodCarbs}: ${product.macrosPer100Grams.carbs.toStringAsFixed(1)}',
                           ),
+                          if ((product.sourceProportionsText ?? '')
+                              .isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text('Пропорции: ${product.sourceProportionsText}'),
+                          ],
+                          if ((product.sourceGuideText ?? '').isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              product.sourceGuideText!,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                          if ((product.sourceVideoUrl ?? '').isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text('Видео: ${product.sourceVideoUrl}'),
+                          ],
                         ],
                       ),
                     ),
                   ),
                 ),
-                IconButton(
-                  tooltip: l10n.addFoodQuickAccessEdit,
-                  onPressed: onEdit,
-                  icon: const Icon(Icons.edit_outlined),
-                ),
+                if (onEdit != null)
+                  IconButton(
+                    tooltip: l10n.addFoodQuickAccessEdit,
+                    onPressed: onEdit,
+                    icon: const Icon(Icons.edit_outlined),
+                  ),
               ],
             ),
             if (selected) ...[

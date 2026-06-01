@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/localization_extensions.dart';
+import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../dashboard/domain/entities/daily_profile_metrics.dart';
@@ -543,7 +544,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       chatMessagesProvider(widget.arguments.chatId),
     );
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(
         title: roomState.when(
           data: (room) =>
@@ -574,17 +575,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           ),
         ],
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: Column(
           children: [
             roomState.when(
               data: (room) => room == null
                   ? Padding(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(16),
                       child: Text(l10n.chatRoomNotFound),
                     )
                   : Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
@@ -603,7 +604,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   if (currentParticipant == null) {
                     return Center(
                       child: Padding(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(16),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -627,7 +628,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       if (messages.isEmpty) {
                         return Center(
                           child: Padding(
-                            padding: const EdgeInsets.all(24),
+                            padding: const EdgeInsets.all(16),
                             child: Text(
                               l10n.chatEmpty,
                               textAlign: TextAlign.center,

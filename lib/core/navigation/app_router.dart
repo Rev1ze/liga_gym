@@ -5,6 +5,8 @@ import '../../features/auth/presentation/screens/profile_screen.dart';
 import '../../features/auth/presentation/screens/profile_setup_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/ai_coach/presentation/screens/ai_coach_screen.dart';
+import '../../features/coach/presentation/screens/coach_dashboard_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_analytics_details_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/dashboard/presentation/screens/goal_settings_screen.dart';
@@ -17,7 +19,9 @@ import '../../features/nutrition/presentation/utils/nutrition_route_arguments.da
 import '../../features/social/presentation/screens/chat_screen.dart';
 import '../../features/social/presentation/screens/chat_room_screen.dart';
 import '../../features/social/presentation/screens/leaderboard_screen.dart';
+import '../../features/social/presentation/screens/trainer_materials_screen.dart';
 import '../../features/social/presentation/utils/chat_room_route_arguments.dart';
+import '../../features/social/presentation/utils/trainer_materials_route_arguments.dart';
 import '../../features/steps/presentation/screens/step_counter_screen.dart';
 import '../../features/steps/presentation/screens/step_settings_screen.dart';
 import '../../features/workout/presentation/screens/active_workout_screen.dart';
@@ -42,6 +46,10 @@ abstract final class AppRouter {
         return _buildRoute(const ProfileScreen(), settings);
       case AppRoutes.dashboard:
         return _buildRoute(const DashboardScreen(), settings);
+      case AppRoutes.aiCoach:
+        return _buildRoute(const AiCoachScreen(), settings);
+      case AppRoutes.coachDashboard:
+        return _buildRoute(const CoachDashboardScreen(), settings);
       case AppRoutes.todayOverview:
         return _buildRoute(const TodayOverviewScreen(), settings);
       case AppRoutes.goalSettings:
@@ -60,6 +68,19 @@ abstract final class AppRouter {
         return _buildRoute(ChatRoomScreen(arguments: arguments), settings);
       case AppRoutes.leaderboard:
         return _buildRoute(const LeaderboardScreen(), settings);
+      case AppRoutes.trainerMaterials:
+        final arguments = settings.arguments as TrainerMaterialsRouteArguments;
+        return _buildRoute(
+          TrainerMaterialsScreen(arguments: arguments),
+          settings,
+        );
+      case AppRoutes.trainerMaterialDetails:
+        final arguments =
+            settings.arguments as TrainerMaterialDetailsRouteArguments;
+        return _buildRoute(
+          TrainerMaterialDetailsScreen(arguments: arguments),
+          settings,
+        );
       case AppRoutes.workoutList:
         return _buildRoute(const WorkoutListScreen(), settings);
       case AppRoutes.workoutHistory:

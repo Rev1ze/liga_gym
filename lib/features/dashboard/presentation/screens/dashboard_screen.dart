@@ -13,8 +13,10 @@ import '../../../../core/theme/app_motion.dart';
 import '../../../../core/utils/localization_extensions.dart';
 import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../auth/presentation/controllers/auth_action_controller.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../coach/domain/entities/coach_request.dart';
+import '../../../coach/domain/entities/coach_trainer.dart';
+import '../../../coach/presentation/providers/coach_providers.dart';
 import '../../domain/entities/dashboard_analytics.dart';
 import '../providers/dashboard_providers.dart';
 import '../utils/goal_settings_route_arguments.dart';
@@ -60,41 +62,28 @@ class DashboardScreen extends ConsumerWidget {
     ref.invalidate(dashboardAnalyticsProvider);
   }
 
-  Future<void> _openStepCounter(BuildContext context, WidgetRef ref) async {
-    await Navigator.of(context).pushNamed(AppRoutes.stepCounter);
-    ref.invalidate(dashboardAnalyticsProvider);
-  }
-
-  Future<void> _handleSignOut(BuildContext context, WidgetRef ref) async {
-    final l10n = AppLocalizations.of(context)!;
-
-    try {
-      await ref.read(authActionControllerProvider.notifier).signOut();
-
-      if (!context.mounted) {
-        return;
-      }
-
-      Navigator.of(
-        context,
-      ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
-    } on AppException catch (error) {
-      if (!context.mounted) {
-        return;
-      }
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.code.localize(l10n))));
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final authUserState = ref.watch(authStateChangesProvider);
     final analyticsState = ref.watch(dashboardAnalyticsProvider);
-    final isLoading = ref.watch(authActionControllerProvider).isLoading;
+    final profileState = ref.watch(currentUserProfileProvider);
+
+    profileState.whenData((profile) {
+      if (profile?.isTrainer != true) {
+        return;
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) {
+          return;
+        }
+
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(AppRoutes.coachDashboard, (route) => false);
+      });
+    });
 
     return LigaPremiumScaffold(
       appBar: AppBar(
@@ -103,23 +92,16 @@ class DashboardScreen extends ConsumerWidget {
           IconButton(
             tooltip: l10n.dashboardProfile,
             onPressed: () => _openProfile(context, ref),
-            icon: const Icon(Icons.tune_rounded),
-          ),
-          TextButton(
-            key: AppKeys.signOutButton,
-            onPressed: isLoading ? null : () => _handleSignOut(context, ref),
-            child: Text(l10n.dashboardSignOut),
+            icon: const Icon(Icons.person_rounded),
           ),
         ],
       ),
       bottomNavigationBar: _DashboardBottomBar(
         onOpenTodayOverview: () => _openTodayOverview(context, ref),
-        onStartWorkout: () =>
-            Navigator.of(context).pushNamed(AppRoutes.startWorkout),
         onOpenWorkouts: () =>
             Navigator.of(context).pushNamed(AppRoutes.workoutList),
-        onOpenStepCounter: () => _openStepCounter(context, ref),
-        onOpenNutrition: () => _openFoodDiary(context, ref),
+        onOpenFriends: () => Navigator.of(context).pushNamed(AppRoutes.friends),
+        onOpenAiCoach: () => Navigator.of(context).pushNamed(AppRoutes.aiCoach),
         l10n: l10n,
       ),
       child: SafeArea(
@@ -140,7 +122,7 @@ class DashboardScreen extends ConsumerWidget {
                     physics: const BouncingScrollPhysics(
                       parent: AlwaysScrollableScrollPhysics(),
                     ),
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 118),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
                     children: [
                       _HeroStatsCard(
                         email: authUser?.email ?? '-',
@@ -148,20 +130,20 @@ class DashboardScreen extends ConsumerWidget {
                         l10n: l10n,
                         onOpenToday: () => _openTodayOverview(context, ref),
                       ).premiumEntrance(),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 12),
                       _SmartQuickActions(
                         l10n: l10n,
                         onStartWorkout: () => Navigator.of(
                           context,
                         ).pushNamed(AppRoutes.startWorkout),
                         onOpenNutrition: () => _openFoodDiary(context, ref),
-                        onOpenSteps: () => _openStepCounter(context, ref),
-                        onOpenCoach: () =>
-                            Navigator.of(context).pushNamed(AppRoutes.chat),
+                        onOpenSteps: () => Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.stepCounter),
+                        onOpenAnalytics: () =>
+                            _openAnalyticsDetails(context, ref),
                       ).premiumEntrance(delayMs: 90),
-                      const SizedBox(height: 18),
-                      _CommunityCard(l10n: l10n).premiumEntrance(delayMs: 130),
-                      const SizedBox(height: 22),
+                      const SizedBox(height: 14),
                       analyticsState.when(
                         data: (analytics) => _AnalyticsContent(
                           analytics: analytics,
@@ -199,6 +181,209 @@ class DashboardScreen extends ConsumerWidget {
   }
 }
 
+// ignore: unused_element
+class _StudentCoachCard extends ConsumerWidget {
+  const _StudentCoachCard();
+
+  Future<void> _accept(
+    BuildContext context,
+    WidgetRef ref,
+    CoachRequest request,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final isRu = Localizations.localeOf(context).languageCode == 'ru';
+
+    try {
+      await ref
+          .read(coachRepositoryProvider)
+          .acceptCoachRequest(
+            requestId: request.id,
+            studentId: request.studentId,
+          );
+      ref.invalidate(incomingCoachRequestsProvider);
+      ref.invalidate(linkedCoachTrainersProvider);
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(isRu ? 'Тренер добавлен.' : 'Coach added.')),
+      );
+    } on AppException catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.code.localize(l10n))));
+    } on Object {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.errorUnknown)));
+    }
+  }
+
+  Future<void> _decline(
+    BuildContext context,
+    WidgetRef ref,
+    CoachRequest request,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    try {
+      await ref
+          .read(coachRepositoryProvider)
+          .declineCoachRequest(
+            requestId: request.id,
+            studentId: request.studentId,
+          );
+      ref.invalidate(incomingCoachRequestsProvider);
+    } on AppException catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.code.localize(l10n))));
+    } on Object {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.errorUnknown)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final requestsState = ref.watch(incomingCoachRequestsProvider);
+    final trainersState = ref.watch(linkedCoachTrainersProvider);
+    final isRu = Localizations.localeOf(context).languageCode == 'ru';
+    final requests = requestsState.asData?.value ?? const <CoachRequest>[];
+    final trainers = trainersState.asData?.value ?? const <CoachTrainer>[];
+    final isLoading = requestsState.isLoading || trainersState.isLoading;
+
+    if (requests.isEmpty && trainers.isEmpty && !isLoading) {
+      return const SizedBox.shrink();
+    }
+
+    if (isLoading && requests.isEmpty && trainers.isEmpty) {
+      return const SkeletonCard(height: 128);
+    }
+
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionHeader(
+            title: isRu ? 'Мои тренеры' : 'My coaches',
+            subtitle: isRu
+                ? 'Принимайте запросы и смотрите, кто уже подключен к профилю.'
+                : 'Accept coach requests and see who is connected.',
+          ),
+          if (requests.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              isRu ? 'Запросы от тренеров' : 'Coach requests',
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 6),
+            for (final request in requests) ...[
+              _CoachRequestTile(
+                request: request,
+                isRu: isRu,
+                onAccept: () => _accept(context, ref, request),
+                onDecline: () => _decline(context, ref, request),
+              ),
+              if (request != requests.last) const Divider(height: 18),
+            ],
+          ],
+          if (trainers.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              isRu ? 'Подключенные тренеры' : 'Connected coaches',
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 6),
+            for (final trainer in trainers) ...[
+              _CoachTrainerTile(trainer: trainer),
+              if (trainer != trainers.last) const Divider(height: 18),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _CoachRequestTile extends StatelessWidget {
+  const _CoachRequestTile({
+    required this.request,
+    required this.isRu,
+    required this.onAccept,
+    required this.onDecline,
+  });
+
+  final CoachRequest request;
+  final bool isRu;
+  final VoidCallback onAccept;
+  final VoidCallback onDecline;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const Icon(Icons.workspace_premium_rounded),
+      title: Text(request.trainerName),
+      subtitle: Text(
+        request.trainerEmail.isEmpty
+            ? (isRu
+                  ? 'Хочет стать вашим тренером'
+                  : 'Wants to become your coach')
+            : request.trainerEmail,
+      ),
+      trailing: Wrap(
+        spacing: 4,
+        children: [
+          IconButton(
+            tooltip: isRu ? 'Отклонить' : 'Decline',
+            onPressed: onDecline,
+            icon: const Icon(Icons.close_rounded),
+          ),
+          IconButton.filled(
+            tooltip: isRu ? 'Принять' : 'Accept',
+            onPressed: onAccept,
+            icon: const Icon(Icons.check_rounded),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CoachTrainerTile extends StatelessWidget {
+  const _CoachTrainerTile({required this.trainer});
+
+  final CoachTrainer trainer;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const Icon(Icons.fitness_center_rounded),
+      title: Text(trainer.name),
+      subtitle: trainer.email.isEmpty ? null : Text(trainer.email),
+    );
+  }
+}
+
 class _HeroStatsCard extends StatelessWidget {
   const _HeroStatsCard({
     required this.email,
@@ -222,21 +407,21 @@ class _HeroStatsCard extends StatelessWidget {
 
     return GlassCard(
       onTap: onOpenToday,
-      borderRadius: 34,
-      padding: const EdgeInsets.all(24),
-      tint: colorScheme.primary.withValues(alpha: 0.3),
+      borderRadius: 22,
+      padding: const EdgeInsets.all(18),
+      tint: colorScheme.primary.withValues(alpha: 0.22),
       heroTag: 'dashboard-hero',
       child: Stack(
         children: [
           Positioned(
-            right: -42,
-            top: -42,
-            child: _GlowOrb(color: colorScheme.secondary, size: 168),
+            right: -18,
+            top: 10,
+            child: _HeroAccentTrace(color: colorScheme.secondary),
           ),
           Positioned(
-            left: -68,
-            bottom: -78,
-            child: _GlowOrb(color: colorScheme.tertiary, size: 182),
+            right: 46,
+            bottom: 6,
+            child: _HeroAccentTrace(color: colorScheme.tertiary, reverse: true),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,16 +435,16 @@ class _HeroStatsCard extends StatelessWidget {
                           ?.copyWith(
                             color: colorScheme.onSurface,
                             fontWeight: FontWeight.w900,
-                            height: 0.98,
+                            height: 1.02,
                           ),
                     ),
                   ),
                   SizedBox.square(
-                    dimension: 108,
+                    dimension: 86,
                     child: AnimatedProgressRing(
                       progress: progress,
                       color: colorScheme.secondary,
-                      strokeWidth: 9,
+                      strokeWidth: 7,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -278,17 +463,19 @@ class _HeroStatsCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Text(
                 l10n.dashboardSubtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 12),
               Wrap(
-                spacing: 10,
-                runSpacing: 10,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   _LivePill(
                     icon: Icons.local_fire_department_rounded,
@@ -321,14 +508,14 @@ class _SmartQuickActions extends StatelessWidget {
     required this.onStartWorkout,
     required this.onOpenNutrition,
     required this.onOpenSteps,
-    required this.onOpenCoach,
+    required this.onOpenAnalytics,
   });
 
   final AppLocalizations l10n;
   final VoidCallback onStartWorkout;
   final VoidCallback onOpenNutrition;
   final VoidCallback onOpenSteps;
-  final VoidCallback onOpenCoach;
+  final VoidCallback onOpenAnalytics;
 
   @override
   Widget build(BuildContext context) {
@@ -338,12 +525,12 @@ class _SmartQuickActions extends StatelessWidget {
       builder: (context, constraints) {
         final isWide = constraints.maxWidth > 760;
         final itemWidth = isWide
-            ? (constraints.maxWidth - 36) / 4
-            : (constraints.maxWidth - 12) / 2;
+            ? (constraints.maxWidth - 30) / 4
+            : (constraints.maxWidth - 10) / 2;
 
         return Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 10,
+          runSpacing: 10,
           children: [
             _QuickActionTile(
               width: itemWidth,
@@ -369,9 +556,9 @@ class _SmartQuickActions extends StatelessWidget {
             _QuickActionTile(
               width: itemWidth,
               icon: Icons.auto_awesome_rounded,
-              label: l10n.dashboardCommunityChat,
+              label: l10n.dashboardAnalyticsOpenDetails,
               color: colorScheme.error,
-              onTap: onOpenCoach,
+              onTap: onOpenAnalytics,
             ),
           ],
         );
@@ -401,21 +588,21 @@ class _QuickActionTile extends StatelessWidget {
       width: width,
       child: GlassCard(
         onTap: onTap,
-        borderRadius: 24,
-        padding: const EdgeInsets.all(16),
-        tint: color.withValues(alpha: 0.16),
+        borderRadius: 16,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        tint: color.withValues(alpha: 0.12),
         child: Row(
           children: [
             Container(
-              width: 38,
-              height: 38,
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
                 label,
@@ -426,50 +613,6 @@ class _QuickActionTile extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _CommunityCard extends StatelessWidget {
-  const _CommunityCard({required this.l10n});
-
-  final AppLocalizations l10n;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return GlassCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SectionHeader(
-            title: l10n.dashboardCommunityTitle,
-            subtitle: l10n.dashboardCommunitySubtitle,
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              FilledButton.icon(
-                key: AppKeys.dashboardChatButton,
-                onPressed: () =>
-                    Navigator.of(context).pushNamed(AppRoutes.chat),
-                icon: const Icon(Icons.forum_rounded),
-                label: Text(l10n.dashboardCommunityChat),
-              ),
-              OutlinedButton.icon(
-                key: AppKeys.dashboardLeaderboardButton,
-                onPressed: () =>
-                    Navigator.of(context).pushNamed(AppRoutes.friends),
-                icon: Icon(Icons.group_rounded, color: colorScheme.secondary),
-                label: Text(_friendsLabel(context)),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -528,18 +671,16 @@ class _DashboardErrorCard extends StatelessWidget {
 class _DashboardBottomBar extends StatelessWidget {
   const _DashboardBottomBar({
     required this.onOpenTodayOverview,
-    required this.onStartWorkout,
     required this.onOpenWorkouts,
-    required this.onOpenStepCounter,
-    required this.onOpenNutrition,
+    required this.onOpenFriends,
+    required this.onOpenAiCoach,
     required this.l10n,
   });
 
   final VoidCallback onOpenTodayOverview;
-  final VoidCallback onStartWorkout;
   final VoidCallback onOpenWorkouts;
-  final VoidCallback onOpenStepCounter;
-  final VoidCallback onOpenNutrition;
+  final VoidCallback onOpenFriends;
+  final VoidCallback onOpenAiCoach;
   final AppLocalizations l10n;
 
   @override
@@ -548,12 +689,12 @@ class _DashboardBottomBar extends StatelessWidget {
     final isCompact = size.width < 430 || size.height < 760;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
       child: SafeArea(
         top: false,
         child: GlassCard(
-          borderRadius: 30,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          borderRadius: 20,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -565,32 +706,25 @@ class _DashboardBottomBar extends StatelessWidget {
                 isCompact: isCompact,
               ),
               _BottomBarAction(
-                key: AppKeys.dashboardStartWorkoutButton,
-                onTap: onStartWorkout,
-                icon: Icons.play_arrow_rounded,
-                label: l10n.dashboardStartWorkout,
-                isCompact: isCompact,
-                isPrimary: true,
-              ),
-              _BottomBarAction(
                 key: AppKeys.dashboardWorkoutHistoryButton,
                 onTap: onOpenWorkouts,
                 icon: Icons.history_rounded,
                 label: l10n.dashboardWorkoutHistory,
                 isCompact: isCompact,
+                isPrimary: true,
               ),
               _BottomBarAction(
-                key: AppKeys.dashboardStepCounterButton,
-                onTap: onOpenStepCounter,
-                icon: Icons.directions_walk_rounded,
-                label: l10n.dashboardStepCounter,
+                key: AppKeys.dashboardLeaderboardButton,
+                onTap: onOpenFriends,
+                icon: Icons.group_rounded,
+                label: _friendsLabel(context),
                 isCompact: isCompact,
               ),
               _BottomBarAction(
-                key: AppKeys.dashboardNutritionDiaryButton,
-                onTap: onOpenNutrition,
-                icon: Icons.restaurant_menu_rounded,
-                label: l10n.dashboardNutritionDiary,
+                key: AppKeys.dashboardAiCoachButton,
+                onTap: onOpenAiCoach,
+                icon: Icons.auto_awesome_rounded,
+                label: 'Liga AI',
                 isCompact: isCompact,
               ),
             ],
@@ -627,19 +761,19 @@ class _BottomBarAction extends StatelessWidget {
         child: AnimatedPressable(
           onTap: onTap,
           semanticLabel: label,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: isCompact ? 2 : 5,
-              vertical: isCompact ? 8 : 9,
+              horizontal: isCompact ? 1 : 4,
+              vertical: isCompact ? 6 : 7,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 AnimatedContainer(
                   duration: LigaMotion.fast,
-                  width: isPrimary ? 44 : 36,
-                  height: isPrimary ? 44 : 36,
+                  width: isPrimary ? 40 : 32,
+                  height: isPrimary ? 40 : 32,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isPrimary
@@ -653,7 +787,7 @@ class _BottomBarAction extends StatelessWidget {
                               color: colorScheme.secondary.withValues(
                                 alpha: 0.32,
                               ),
-                              blurRadius: 14,
+                              blurRadius: 10,
                             ),
                           ]
                         : null,
@@ -664,7 +798,7 @@ class _BottomBarAction extends StatelessWidget {
                   ),
                 ),
                 if (!isCompact) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
                     label,
                     maxLines: 1,
@@ -765,12 +899,7 @@ class _AnalyticsContent extends StatelessWidget {
             );
           },
         ).premiumEntrance(delayMs: 180),
-        const SizedBox(height: 18),
-        _AiRecommendationCard(
-          analytics: analytics,
-          l10n: l10n,
-        ).premiumEntrance(delayMs: 230),
-        const SizedBox(height: 18),
+        const SizedBox(height: 12),
         GlassCard(
           onTap: onOpenAnalyticsDetails,
           heroTag: 'weekly-chart',
@@ -786,16 +915,16 @@ class _AnalyticsContent extends StatelessWidget {
                   icon: const Icon(Icons.open_in_new_rounded),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
               _WeeklyLineChart(days: analytics.weeklyStats.days),
-              const SizedBox(height: 18),
+              const SizedBox(height: 12),
               HeatmapStrip(
                 values: analytics.weeklyStats.days
                     .map((day) => day.progress.overall)
                     .toList(growable: false),
                 color: colorScheme.secondary,
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 12),
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
@@ -825,7 +954,7 @@ class _AnalyticsContent extends StatelessWidget {
             ],
           ),
         ).premiumEntrance(delayMs: 280),
-        const SizedBox(height: 18),
+        const SizedBox(height: 12),
         _WeightAnalyticsCard(
           analytics: analytics,
           l10n: l10n,
@@ -836,6 +965,7 @@ class _AnalyticsContent extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _AiRecommendationCard extends StatelessWidget {
   const _AiRecommendationCard({required this.analytics, required this.l10n});
 
@@ -861,23 +991,23 @@ class _AiRecommendationCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 54,
-            height: 54,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(14),
               gradient: LinearGradient(
                 colors: [colorScheme.secondary, colorScheme.tertiary],
               ),
               boxShadow: [
                 BoxShadow(
                   color: colorScheme.secondary.withValues(alpha: 0.18),
-                  blurRadius: 16,
+                  blurRadius: 10,
                 ),
               ],
             ),
             child: const Icon(Icons.auto_awesome_rounded, color: Colors.black),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -888,7 +1018,7 @@ class _AiRecommendationCard extends StatelessWidget {
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   '$recommendation ${NumberFormat.compact().format(remainingSteps)} steps left.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -935,7 +1065,7 @@ class _WeightAnalyticsCard extends StatelessWidget {
               tooltip: l10n.dashboardGoalsAction,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           if (weight.hasData)
             Wrap(
               spacing: 10,
@@ -970,12 +1100,12 @@ class _WeightAnalyticsCard extends StatelessWidget {
           else
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerHighest.withValues(
                   alpha: 0.54,
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Text(
                 l10n.dashboardWeightEmptyTitle,
@@ -1004,7 +1134,7 @@ class _WeeklyLineChart extends StatelessWidget {
     ];
 
     return SizedBox(
-      height: 230,
+      height: 190,
       child: LineChart(
         LineChartData(
           minX: 0,
@@ -1074,13 +1204,13 @@ class _WeeklyLineChart extends StatelessWidget {
               spots: spots,
               isCurved: true,
               preventCurveOverShooting: true,
-              barWidth: 4,
+              barWidth: 3,
               dotData: FlDotData(
                 getDotPainter: (spot, percent, bar, index) {
                   return FlDotCirclePainter(
-                    radius: index == days.length - 1 ? 5 : 3,
+                    radius: index == days.length - 1 ? 4 : 2.5,
                     color: colorScheme.secondary,
-                    strokeWidth: 3,
+                    strokeWidth: 2,
                     strokeColor: colorScheme.surface,
                   );
                 },
@@ -1123,7 +1253,7 @@ class _LegendPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1156,7 +1286,7 @@ class _WeeklySummaryPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         child: Text(label),
       ),
     );
@@ -1183,7 +1313,7 @@ class _LivePill extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1206,23 +1336,29 @@ class _LivePill extends StatelessWidget {
   }
 }
 
-class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({required this.color, required this.size});
+class _HeroAccentTrace extends StatelessWidget {
+  const _HeroAccentTrace({required this.color, this.reverse = false});
 
   final Color color;
-  final double size;
+  final bool reverse;
 
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [color.withValues(alpha: 0.44), color.withValues(alpha: 0)],
+      child: Transform.rotate(
+        angle: reverse ? -0.22 : 0.22,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            gradient: LinearGradient(
+              colors: [
+                color.withValues(alpha: 0),
+                color.withValues(alpha: 0.36),
+                color.withValues(alpha: 0),
+              ],
+            ),
           ),
+          child: const SizedBox(width: 138, height: 6),
         ),
       ),
     );

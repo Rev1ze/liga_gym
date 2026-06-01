@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_keys.dart';
 import '../../../../core/navigation/app_routes.dart';
+import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../providers/step_providers.dart';
 import '../../../dashboard/presentation/utils/goal_settings_route_arguments.dart';
@@ -17,16 +18,17 @@ class StepSettingsScreen extends ConsumerWidget {
     final actionState = ref.watch(stepScreenControllerProvider);
     final isBusy = actionState.isLoading;
 
-    return Scaffold(
+    return LigaPremiumScaffold(
       appBar: AppBar(title: Text(l10n.stepCounterSettingsTitle)),
-      body: SafeArea(
+      child: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           children: [
             trackingStatusState.when(
-              data: (status) => Card(
+              data: (status) => GlassCard(
+                padding: const EdgeInsets.all(14),
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.zero,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -34,7 +36,7 @@ class StepSettingsScreen extends ConsumerWidget {
                         l10n.stepCounterStatusTitle,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       Text(
                         _statusHint(l10n, status),
                         style: Theme.of(context).textTheme.bodyMedium,
@@ -43,23 +45,24 @@ class StepSettingsScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              loading: () => const Card(
+              loading: () => const GlassCard(
                 child: Padding(
-                  padding: EdgeInsets.all(24),
+                  padding: EdgeInsets.zero,
                   child: Center(child: CircularProgressIndicator()),
                 ),
               ),
-              error: (_, _) => Card(
+              error: (_, _) => GlassCard(
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.zero,
                   child: Text(l10n.errorUnknown),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Card(
+            const SizedBox(height: 12),
+            GlassCard(
+              padding: const EdgeInsets.all(14),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.zero,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -67,7 +70,7 @@ class StepSettingsScreen extends ConsumerWidget {
                       l10n.stepCounterActionsTitle,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     FilledButton.icon(
                       key: AppKeys.stepScreenEnableButton,
                       onPressed: isBusy
@@ -80,7 +83,7 @@ class StepSettingsScreen extends ConsumerWidget {
                       icon: const Icon(Icons.directions_walk_rounded),
                       label: Text(l10n.stepCounterEnable),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     OutlinedButton.icon(
                       key: AppKeys.stepScreenOpenSettingsButton,
                       onPressed: isBusy
@@ -93,7 +96,7 @@ class StepSettingsScreen extends ConsumerWidget {
                       icon: const Icon(Icons.settings_outlined),
                       label: Text(l10n.stepCounterOpenSettings),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     OutlinedButton.icon(
                       onPressed: () => Navigator.of(context).pushNamed(
                         AppRoutes.goalSettings,

@@ -139,6 +139,7 @@ class AuthRepositoryImpl implements AuthRepository {
         goalType: profile.goalType,
         dailyStepGoal: profile.dailyStepGoal,
         dailyCalorieGoal: profile.dailyCalorieGoal,
+        role: existingProfile?.role ?? 'student',
       ),
     );
   }

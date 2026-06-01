@@ -20,6 +20,7 @@ class UserProfileModel extends UserProfile {
     super.goalType,
     super.dailyStepGoal,
     super.dailyCalorieGoal,
+    super.role,
   });
 
   factory UserProfileModel.fromFirestore(
@@ -45,6 +46,7 @@ class UserProfileModel extends UserProfile {
       goalType: _parseGoalType((data['goalType'] as String?) ?? ''),
       dailyStepGoal: (data['dailyStepGoal'] as num?)?.toInt() ?? 10000,
       dailyCalorieGoal: (data['dailyCalorieGoal'] as num?)?.toDouble() ?? 2200,
+      role: _parseRole(data),
     );
   }
 
@@ -64,6 +66,7 @@ class UserProfileModel extends UserProfile {
       'goalType': goalType.name,
       'dailyStepGoal': dailyStepGoal,
       'dailyCalorieGoal': dailyCalorieGoal,
+      'role': role,
       'socialScore': FieldValue.increment(0),
       'socialWorkoutsCount': FieldValue.increment(0),
       'socialCaloriesBurned': FieldValue.increment(0),
@@ -84,5 +87,17 @@ class UserProfileModel extends UserProfile {
       (goalType) => goalType.name == value,
       orElse: () => UserGoalType.maintainWeight,
     );
+  }
+
+  static String _parseRole(Map<String, Object?> data) {
+    final role =
+        ((data['role'] ??
+                    data['userRole'] ??
+                    data['user_role'] ??
+                    data['user role'])
+                as String?)
+            ?.trim()
+            .toLowerCase();
+    return role == 'trainer' ? 'trainer' : 'student';
   }
 }

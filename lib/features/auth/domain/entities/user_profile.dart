@@ -17,6 +17,7 @@ class UserProfile {
     this.goalType = UserGoalType.maintainWeight,
     this.dailyStepGoal = 10000,
     this.dailyCalorieGoal = 2200,
+    this.role = 'student',
   });
 
   final String userId;
@@ -33,4 +34,7 @@ class UserProfile {
   final UserGoalType goalType;
   final int dailyStepGoal;
   final double dailyCalorieGoal;
+  final String role;
+
+  bool get isTrainer => role == 'trainer';
 }

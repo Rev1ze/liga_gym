@@ -42,7 +42,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
             constraints: const BoxConstraints(maxWidth: 760),
             child: ListView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               children: [
                 _LiveTrainingHero(
                   elapsed: formatWorkoutDuration(state.elapsed),
@@ -52,7 +52,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
                   caloriesLabel: l10n.workoutMetricCalories,
                   distanceLabel: l10n.workoutMetricDistance,
                 ).premiumEntrance(),
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
                 if (state.shouldAskForRouteMap)
                   _RouteMapPromptCard(
                     title: l10n.workoutRoutePromptTitle,
@@ -83,9 +83,9 @@ class ActiveWorkoutScreen extends ConsumerWidget {
                               ? l10n.workoutRouteWaitingForSignal
                               : l10n.workoutRouteMissing,
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 10),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(16),
                           child: WorkoutRouteMap(
                             route: state.route,
                             emptyMessage: l10n.workoutRouteMissing,
@@ -109,7 +109,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
                     ),
                   ),
                 ],
-                const SizedBox(height: 22),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
@@ -130,7 +130,7 @@ class ActiveWorkoutScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: FilledButton.icon(
                         key: AppKeys.workoutStopButton,
@@ -181,9 +181,9 @@ class _LiveTrainingHero extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return GlassCard(
-      borderRadius: 36,
-      tint: colorScheme.primary.withValues(alpha: 0.22),
-      padding: const EdgeInsets.all(24),
+      borderRadius: 22,
+      tint: colorScheme.primary.withValues(alpha: 0.18),
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           Row(
@@ -193,13 +193,13 @@ class _LiveTrainingHero extends StatelessWidget {
               Icon(Icons.sensors_rounded, color: colorScheme.secondary),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           SizedBox.square(
-            dimension: 228,
+            dimension: 196,
             child: AnimatedProgressRing(
               progress: isRunning ? 0.78 : 0.54,
               color: isRunning ? colorScheme.secondary : colorScheme.tertiary,
-              strokeWidth: 13,
+              strokeWidth: 10,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -210,7 +210,7 @@ class _LiveTrainingHero extends StatelessWidget {
                       letterSpacing: 0,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
                     isRunning ? 'LIVE TRAINING' : 'PAUSED',
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
@@ -222,7 +222,7 @@ class _LiveTrainingHero extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -233,7 +233,7 @@ class _LiveTrainingHero extends StatelessWidget {
                   color: colorScheme.secondary,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: _TrainingMetric(
                   label: distanceLabel,
@@ -268,7 +268,7 @@ class _LiveStatusPill extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.26)),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -311,14 +311,14 @@ class _TrainingMetric extends StatelessWidget {
         color: Theme.of(
           context,
         ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           children: [
             Icon(icon, color: color),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Text(
               value,
               maxLines: 1,
@@ -365,9 +365,9 @@ class _RouteMapPromptCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SectionHeader(title: title, subtitle: message),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           Wrap(
-            spacing: 12,
+            spacing: 10,
             runSpacing: 8,
             children: [
               FilledButton.icon(
@@ -408,9 +408,9 @@ class _LocationEnableCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SectionHeader(title: title, subtitle: message),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           Wrap(
-            spacing: 12,
+            spacing: 10,
             runSpacing: 8,
             children: [
               FilledButton.icon(
