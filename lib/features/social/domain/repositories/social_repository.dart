@@ -1,9 +1,9 @@
 import '../entities/chat_member_role.dart';
 import '../entities/chat_message.dart';
 import '../entities/chat_participant.dart';
+import '../entities/friend_chat_room.dart';
 import '../entities/friend_profile.dart';
 import '../entities/friend_request.dart';
-import '../entities/interest_chat_room.dart';
 import '../entities/leaderboard_user.dart';
 import '../entities/social_privacy.dart';
 
@@ -49,14 +49,6 @@ abstract interface class SocialRepository {
     required SocialPrivacySettings settings,
   });
 
-  Future<String> createInterestChat({
-    required String userId,
-    required String fallbackName,
-    required String fallbackEmail,
-    required String title,
-    required String description,
-  });
-
   Future<String> openFriendChat({
     required String userId,
     required String friendId,
@@ -65,24 +57,13 @@ abstract interface class SocialRepository {
     required String fallbackEmail,
   });
 
-  Future<void> joinInterestChat({
-    required String chatId,
-    required String userId,
-    required String fallbackName,
-    required String fallbackEmail,
-  });
-
-  Future<void> leaveInterestChat({
-    required String chatId,
-    required String userId,
-  });
-
   Future<void> sendMessage({
     required String chatId,
     required String userId,
     required String fallbackName,
     required String fallbackEmail,
     required String message,
+    Map<String, Object?>? metadata,
   });
 
   Future<void> deleteMessage({
@@ -104,9 +85,7 @@ abstract interface class SocialRepository {
     required bool canRemoveUsers,
   });
 
-  Stream<List<InterestChatRoom>> listenInterestChats({int limit = 100});
-
-  Stream<InterestChatRoom?> watchInterestChat(String chatId);
+  Stream<FriendChatRoom?> watchFriendChat(String chatId);
 
   Stream<List<ChatParticipant>> listenParticipants(String chatId);
 
@@ -126,5 +105,8 @@ abstract interface class SocialRepository {
 
   Stream<SocialPrivacySettings> watchPrivacySettings(String userId);
 
-  Stream<List<LeaderboardUser>> listenLeaderboard({int limit = 20});
+  Stream<List<LeaderboardUser>> listenLeaderboard({
+    int limit = 20,
+    String? city,
+  });
 }

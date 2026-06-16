@@ -25,6 +25,52 @@ void main() {
       expect(calories, 279.0);
     });
 
+    test('uses hidden route telemetry for uphill running calories', () {
+      final route = [
+        WorkoutRoutePoint(
+          latitude: 55.0,
+          longitude: 60.0,
+          recordedAt: DateTime.utc(2026, 6, 5, 8),
+          altitudeMeters: 120,
+          accuracyMeters: 6,
+          speedMetersPerSecond: 3.2,
+        ),
+        WorkoutRoutePoint(
+          latitude: 55.001,
+          longitude: 60.001,
+          recordedAt: DateTime.utc(2026, 6, 5, 8, 5),
+          altitudeMeters: 138,
+          accuracyMeters: 5,
+          speedMetersPerSecond: 3.4,
+        ),
+        WorkoutRoutePoint(
+          latitude: 55.002,
+          longitude: 60.002,
+          recordedAt: DateTime.utc(2026, 6, 5, 8, 10),
+          altitudeMeters: 154,
+          accuracyMeters: 5,
+          speedMetersPerSecond: 3.5,
+        ),
+      ];
+
+      final flatCalories = WorkoutMetricsCalculator.calculateCaloriesBurned(
+        type: WorkoutType.running,
+        duration: const Duration(minutes: 30),
+        distanceMeters: 5000,
+      );
+      final uphillCalories = WorkoutMetricsCalculator.calculateCaloriesBurned(
+        type: WorkoutType.running,
+        duration: const Duration(minutes: 30),
+        distanceMeters: 5000,
+        route: route,
+      );
+      final telemetry = WorkoutMetricsCalculator.analyzeRouteTelemetry(route);
+
+      expect(telemetry.elevationGainMeters, 34);
+      expect(telemetry.averageAccuracyMeters, closeTo(5.3, 0.1));
+      expect(uphillCalories, greaterThan(flatCalories));
+    });
+
     test('calculates geographic distance between route points', () {
       final start = WorkoutRoutePoint(
         latitude: 0,

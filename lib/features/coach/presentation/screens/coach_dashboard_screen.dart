@@ -43,7 +43,7 @@ class CoachDashboardScreen extends ConsumerWidget {
       context: context,
       builder: (context) => const _StudentInviteDialog(),
     );
-    final trainerId = ref.read(firebaseAuthProvider).currentUser?.uid;
+    final trainerId = ref.read(currentFirebaseUserProvider)?.uid;
     if (friendCode == null || friendCode.isEmpty || trainerId == null) {
       return;
     }
@@ -79,7 +79,7 @@ class CoachDashboardScreen extends ConsumerWidget {
     WidgetRef ref, {
     TrainerExercise? initial,
   }) async {
-    final trainerId = ref.read(firebaseAuthProvider).currentUser?.uid;
+    final trainerId = ref.read(currentFirebaseUserProvider)?.uid;
     if (trainerId == null) {
       return;
     }
@@ -116,7 +116,7 @@ class CoachDashboardScreen extends ConsumerWidget {
     WidgetRef ref, {
     TrainerRecipe? initial,
   }) async {
-    final trainerId = ref.read(firebaseAuthProvider).currentUser?.uid;
+    final trainerId = ref.read(currentFirebaseUserProvider)?.uid;
     if (trainerId == null) {
       return;
     }
@@ -152,7 +152,7 @@ class CoachDashboardScreen extends ConsumerWidget {
     List<TrainerExercise> exercises, {
     TrainerWorkoutTemplate? initial,
   }) async {
-    final trainerId = ref.read(firebaseAuthProvider).currentUser?.uid;
+    final trainerId = ref.read(currentFirebaseUserProvider)?.uid;
     if (trainerId == null) {
       return;
     }

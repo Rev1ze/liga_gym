@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_keys.dart';
+import '../../../../core/providers/shared_preferences_provider.dart';
 import '../../../../core/theme/app_motion.dart';
 import '../../../../core/widgets/premium_components.dart';
 import '../../../auth/domain/entities/user_goal.dart';
@@ -12,8 +15,16 @@ import '../../../nutrition/presentation/providers/nutrition_providers.dart';
 import '../../domain/entities/ai_coach_message.dart';
 import '../../domain/services/fitness_ai_agent.dart';
 
+class AiCoachRouteArguments {
+  const AiCoachRouteArguments({this.initialPrompt});
+
+  final String? initialPrompt;
+}
+
 class AiCoachScreen extends ConsumerStatefulWidget {
-  const AiCoachScreen({super.key});
+  const AiCoachScreen({this.arguments, super.key});
+
+  final AiCoachRouteArguments? arguments;
 
   @override
   ConsumerState<AiCoachScreen> createState() => _AiCoachScreenState();
@@ -24,8 +35,21 @@ class _AiCoachScreenState extends ConsumerState<AiCoachScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   final List<AiCoachMessage> _messages = <AiCoachMessage>[];
+  final List<_AiChatPage> _chatPages = <_AiChatPage>[];
+  String? _currentPageId;
+  String? _pendingInitialPrompt;
   bool _isThinking = false;
   bool _hasFitnessHistory = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadChatPages();
+    _pendingInitialPrompt = widget.arguments?.initialPrompt?.trim();
+    if (_pendingInitialPrompt?.isNotEmpty == true) {
+      _createNewPage(title: 'Оценка упражнения', persist: false);
+    }
+  }
 
   @override
   void dispose() {
@@ -50,6 +74,7 @@ class _AiCoachScreenState extends ConsumerState<AiCoachScreen> {
       _messageController.clear();
       _isThinking = true;
     });
+    await _persistCurrentPage();
     _scrollToBottom();
 
     await Future<void>.delayed(const Duration(milliseconds: 360));
@@ -73,7 +98,148 @@ class _AiCoachScreenState extends ConsumerState<AiCoachScreen> {
       _hasFitnessHistory = !_isOutOfScopeAnswer(answer);
       _isThinking = false;
     });
+    await _persistCurrentPage();
     _scrollToBottom();
+  }
+
+  void _loadChatPages() {
+    final sharedPreferences = ref.read(sharedPreferencesProvider);
+    final payload = sharedPreferences?.getString(_aiChatPagesKey);
+    if (payload != null && payload.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(payload) as List<dynamic>;
+        _chatPages
+          ..clear()
+          ..addAll(
+            decoded.map(
+              (item) =>
+                  _AiChatPage.fromJson(Map<String, Object?>.from(item as Map)),
+            ),
+          );
+      } catch (_) {
+        _chatPages.clear();
+      }
+    }
+
+    if (_chatPages.isEmpty) {
+      _createNewPage(persist: false);
+      return;
+    }
+
+    _chatPages.sort((left, right) => right.updatedAt.compareTo(left.updatedAt));
+    final current = _chatPages.first;
+    _currentPageId = current.id;
+    _messages
+      ..clear()
+      ..addAll(current.messages);
+  }
+
+  void _createNewPage({String? title, bool persist = true}) {
+    final now = DateTime.now();
+    final page = _AiChatPage(
+      id: 'ai_chat_${now.microsecondsSinceEpoch}',
+      title: title ?? 'Новый чат',
+      messages: const <AiCoachMessage>[],
+      createdAt: now,
+      updatedAt: now,
+    );
+    setState(() {
+      _chatPages.insert(0, page);
+      _currentPageId = page.id;
+      _messages.clear();
+      _hasFitnessHistory = false;
+    });
+    if (persist) {
+      _persistChatPages();
+    }
+  }
+
+  void _openPage(_AiChatPage page) {
+    if (_isThinking) {
+      return;
+    }
+
+    setState(() {
+      _currentPageId = page.id;
+      _messages
+        ..clear()
+        ..addAll(page.messages);
+      _hasFitnessHistory = page.messages.any((message) => !message.isUser);
+    });
+    Navigator.of(context).pop();
+    _scrollToBottom();
+  }
+
+  Future<void> _showChatPages() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            children: [
+              Text('AI чаты', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 8),
+              for (final page in _chatPages)
+                ListTile(
+                  selected: page.id == _currentPageId,
+                  leading: const Icon(Icons.chat_bubble_outline_rounded),
+                  title: Text(page.title),
+                  subtitle: Text(_formatAiChatTimestamp(page.updatedAt)),
+                  onTap: () => _openPage(page),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _persistCurrentPage() async {
+    final pageIndex = _chatPages.indexWhere(
+      (page) => page.id == _currentPageId,
+    );
+    if (pageIndex == -1) {
+      return;
+    }
+
+    final now = DateTime.now();
+    String? firstUserMessage;
+    for (final message in _messages) {
+      final text = message.text.trim();
+      if (message.isUser && text.isNotEmpty) {
+        firstUserMessage = text;
+        break;
+      }
+    }
+    final nextPage = _chatPages[pageIndex].copyWith(
+      title: firstUserMessage == null
+          ? _chatPages[pageIndex].title
+          : _shortChatTitle(firstUserMessage),
+      messages: List.unmodifiable(_messages),
+      updatedAt: now,
+    );
+
+    setState(() {
+      _chatPages
+        ..removeAt(pageIndex)
+        ..insert(0, nextPage);
+    });
+    await _persistChatPages();
+  }
+
+  Future<void> _persistChatPages() async {
+    final sharedPreferences = ref.read(sharedPreferencesProvider);
+    if (sharedPreferences == null) {
+      return;
+    }
+
+    final payload = jsonEncode(
+      _chatPages.map((page) => page.toJson()).toList(growable: false),
+    );
+    await sharedPreferences.setString(_aiChatPagesKey, payload);
   }
 
   void _useSuggestion(String text, FitnessAiContext context) {
@@ -109,11 +275,38 @@ class _AiCoachScreenState extends ConsumerState<AiCoachScreen> {
     final diaryState = ref.watch(todayNutritionDiaryProvider);
     final analyticsState = ref.watch(dashboardAnalyticsProvider);
     final contextData = _buildFitnessContext(diaryState, analyticsState);
+    final pendingPrompt = _pendingInitialPrompt;
+    if (pendingPrompt != null &&
+        pendingPrompt.isNotEmpty &&
+        !_isThinking &&
+        _messageController.text.isEmpty) {
+      _pendingInitialPrompt = null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+
+        _messageController.text = pendingPrompt;
+        _sendMessage(contextData);
+      });
+    }
 
     return LigaPremiumScaffold(
       extendBody: false,
       appBar: AppBar(
         title: Text(isRu ? 'AI фитнес-агент' : 'AI Fitness Agent'),
+        actions: [
+          IconButton(
+            tooltip: isRu ? 'Новый чат' : 'New chat',
+            onPressed: _isThinking ? null : () => _createNewPage(),
+            icon: const Icon(Icons.add_comment_rounded),
+          ),
+          IconButton(
+            tooltip: isRu ? 'История' : 'History',
+            onPressed: _showChatPages,
+            icon: const Icon(Icons.history_rounded),
+          ),
+        ],
       ),
       child: SafeArea(
         child: Align(
@@ -197,6 +390,81 @@ class _AiCoachScreenState extends ConsumerState<AiCoachScreen> {
       targetWeightKg: analytics?.goals.targetWeightKg,
     );
   }
+}
+
+const _aiChatPagesKey = 'ai_coach_chat_pages';
+
+class _AiChatPage {
+  const _AiChatPage({
+    required this.id,
+    required this.title,
+    required this.messages,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String title;
+  final List<AiCoachMessage> messages;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  _AiChatPage copyWith({
+    String? title,
+    List<AiCoachMessage>? messages,
+    DateTime? updatedAt,
+  }) {
+    return _AiChatPage(
+      id: id,
+      title: title ?? this.title,
+      messages: messages ?? this.messages,
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  Map<String, Object?> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'messages': messages.map((message) => message.toJson()).toList(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
+
+  factory _AiChatPage.fromJson(Map<String, Object?> json) {
+    final messages =
+        (json['messages'] as List<Object?>?)
+            ?.map(
+              (item) => AiCoachMessage.fromJson(
+                Map<String, Object?>.from(item as Map),
+              ),
+            )
+            .toList(growable: false) ??
+        const <AiCoachMessage>[];
+    final now = DateTime.now();
+
+    return _AiChatPage(
+      id: json['id'] as String? ?? 'ai_chat_${now.microsecondsSinceEpoch}',
+      title: json['title'] as String? ?? 'AI чат',
+      messages: messages,
+      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? now,
+      updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? now,
+    );
+  }
+}
+
+String _shortChatTitle(String text) {
+  return text.length <= 36 ? text : '${text.substring(0, 36)}...';
+}
+
+String _formatAiChatTimestamp(DateTime dateTime) {
+  final day = dateTime.day.toString().padLeft(2, '0');
+  final month = dateTime.month.toString().padLeft(2, '0');
+  final hour = dateTime.hour.toString().padLeft(2, '0');
+  final minute = dateTime.minute.toString().padLeft(2, '0');
+  return '$day.$month $hour:$minute';
 }
 
 class _AgentHeader extends StatelessWidget {

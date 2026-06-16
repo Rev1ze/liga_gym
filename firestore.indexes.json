@@ -1,6 +1,38 @@
 {
   "indexes": [
     {
+      "collectionGroup": "leaderboard_entries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "visibleInFriendLeaderboard",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "score",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "leaderboard_entries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "visibleInFriendLeaderboard",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "city",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "score",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "food_entries",
       "queryScope": "COLLECTION",
       "fields": [

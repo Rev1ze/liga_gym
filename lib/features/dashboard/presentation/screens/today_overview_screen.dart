@@ -6,15 +6,29 @@ import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/utils/localization_extensions.dart';
 import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../workout/presentation/providers/workout_providers.dart';
 import '../providers/dashboard_providers.dart';
 import '../utils/goal_settings_route_arguments.dart';
 
-class TodayOverviewScreen extends ConsumerWidget {
+class TodayOverviewScreen extends ConsumerStatefulWidget {
   const TodayOverviewScreen({super.key});
+
+  @override
+  ConsumerState<TodayOverviewScreen> createState() =>
+      _TodayOverviewScreenState();
+}
+
+class _TodayOverviewScreenState extends ConsumerState<TodayOverviewScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(workoutListControllerProvider.notifier).loadUserWorkouts();
+    });
+  }
 
   Future<void> _openGoalSettings(
     BuildContext context,
-    WidgetRef ref,
     GoalSettingsSection section,
   ) async {
     await Navigator.of(context).pushNamed(
@@ -25,7 +39,7 @@ class TodayOverviewScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final analyticsState = ref.watch(dashboardAnalyticsProvider);
 
@@ -75,7 +89,6 @@ class TodayOverviewScreen extends ConsumerWidget {
                               FilledButton.icon(
                                 onPressed: () => _openGoalSettings(
                                   context,
-                                  ref,
                                   GoalSettingsSection.progress,
                                 ),
                                 icon: const Icon(Icons.tune_rounded),
@@ -104,7 +117,6 @@ class TodayOverviewScreen extends ConsumerWidget {
                               icon: Icons.directions_walk_rounded,
                               onTap: () => _openGoalSettings(
                                 context,
-                                ref,
                                 GoalSettingsSection.steps,
                               ),
                             ),
@@ -119,7 +131,6 @@ class TodayOverviewScreen extends ConsumerWidget {
                               icon: Icons.local_fire_department_rounded,
                               onTap: () => _openGoalSettings(
                                 context,
-                                ref,
                                 GoalSettingsSection.calories,
                               ),
                             ),
@@ -140,7 +151,6 @@ class TodayOverviewScreen extends ConsumerWidget {
                               icon: Icons.track_changes_rounded,
                               onTap: () => _openGoalSettings(
                                 context,
-                                ref,
                                 GoalSettingsSection.progress,
                               ),
                             ),
@@ -191,7 +201,7 @@ class TodayOverviewScreen extends ConsumerWidget {
                               ),
                             ],
                           ),
-                        ).premiumEntrance(delayMs: 200),
+                        ).premiumEntrance(delayMs: 260),
                       ],
                     );
                   },

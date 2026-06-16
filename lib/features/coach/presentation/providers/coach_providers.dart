@@ -32,7 +32,7 @@ final coachRepositoryProvider = Provider<CoachRepository>((ref) {
 });
 
 final coachStudentsProvider = FutureProvider<List<CoachStudent>>((ref) async {
-  final user = ref.watch(firebaseAuthProvider).currentUser;
+  final user = ref.watch(currentFirebaseUserProvider);
   if (user == null) {
     return const <CoachStudent>[];
   }
@@ -43,7 +43,7 @@ final coachStudentsProvider = FutureProvider<List<CoachStudent>>((ref) async {
 final linkedCoachTrainersProvider = FutureProvider<List<CoachTrainer>>((
   ref,
 ) async {
-  final user = ref.watch(firebaseAuthProvider).currentUser;
+  final user = ref.watch(currentFirebaseUserProvider);
   if (user == null) {
     return const <CoachTrainer>[];
   }
@@ -54,7 +54,7 @@ final linkedCoachTrainersProvider = FutureProvider<List<CoachTrainer>>((
 final incomingCoachRequestsProvider = FutureProvider<List<CoachRequest>>((
   ref,
 ) async {
-  final user = ref.watch(firebaseAuthProvider).currentUser;
+  final user = ref.watch(currentFirebaseUserProvider);
   if (user == null) {
     return const <CoachRequest>[];
   }
@@ -65,7 +65,7 @@ final incomingCoachRequestsProvider = FutureProvider<List<CoachRequest>>((
 final outgoingCoachRequestsProvider = FutureProvider<List<CoachRequest>>((
   ref,
 ) async {
-  final user = ref.watch(firebaseAuthProvider).currentUser;
+  final user = ref.watch(currentFirebaseUserProvider);
   if (user == null) {
     return const <CoachRequest>[];
   }
@@ -76,7 +76,7 @@ final outgoingCoachRequestsProvider = FutureProvider<List<CoachRequest>>((
 final trainerExercisesProvider = FutureProvider<List<TrainerExercise>>((
   ref,
 ) async {
-  final user = ref.watch(firebaseAuthProvider).currentUser;
+  final user = ref.watch(currentFirebaseUserProvider);
   if (user == null) {
     return const <TrainerExercise>[];
   }
@@ -85,7 +85,7 @@ final trainerExercisesProvider = FutureProvider<List<TrainerExercise>>((
 });
 
 final trainerRecipesProvider = FutureProvider<List<TrainerRecipe>>((ref) async {
-  final user = ref.watch(firebaseAuthProvider).currentUser;
+  final user = ref.watch(currentFirebaseUserProvider);
   if (user == null) {
     return const <TrainerRecipe>[];
   }
@@ -95,7 +95,7 @@ final trainerRecipesProvider = FutureProvider<List<TrainerRecipe>>((ref) async {
 
 final trainerWorkoutTemplatesProvider =
     FutureProvider<List<TrainerWorkoutTemplate>>((ref) async {
-      final user = ref.watch(firebaseAuthProvider).currentUser;
+      final user = ref.watch(currentFirebaseUserProvider);
       if (user == null) {
         return const <TrainerWorkoutTemplate>[];
       }
@@ -106,7 +106,7 @@ final trainerWorkoutTemplatesProvider =
 final assignedTrainerRecipesProvider = FutureProvider<List<TrainerRecipe>>((
   ref,
 ) async {
-  final user = ref.watch(firebaseAuthProvider).currentUser;
+  final user = ref.watch(currentFirebaseUserProvider);
   if (user == null) {
     return const <TrainerRecipe>[];
   }
@@ -116,7 +116,7 @@ final assignedTrainerRecipesProvider = FutureProvider<List<TrainerRecipe>>((
 
 final assignedTrainerWorkoutsProvider =
     FutureProvider<List<StudentWorkoutAssignment>>((ref) async {
-      final user = ref.watch(firebaseAuthProvider).currentUser;
+      final user = ref.watch(currentFirebaseUserProvider);
       if (user == null) {
         return const <StudentWorkoutAssignment>[];
       }
@@ -126,7 +126,7 @@ final assignedTrainerWorkoutsProvider =
 
 final trainerSharedContentProvider =
     FutureProvider.family<TrainerSharedContent, String>((ref, trainerId) async {
-      final user = ref.watch(firebaseAuthProvider).currentUser;
+      final user = ref.watch(currentFirebaseUserProvider);
       if (user == null) {
         return const TrainerSharedContent(
           exercises: <TrainerExercise>[],

@@ -55,6 +55,7 @@ class FirestoreProfileRemoteDataSource implements ProfileRemoteDataSource {
   final FirebaseFirestore _firestore;
 
   static const String _usersCollection = 'users';
+  static const String _leaderboardEntriesCollection = 'leaderboard_entries';
   static const String _friendInvitesCollection = 'friend_invites';
   static const String _weightHistoryCollection = 'weight_history';
   static const Duration _requestTimeout = Duration(seconds: 15);
@@ -68,7 +69,16 @@ class FirestoreProfileRemoteDataSource implements ProfileRemoteDataSource {
           .get()
           .timeout(_requestTimeout);
 
-      return documentSnapshot.exists;
+      final data = documentSnapshot.data();
+      if (!documentSnapshot.exists || data == null) {
+        return false;
+      }
+
+      final name = (data['name'] as String?)?.trim() ?? '';
+      final gender = (data['gender'] as String?)?.trim() ?? '';
+      return name.isNotEmpty &&
+          gender.isNotEmpty &&
+          data['birthDate'] is Timestamp;
     } on FirebaseException catch (error) {
       throw ProfileException(_mapFirestoreError(error.code));
     } on TimeoutException {
@@ -143,6 +153,32 @@ class FirestoreProfileRemoteDataSource implements ProfileRemoteDataSource {
           ? null
           : normalizedFriendCode;
       batch.set(userReference, profileData, SetOptions(merge: true));
+      final existingProfileData =
+          existingProfileSnapshot.data() ?? <String, Object?>{};
+      batch.set(
+        _firestore
+            .collection(_leaderboardEntriesCollection)
+            .doc(profile.userId),
+        <String, Object?>{
+          'displayName': profile.name,
+          'city': profile.city,
+          'score': (existingProfileData['socialScore'] as num?)?.toInt() ?? 0,
+          'workoutsCount':
+              (existingProfileData['socialWorkoutsCount'] as num?)?.toInt() ??
+              0,
+          'caloriesBurned':
+              (existingProfileData['socialCaloriesBurned'] as num?)
+                  ?.toDouble() ??
+              0,
+          'stepsCount':
+              (existingProfileData['socialStepsCount'] as num?)?.toInt() ?? 0,
+          'visibleInFriendLeaderboard':
+              existingProfileData['visibleInFriendLeaderboard'] as bool? ??
+              true,
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
       if (shouldDeleteExistingCode) {
         batch.delete(
           _firestore

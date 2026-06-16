@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/firebase/firebase_bootstrap.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../domain/entities/chat_participant.dart';
-import '../../domain/entities/interest_chat_room.dart';
+import '../../domain/entities/friend_chat_room.dart';
 import '../../data/datasources/social_remote_data_source.dart';
 import '../../data/repositories/social_repository_impl.dart';
 import '../../domain/entities/chat_message.dart';
@@ -54,16 +54,9 @@ final updateLeaderboardStepsUseCaseProvider = Provider(
   (ref) => UpdateLeaderboardStepsUseCase(ref.watch(socialRepositoryProvider)),
 );
 
-final interestChatsProvider =
-    StreamProvider.autoDispose<List<InterestChatRoom>>((ref) {
-      return ref
-          .watch(socialRepositoryProvider)
-          .listenInterestChats(limit: 100);
-    });
-
-final interestChatProvider = StreamProvider.autoDispose
-    .family<InterestChatRoom?, String>((ref, chatId) {
-      return ref.watch(socialRepositoryProvider).watchInterestChat(chatId);
+final friendChatProvider = StreamProvider.autoDispose
+    .family<FriendChatRoom?, String>((ref, chatId) {
+      return ref.watch(socialRepositoryProvider).watchFriendChat(chatId);
     });
 
 final chatMessagesProvider = StreamProvider.autoDispose
@@ -78,7 +71,7 @@ final chatParticipantsProvider = StreamProvider.autoDispose
 
 final currentChatParticipantProvider = StreamProvider.autoDispose
     .family<ChatParticipant?, String>((ref, chatId) {
-      final currentUser = ref.watch(firebaseAuthProvider).currentUser;
+      final currentUser = ref.watch(currentFirebaseUserProvider);
       if (currentUser == null) {
         return Stream<ChatParticipant?>.value(null);
       }
@@ -91,7 +84,7 @@ final currentChatParticipantProvider = StreamProvider.autoDispose
 final leaderboardProvider = StreamProvider.autoDispose<List<LeaderboardUser>>((
   ref,
 ) async* {
-  final currentUser = ref.watch(firebaseAuthProvider).currentUser;
+  final currentUser = ref.watch(currentFirebaseUserProvider);
   if (currentUser != null) {
     final email = currentUser.email ?? '';
     await ref
@@ -106,8 +99,15 @@ final leaderboardProvider = StreamProvider.autoDispose<List<LeaderboardUser>>((
   yield* ref.watch(listenLeaderboardUseCaseProvider).call(limit: 100);
 });
 
+final cityLeaderboardProvider = StreamProvider.autoDispose
+    .family<List<LeaderboardUser>, String>((ref, city) {
+      return ref
+          .watch(listenLeaderboardUseCaseProvider)
+          .call(limit: 100, city: city);
+    });
+
 final friendsProvider = StreamProvider.autoDispose<List<FriendProfile>>((ref) {
-  final currentUser = ref.watch(firebaseAuthProvider).currentUser;
+  final currentUser = ref.watch(currentFirebaseUserProvider);
   if (currentUser == null) {
     return Stream<List<FriendProfile>>.value(const <FriendProfile>[]);
   }
@@ -117,7 +117,7 @@ final friendsProvider = StreamProvider.autoDispose<List<FriendProfile>>((ref) {
 
 final incomingFriendRequestsProvider =
     StreamProvider.autoDispose<List<FriendRequest>>((ref) {
-      final currentUser = ref.watch(firebaseAuthProvider).currentUser;
+      final currentUser = ref.watch(currentFirebaseUserProvider);
       if (currentUser == null) {
         return Stream<List<FriendRequest>>.value(const <FriendRequest>[]);
       }
@@ -129,7 +129,7 @@ final incomingFriendRequestsProvider =
 
 final socialPrivacySettingsProvider =
     StreamProvider.autoDispose<SocialPrivacySettings>((ref) {
-      final currentUser = ref.watch(firebaseAuthProvider).currentUser;
+      final currentUser = ref.watch(currentFirebaseUserProvider);
       if (currentUser == null) {
         return Stream<SocialPrivacySettings>.value(
           SocialPrivacySettings.defaults(),

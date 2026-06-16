@@ -10,6 +10,7 @@ import '../../../auth/domain/entities/user_goal.dart';
 import '../../../auth/domain/entities/user_profile.dart';
 import '../../../auth/domain/entities/user_profile_update_data.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../notifications/presentation/providers/reminder_settings_providers.dart';
 import '../../../steps/presentation/providers/step_providers.dart';
 import '../providers/dashboard_providers.dart';
 import '../utils/goal_settings_route_arguments.dart';
@@ -49,6 +50,8 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final profileState = ref.watch(currentUserProfileProvider);
+    final reminderSettings = ref.watch(reminderSettingsControllerProvider);
+    final isRu = Localizations.localeOf(context).languageCode == 'ru';
 
     return LigaPremiumScaffold(
       appBar: AppBar(title: Text(l10n.goalSettingsTitle)),
@@ -193,6 +196,46 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
                                 ],
                               ],
                             ),
+                          ),
+                          const SizedBox(height: 12),
+                          _NotificationSettingsCard(
+                            settings: reminderSettings,
+                            isRu: isRu,
+                            onMasterChanged: (value) => ref
+                                .read(
+                                  reminderSettingsControllerProvider.notifier,
+                                )
+                                .setMasterEnabled(value),
+                            onWorkoutChanged: (value) => ref
+                                .read(
+                                  reminderSettingsControllerProvider.notifier,
+                                )
+                                .setWorkoutEnabled(value),
+                            onWaterChanged: (value) => ref
+                                .read(
+                                  reminderSettingsControllerProvider.notifier,
+                                )
+                                .setWaterEnabled(value),
+                            onDailySummaryChanged: (value) => ref
+                                .read(
+                                  reminderSettingsControllerProvider.notifier,
+                                )
+                                .setDailySummaryEnabled(value),
+                            onWorkoutTimeChanged: (value) => ref
+                                .read(
+                                  reminderSettingsControllerProvider.notifier,
+                                )
+                                .setWorkoutTime(value),
+                            onWaterTimeChanged: (value) => ref
+                                .read(
+                                  reminderSettingsControllerProvider.notifier,
+                                )
+                                .setWaterTime(value),
+                            onDailySummaryTimeChanged: (value) => ref
+                                .read(
+                                  reminderSettingsControllerProvider.notifier,
+                                )
+                                .setDailySummaryTime(value),
                           ),
                           const SizedBox(height: 16),
                           FilledButton.icon(
@@ -351,6 +394,145 @@ class _GoalSettingsScreenState extends ConsumerState<GoalSettingsScreen> {
     }
 
     return double.tryParse(normalized);
+  }
+}
+
+class _NotificationSettingsCard extends StatelessWidget {
+  const _NotificationSettingsCard({
+    required this.settings,
+    required this.isRu,
+    required this.onMasterChanged,
+    required this.onWorkoutChanged,
+    required this.onWaterChanged,
+    required this.onDailySummaryChanged,
+    required this.onWorkoutTimeChanged,
+    required this.onWaterTimeChanged,
+    required this.onDailySummaryTimeChanged,
+  });
+
+  final ReminderSettingsState settings;
+  final bool isRu;
+  final ValueChanged<bool> onMasterChanged;
+  final ValueChanged<bool> onWorkoutChanged;
+  final ValueChanged<bool> onWaterChanged;
+  final ValueChanged<bool> onDailySummaryChanged;
+  final ValueChanged<TimeOfDay> onWorkoutTimeChanged;
+  final ValueChanged<TimeOfDay> onWaterTimeChanged;
+  final ValueChanged<TimeOfDay> onDailySummaryTimeChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      padding: const EdgeInsets.all(14),
+      child: Padding(
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.notifications_active_rounded),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    isRu ? 'Уведомления' : 'Notifications',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              value: settings.enabled,
+              onChanged: onMasterChanged,
+              title: Text(isRu ? 'Включить уведомления' : 'Enable reminders'),
+              subtitle: Text(
+                isRu
+                    ? 'Локальные напоминания на устройстве'
+                    : 'Local reminders on this device',
+              ),
+            ),
+            _ReminderRow(
+              enabled: settings.enabled && settings.workoutEnabled,
+              title: isRu ? 'Тренировка' : 'Workout',
+              subtitle: isRu
+                  ? 'Не забудь выполнить тренировку сегодня'
+                  : 'Do not forget today workout',
+              time: settings.workoutTime,
+              onEnabledChanged: settings.enabled ? onWorkoutChanged : null,
+              onTimeChanged: settings.enabled ? onWorkoutTimeChanged : null,
+            ),
+            _ReminderRow(
+              enabled: settings.enabled && settings.waterEnabled,
+              title: isRu ? 'Вода' : 'Water',
+              subtitle: isRu
+                  ? 'Выпей воды, организм скажет спасибо'
+                  : 'Drink water, your body will thank you',
+              time: settings.waterTime,
+              onEnabledChanged: settings.enabled ? onWaterChanged : null,
+              onTimeChanged: settings.enabled ? onWaterTimeChanged : null,
+            ),
+            _ReminderRow(
+              enabled: settings.enabled && settings.dailySummaryEnabled,
+              title: isRu ? 'Итог дня' : 'Day summary',
+              subtitle: isRu
+                  ? 'Посмотри свой итог дня'
+                  : 'Review your day summary',
+              time: settings.dailySummaryTime,
+              onEnabledChanged: settings.enabled ? onDailySummaryChanged : null,
+              onTimeChanged: settings.enabled
+                  ? onDailySummaryTimeChanged
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReminderRow extends StatelessWidget {
+  const _ReminderRow({
+    required this.enabled,
+    required this.title,
+    required this.subtitle,
+    required this.time,
+    required this.onEnabledChanged,
+    required this.onTimeChanged,
+  });
+
+  final bool enabled;
+  final String title;
+  final String subtitle;
+  final TimeOfDay time;
+  final ValueChanged<bool>? onEnabledChanged;
+  final ValueChanged<TimeOfDay>? onTimeChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile.adaptive(
+      contentPadding: EdgeInsets.zero,
+      value: enabled,
+      onChanged: onEnabledChanged,
+      title: Text(title),
+      subtitle: Text(subtitle),
+      secondary: OutlinedButton.icon(
+        onPressed: onTimeChanged == null
+            ? null
+            : () async {
+                final picked = await showTimePicker(
+                  context: context,
+                  initialTime: time,
+                );
+                if (picked != null) {
+                  onTimeChanged!(picked);
+                }
+              },
+        icon: const Icon(Icons.schedule_rounded),
+        label: Text(time.format(context)),
+      ),
+    );
   }
 }
 

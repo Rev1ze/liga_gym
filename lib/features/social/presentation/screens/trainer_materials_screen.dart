@@ -87,10 +87,7 @@ class TrainerMaterialDetailsScreen extends StatelessWidget {
                           ),
                         ),
                         child: Icon(
-                          IconData(
-                            arguments.iconCodePoint,
-                            fontFamily: 'MaterialIcons',
-                          ),
+                          _trainerMaterialIcon(arguments.iconCodePoint),
                           color: Colors.black,
                         ),
                       ),
@@ -169,6 +166,22 @@ class TrainerMaterialDetailsScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+IconData _trainerMaterialIcon(int codePoint) {
+  if (codePoint == Icons.event_available_rounded.codePoint) {
+    return Icons.event_available_rounded;
+  }
+  if (codePoint == Icons.assignment_rounded.codePoint) {
+    return Icons.assignment_rounded;
+  }
+  if (codePoint == Icons.restaurant_menu_rounded.codePoint) {
+    return Icons.restaurant_menu_rounded;
+  }
+  if (codePoint == Icons.fitness_center_rounded.codePoint) {
+    return Icons.fitness_center_rounded;
+  }
+  return Icons.auto_awesome_rounded;
 }
 
 class _TrainerMaterialsContent extends StatelessWidget {

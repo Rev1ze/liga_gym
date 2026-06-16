@@ -13,10 +13,12 @@ abstract final class AppRoutes {
   static const chat = '/social/chat';
   static const chatRoom = '/social/chat-room';
   static const friends = '/social/friends';
+  static const leaderboard = '/social/leaderboard';
+  static const leaderboardSettings = '/social/leaderboard/settings';
   static const trainerMaterials = '/social/trainer-materials';
   static const trainerMaterialDetails = '/social/trainer-material-details';
-  static const leaderboard = friends;
   static const workoutList = '/workouts';
+  static const exerciseLibrary = '/workouts/exercises';
   static const workoutHistory = '/workouts/history';
   static const startWorkout = '/workouts/start';
   static const activeWorkout = '/workouts/active';

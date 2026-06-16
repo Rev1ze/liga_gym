@@ -22,21 +22,615 @@ import '../../../coach/domain/entities/trainer_workout_template.dart';
 import '../../../coach/presentation/providers/coach_providers.dart';
 import '../../domain/entities/friend_profile.dart';
 import '../../domain/entities/friend_request.dart';
+import '../../domain/entities/leaderboard_user.dart';
 import '../../domain/entities/social_privacy.dart';
+import '../../domain/services/friend_visibility_service.dart';
 import '../providers/social_providers.dart';
+import '../utils/chat_room_route_arguments.dart';
 import '../utils/trainer_materials_route_arguments.dart';
 
-class LeaderboardScreen extends ConsumerStatefulWidget {
+class LeaderboardScreen extends ConsumerWidget {
   const LeaderboardScreen({super.key});
 
   @override
-  ConsumerState<LeaderboardScreen> createState() => _LeaderboardScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final copy = _SocialCopy.of(context);
+    final friendsState = ref.watch(friendsProvider);
+    final currentUser = ref.watch(currentFirebaseUserProvider);
+    final leaderboardState = ref.watch(leaderboardProvider);
+
+    return LigaPremiumScaffold(
+      appBar: AppBar(
+        title: Text(copy.friendLeaderboardTitle),
+        actions: [
+          IconButton(
+            tooltip: _localized(context, ru: 'Настройки', en: 'Settings'),
+            onPressed: () =>
+                Navigator.of(context).pushNamed(AppRoutes.leaderboardSettings),
+            icon: const Icon(Icons.tune_rounded),
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(36),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                copy.friendLeaderboardSubtitle,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).hintColor,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      child: SafeArea(
+        child: currentUser == null
+            ? Center(child: Text(copy.unauthorized))
+            : Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 980),
+                  child: friendsState.when(
+                    loading: () => ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
+                      children: const [SkeletonCard(height: 360)],
+                    ),
+                    error: (error, _) => ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
+                      children: [
+                        _ErrorCard(message: _leaderboardError(context, error)),
+                      ],
+                    ),
+                    data: (friends) => ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
+                      children: [
+                        leaderboardState.when(
+                          data: (users) => _FriendLeaderboardCard(
+                            copy: copy,
+                            friends: friends,
+                            currentUserId: currentUser.uid,
+                            currentUser: _currentLeaderboardUser(
+                              users,
+                              currentUser.uid,
+                            ),
+                          ),
+                          error: (_, _) => _FriendLeaderboardCard(
+                            copy: copy,
+                            friends: friends,
+                            currentUserId: currentUser.uid,
+                            currentUser: null,
+                          ),
+                          loading: () => const SkeletonCard(height: 360),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
+
+  static String _leaderboardError(BuildContext context, Object error) {
+    final l10n = AppLocalizations.of(context)!;
+    return error is AppException
+        ? error.code.localize(l10n)
+        : l10n.errorLeaderboardLoadFailed;
+  }
+
+  static LeaderboardUser? _currentLeaderboardUser(
+    List<LeaderboardUser> users,
+    String currentUserId,
+  ) {
+    for (final user in users) {
+      if (user.userId == currentUserId) {
+        return user;
+      }
+    }
+    return null;
+  }
 }
 
-class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
+extension _FriendProfileCopy on _SocialCopy {
+  String get friendProfileTapHint => 'Open profile to see shared data';
+  String get friendProfileNoSharedData => 'This user has hidden their stats.';
+  String get hiddenValue => 'hidden';
+  String get stepsTitle => 'Steps';
+  String get workoutsTitle => 'Workouts';
+  String get progressTitle => 'Progress';
+  String get caloriesTitle => 'Calories';
+  String get leaderboardAccessTitle => 'Leaderboard';
+  String get leaderboardShared => 'shared';
+  String get leaderboardYouBadge => isRu ? 'Вы' : 'You';
+
+  String stepsLabel(String value) => '$value steps';
+  String workoutsLabel(String value) => '$value workouts';
+  String scoreLabel(String value) => '$value pts';
+}
+
+class LeaderboardSettingsScreen extends ConsumerWidget {
+  const LeaderboardSettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final copy = _SocialCopy.of(context);
+    final currentUser = ref.watch(currentFirebaseUserProvider);
+    final privacyState = ref.watch(socialPrivacySettingsProvider);
+    final friendsState = ref.watch(friendsProvider);
+
+    return LigaPremiumScaffold(
+      appBar: AppBar(
+        title: Text(
+          _localized(
+            context,
+            ru: 'Настройки лидерборда',
+            en: 'Leaderboard settings',
+          ),
+        ),
+      ),
+      child: SafeArea(
+        child: currentUser == null
+            ? Center(child: Text(copy.unauthorized))
+            : Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 980),
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
+                    children: [
+                      privacyState.when(
+                        data: (settings) => friendsState.when(
+                          data: (friends) => _PrivacyCard(
+                            copy: copy,
+                            settings: settings,
+                            friends: friends,
+                            onSave: (next) => _savePrivacy(
+                              context,
+                              ref,
+                              currentUser.uid,
+                              next,
+                            ),
+                          ),
+                          error: (error, _) =>
+                              _ErrorCard(message: _messageFor(context, error)),
+                          loading: () => const SkeletonCard(height: 260),
+                        ),
+                        error: (error, _) =>
+                            _ErrorCard(message: _messageFor(context, error)),
+                        loading: () => const SkeletonCard(height: 260),
+                      ),
+                      const SizedBox(height: 12),
+                      GlassCard(
+                        child: Text(
+                          _localized(
+                            context,
+                            ru: 'Эти настройки управляют показом вас в лидерборде и доступом друзей к социальным показателям.',
+                            en: 'These settings control your leaderboard visibility and friends access to social metrics.',
+                          ),
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
+
+  Future<void> _savePrivacy(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    SocialPrivacySettings settings,
+  ) async {
+    final copy = _SocialCopy.of(context);
+    try {
+      await ref
+          .read(socialRepositoryProvider)
+          .savePrivacySettings(userId: userId, settings: settings);
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(copy.settingsSaved)));
+    } on Object catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_messageFor(context, error))));
+    }
+  }
+
+  static String _messageFor(BuildContext context, Object error) {
+    final l10n = AppLocalizations.of(context)!;
+    return error is AppException
+        ? error.code.localize(l10n)
+        : l10n.errorUnknown;
+  }
+}
+
+class _LeaderboardLoadingList extends StatelessWidget {
+  const _LeaderboardLoadingList();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+      children: const [SkeletonCard(height: 360)],
+    );
+  }
+}
+
+class _LeaderboardStatsStrip extends StatelessWidget {
+  const _LeaderboardStatsStrip({
+    required this.users,
+    required this.currentUserId,
+  });
+
+  final List<LeaderboardUser> users;
+  final String currentUserId;
+
+  @override
+  Widget build(BuildContext context) {
+    final currentIndex = users.indexWhere(
+      (user) => user.userId == currentUserId,
+    );
+    final currentUser = currentIndex == -1 ? null : users[currentIndex];
+    final formatter = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toLanguageTag(),
+    );
+
+    return GlassCard(
+      padding: const EdgeInsets.all(16),
+      child: Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          _CountPill(
+            icon: Icons.emoji_events_rounded,
+            label: currentIndex == -1
+                ? _localized(context, ru: 'Место -', en: 'Rank -')
+                : _localized(
+                    context,
+                    ru: 'Место ${currentIndex + 1}',
+                    en: 'Rank ${currentIndex + 1}',
+                  ),
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          _CountPill(
+            icon: Icons.star_rounded,
+            label: formatter.format(currentUser?.score ?? 0),
+            color: Theme.of(context).colorScheme.secondary,
+          ),
+          _CountPill(
+            icon: Icons.groups_rounded,
+            label: _localized(
+              context,
+              ru: '${users.length} участников',
+              en: '${users.length} athletes',
+            ),
+            color: Theme.of(context).colorScheme.tertiary,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LeaderboardTableCard extends StatelessWidget {
+  const _LeaderboardTableCard({
+    required this.users,
+    required this.currentUserId,
+    required this.emptyText,
+  });
+
+  final List<LeaderboardUser> users;
+  final String currentUserId;
+  final String emptyText;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+      children: [
+        GlassCard(
+          padding: const EdgeInsets.all(12),
+          child: users.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(emptyText, textAlign: TextAlign.center),
+                )
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth < 680) {
+                      return Column(
+                        children: [
+                          for (var i = 0; i < users.length; i++) ...[
+                            _LeaderboardMobileRow(
+                              position: i + 1,
+                              user: users[i],
+                              isCurrentUser: users[i].userId == currentUserId,
+                            ),
+                            if (i != users.length - 1)
+                              const Divider(height: 20),
+                          ],
+                        ],
+                      );
+                    }
+
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        columnSpacing: 22,
+                        headingRowHeight: 38,
+                        dataRowMinHeight: 58,
+                        dataRowMaxHeight: 68,
+                        columns: [
+                          DataColumn(label: Text('#')),
+                          DataColumn(
+                            label: Text(
+                              _localized(
+                                context,
+                                ru: 'Спортсмен',
+                                en: 'Athlete',
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              _localized(context, ru: 'Город', en: 'City'),
+                            ),
+                          ),
+                          DataColumn(
+                            numeric: true,
+                            label: Text(
+                              _localized(context, ru: 'Очки', en: 'Points'),
+                            ),
+                          ),
+                          DataColumn(
+                            numeric: true,
+                            label: Text(
+                              _localized(
+                                context,
+                                ru: 'Тренировки',
+                                en: 'Workouts',
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            numeric: true,
+                            label: Text(
+                              _localized(context, ru: 'Шаги', en: 'Steps'),
+                            ),
+                          ),
+                          DataColumn(
+                            numeric: true,
+                            label: Text(
+                              _localized(context, ru: 'Ккал', en: 'Kcal'),
+                            ),
+                          ),
+                        ],
+                        rows: [
+                          for (var i = 0; i < users.length; i++)
+                            _leaderboardDataRow(
+                              context,
+                              position: i + 1,
+                              user: users[i],
+                              isCurrentUser: users[i].userId == currentUserId,
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  DataRow _leaderboardDataRow(
+    BuildContext context, {
+    required int position,
+    required LeaderboardUser user,
+    required bool isCurrentUser,
+  }) {
+    final formatter = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toLanguageTag(),
+    );
+    final colorScheme = Theme.of(context).colorScheme;
+    return DataRow(
+      color: WidgetStatePropertyAll(
+        isCurrentUser
+            ? colorScheme.primary.withValues(alpha: 0.10)
+            : Colors.transparent,
+      ),
+      cells: [
+        DataCell(Text('$position')),
+        DataCell(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 16,
+                child: Text(_avatarLabel(user.displayName)),
+              ),
+              const SizedBox(width: 10),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 220),
+                child: Text(
+                  isCurrentUser
+                      ? '${user.displayName} (${AppLocalizations.of(context)!.leaderboardYou})'
+                      : user.displayName,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+        DataCell(Text((user.city ?? '').isEmpty ? '-' : user.city!)),
+        DataCell(Text(formatter.format(user.score))),
+        DataCell(Text(formatter.format(user.workoutsCount))),
+        DataCell(Text(formatter.format(user.stepsCount))),
+        DataCell(Text(formatter.format(user.caloriesBurned.round()))),
+      ],
+    );
+  }
+}
+
+class _LeaderboardMobileRow extends StatelessWidget {
+  const _LeaderboardMobileRow({
+    required this.position,
+    required this.user,
+    required this.isCurrentUser,
+  });
+
+  final int position;
+  final LeaderboardUser user;
+  final bool isCurrentUser;
+
+  @override
+  Widget build(BuildContext context) {
+    final formatter = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toLanguageTag(),
+    );
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: isCurrentUser
+            ? colorScheme.primary.withValues(alpha: 0.10)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          children: [
+            CircleAvatar(child: Text('$position')),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isCurrentUser
+                        ? '${user.displayName} (${AppLocalizations.of(context)!.leaderboardYou})'
+                        : user.displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    [
+                      if ((user.city ?? '').isNotEmpty) user.city!,
+                      AppLocalizations.of(
+                        context,
+                      )!.leaderboardPoints(formatter.format(user.score)),
+                      AppLocalizations.of(context)!.leaderboardWorkouts(
+                        formatter.format(user.workoutsCount),
+                      ),
+                    ].join(' · '),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _MetricChip(
+                        icon: Icons.directions_walk_rounded,
+                        label: AppLocalizations.of(
+                          context,
+                        )!.leaderboardSteps(formatter.format(user.stepsCount)),
+                      ),
+                      _MetricChip(
+                        icon: Icons.local_fire_department_rounded,
+                        label:
+                            '${formatter.format(user.caloriesBurned.round())} kcal',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MetricChip extends StatelessWidget {
+  const _MetricChip({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.48),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w800),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _localized(
+  BuildContext context, {
+  required String ru,
+  required String en,
+}) {
+  return Localizations.localeOf(context).languageCode == 'ru' ? ru : en;
+}
+
+String _avatarLabel(String value) {
+  final trimmed = value.trim();
+  return trimmed.isEmpty ? '?' : trimmed.characters.first.toUpperCase();
+}
+
+class SocialHubScreen extends ConsumerStatefulWidget {
+  const SocialHubScreen({super.key});
+
+  @override
+  ConsumerState<SocialHubScreen> createState() => _SocialHubScreenState();
+}
+
+class _SocialHubScreenState extends ConsumerState<SocialHubScreen> {
   final _inviteController = TextEditingController();
   String? _inviteLink;
   bool _isBusy = false;
+  String? _openingFriendId;
 
   @override
   void dispose() {
@@ -51,7 +645,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     final requestsState = ref.watch(incomingFriendRequestsProvider);
     final privacyState = ref.watch(socialPrivacySettingsProvider);
     final trainersState = ref.watch(linkedCoachTrainersProvider);
-    final currentUser = ref.watch(firebaseAuthProvider).currentUser;
+    final currentUser = ref.watch(currentFirebaseUserProvider);
 
     return LigaPremiumScaffold(
       appBar: AppBar(
@@ -113,12 +707,27 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                         data: (friends) => _FriendsListCard(
                           copy: copy,
                           friends: friends,
+                          openingFriendId: _openingFriendId,
+                          onMessage: _openFriendChat,
                           onRemove: (friend) =>
                               _removeFriend(currentUser.uid, friend.userId),
                         ),
                         error: (error, _) =>
                             _ErrorCard(message: _messageFor(error)),
                         loading: () => const SkeletonCard(height: 168),
+                      ),
+                      const SizedBox(height: 12),
+                      friendsState.when(
+                        data: (friends) => _OpenFriendLeaderboardCard(
+                          copy: copy,
+                          friendsCount: friends.length,
+                          onOpen: () => Navigator.of(
+                            context,
+                          ).pushNamed(AppRoutes.leaderboard),
+                        ),
+                        error: (error, _) =>
+                            _ErrorCard(message: _messageFor(error)),
+                        loading: () => const SkeletonCard(height: 96),
                       ),
                       const SizedBox(height: 12),
                       trainersState.when(
@@ -217,7 +826,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   }
 
   Future<void> _acceptRequest(FriendRequest request) async {
-    final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
+    final userId = ref.read(currentFirebaseUserProvider)?.uid;
     if (userId == null) {
       return;
     }
@@ -233,7 +842,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   }
 
   Future<void> _declineRequest(FriendRequest request) async {
-    final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
+    final userId = ref.read(currentFirebaseUserProvider)?.uid;
     if (userId == null) {
       return;
     }
@@ -256,8 +865,50 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     }
   }
 
+  Future<void> _openFriendChat(FriendProfile friend) async {
+    final currentUser = ref.read(currentFirebaseUserProvider);
+    if (currentUser == null || _openingFriendId != null) {
+      return;
+    }
+
+    setState(() {
+      _openingFriendId = friend.userId;
+    });
+
+    try {
+      final email = currentUser.email ?? '';
+      final chatId = await ref
+          .read(socialRepositoryProvider)
+          .openFriendChat(
+            userId: currentUser.uid,
+            friendId: friend.userId,
+            friendName: friend.displayName,
+            fallbackName: currentUser.displayName ?? email.split('@').first,
+            fallbackEmail: email,
+          );
+      if (!mounted) {
+        return;
+      }
+      await Navigator.of(context).pushNamed(
+        AppRoutes.chatRoom,
+        arguments: ChatRoomRouteArguments(
+          chatId: chatId,
+          title: friend.displayName,
+        ),
+      );
+    } on Object catch (error) {
+      _showError(error);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _openingFriendId = null;
+        });
+      }
+    }
+  }
+
   Future<void> _savePrivacy(SocialPrivacySettings settings) async {
-    final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
+    final userId = ref.read(currentFirebaseUserProvider)?.uid;
     if (userId == null) {
       return;
     }
@@ -771,21 +1422,27 @@ class _PrivacyCard extends StatelessWidget {
 }
 
 class _FriendLeaderboardCard extends StatelessWidget {
-  const _FriendLeaderboardCard({required this.copy, required this.friends});
+  const _FriendLeaderboardCard({
+    required this.copy,
+    required this.friends,
+    required this.currentUserId,
+    required this.currentUser,
+  });
 
   final _SocialCopy copy;
   final List<FriendProfile> friends;
+  final String currentUserId;
+  final LeaderboardUser? currentUser;
 
   @override
   Widget build(BuildContext context) {
-    final visibleFriends =
-        friends
-            .where(
-              (friend) =>
-                  friend.canView(SocialPrivacyCategory.friendLeaderboard),
-            )
-            .toList(growable: false)
-          ..sort((left, right) => right.score.compareTo(left.score));
+    final visibleFriends = FriendVisibilityService.leaderboardProfiles(friends);
+    final entries = <_FriendLeaderboardEntry>[
+      for (final friend in visibleFriends)
+        if (friend.userId != currentUserId)
+          _FriendLeaderboardEntry.friend(friend),
+      if (currentUser != null) _FriendLeaderboardEntry.current(currentUser!),
+    ]..sort((left, right) => right.score.compareTo(left.score));
 
     return GlassCard(
       child: Column(
@@ -796,12 +1453,16 @@ class _FriendLeaderboardCard extends StatelessWidget {
             subtitle: copy.friendLeaderboardSubtitle,
           ),
           const SizedBox(height: 12),
-          if (visibleFriends.isEmpty)
+          if (entries.isEmpty)
             Text(copy.friendLeaderboardEmpty)
           else
-            for (var i = 0; i < visibleFriends.length; i++) ...[
-              _LeaderboardFriendRow(position: i + 1, friend: visibleFriends[i]),
-              if (i != visibleFriends.length - 1) const Divider(height: 22),
+            for (var i = 0; i < entries.length; i++) ...[
+              _LeaderboardFriendRow(
+                copy: copy,
+                position: i + 1,
+                entry: entries[i],
+              ),
+              if (i != entries.length - 1) const Divider(height: 22),
             ],
         ],
       ),
@@ -809,14 +1470,63 @@ class _FriendLeaderboardCard extends StatelessWidget {
   }
 }
 
-class _LeaderboardFriendRow extends StatelessWidget {
-  const _LeaderboardFriendRow({required this.position, required this.friend});
+class _FriendLeaderboardEntry {
+  const _FriendLeaderboardEntry({
+    required this.userId,
+    required this.displayName,
+    required this.score,
+    required this.workoutsCount,
+    required this.stepsCount,
+    required this.isCurrentUser,
+  });
 
+  factory _FriendLeaderboardEntry.friend(VisibleFriendProfile friend) {
+    return _FriendLeaderboardEntry(
+      displayName: friend.displayName,
+      userId: friend.userId,
+      score: friend.score ?? 0,
+      workoutsCount: friend.workoutsCount,
+      stepsCount: friend.stepsCount,
+      isCurrentUser: false,
+    );
+  }
+
+  factory _FriendLeaderboardEntry.current(LeaderboardUser user) {
+    return _FriendLeaderboardEntry(
+      displayName: user.displayName,
+      userId: user.userId,
+      score: user.score,
+      workoutsCount: user.workoutsCount,
+      stepsCount: user.stepsCount,
+      isCurrentUser: true,
+    );
+  }
+
+  final String displayName;
+  final String userId;
+  final int score;
+  final int? workoutsCount;
+  final int? stepsCount;
+  final bool isCurrentUser;
+}
+
+class _LeaderboardFriendRow extends StatelessWidget {
+  const _LeaderboardFriendRow({
+    required this.copy,
+    required this.position,
+    required this.entry,
+  });
+
+  final _SocialCopy copy;
   final int position;
-  final FriendProfile friend;
+  final _FriendLeaderboardEntry entry;
 
   @override
   Widget build(BuildContext context) {
+    final formatter = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toLanguageTag(),
+    );
+
     return Row(
       children: [
         CircleAvatar(child: Text('$position')),
@@ -826,14 +1536,26 @@ class _LeaderboardFriendRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                friend.displayName,
+                entry.displayName,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
               ),
+              if (entry.isCurrentUser) ...[
+                const SizedBox(height: 4),
+                _CurrentUserBadge(label: copy.leaderboardYouBadge),
+              ],
               const SizedBox(height: 4),
               Text(
-                '${friend.score} pts · ${friend.workoutsCount} workouts · ${friend.stepsCount} steps',
+                copy.friendLeaderboardMeta(
+                  score: formatter.format(entry.score),
+                  workouts: entry.workoutsCount == null
+                      ? copy.hiddenValue
+                      : formatter.format(entry.workoutsCount),
+                  steps: entry.stepsCount == null
+                      ? copy.hiddenValue
+                      : formatter.format(entry.stepsCount),
+                ),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -844,21 +1566,50 @@ class _LeaderboardFriendRow extends StatelessWidget {
   }
 }
 
+class _CurrentUserBadge extends StatelessWidget {
+  const _CurrentUserBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.primary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: colorScheme.primary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _FriendsListCard extends StatelessWidget {
   const _FriendsListCard({
     required this.copy,
     required this.friends,
+    required this.openingFriendId,
+    required this.onMessage,
     required this.onRemove,
   });
 
   final _SocialCopy copy;
   final List<FriendProfile> friends;
+  final String? openingFriendId;
+  final ValueChanged<FriendProfile> onMessage;
   final ValueChanged<FriendProfile> onRemove;
 
   @override
   Widget build(BuildContext context) {
-    final languageCode = Localizations.localeOf(context).languageCode;
-
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -869,49 +1620,282 @@ class _FriendsListCard extends StatelessWidget {
             Text(copy.friendsEmpty)
           else
             for (final friend in friends) ...[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    child: Text(friend.displayName.characters.first),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                onTap: () => _showFriendProfile(context, copy, friend),
+                leading: CircleAvatar(
+                  child: Text(_avatarLabel(friend.displayName)),
+                ),
+                title: Text(
+                  friend.displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          friend.displayName,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w800),
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            for (final category
-                                in SocialPrivacyCategory.values.where(
-                                  friend.canView,
-                                ))
-                              Chip(
-                                visualDensity: VisualDensity.compact,
-                                label: Text(category.label(languageCode)),
-                              ),
-                          ],
-                        ),
-                      ],
+                ),
+                subtitle: _FriendListSubtitle(copy: copy, friend: friend),
+                trailing: Wrap(
+                  spacing: 2,
+                  children: [
+                    IconButton(
+                      tooltip: copy.messageFriend,
+                      onPressed: openingFriendId == null
+                          ? () => onMessage(friend)
+                          : null,
+                      icon: openingFriendId == friend.userId
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.chat_bubble_outline_rounded),
                     ),
-                  ),
-                  IconButton(
-                    tooltip: copy.removeFriend,
-                    onPressed: () => onRemove(friend),
-                    icon: const Icon(Icons.person_remove_alt_1_rounded),
-                  ),
-                ],
+                    IconButton(
+                      tooltip: copy.removeFriend,
+                      onPressed: () => onRemove(friend),
+                      icon: const Icon(Icons.person_remove_alt_1_rounded),
+                    ),
+                  ],
+                ),
               ),
               if (friend != friends.last) const Divider(height: 24),
             ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showFriendProfile(
+    BuildContext context,
+    _SocialCopy copy,
+    FriendProfile friend,
+  ) {
+    final visible = FriendVisibilityService.visibleProfile(friend);
+    return showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              0,
+              16,
+              16 + MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.82,
+              ),
+              child: _FriendProfileSheet(copy: copy, friend: visible),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _FriendListSubtitle extends StatelessWidget {
+  const _FriendListSubtitle({required this.copy, required this.friend});
+
+  final _SocialCopy copy;
+  final FriendProfile friend;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = FriendVisibilityService.visibleProfile(friend);
+    final formatter = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toLanguageTag(),
+    );
+    final parts = [
+      if ((visible.city ?? '').isNotEmpty) visible.city!,
+      if (visible.stepsCount != null)
+        copy.stepsLabel(formatter.format(visible.stepsCount)),
+      if (visible.workoutsCount != null)
+        copy.workoutsLabel(formatter.format(visible.workoutsCount)),
+      if (visible.score != null)
+        copy.scoreLabel(formatter.format(visible.score)),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 5),
+      child: Text(
+        parts.isEmpty ? copy.friendProfileTapHint : parts.join(' · '),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+}
+
+class _FriendProfileSheet extends StatelessWidget {
+  const _FriendProfileSheet({required this.copy, required this.friend});
+
+  final _SocialCopy copy;
+  final VisibleFriendProfile friend;
+
+  @override
+  Widget build(BuildContext context) {
+    final formatter = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toLanguageTag(),
+    );
+    final metricTiles = <Widget>[
+      if (friend.stepsCount != null)
+        _FriendMetricTile(
+          icon: Icons.directions_walk_rounded,
+          label: copy.stepsTitle,
+          value: formatter.format(friend.stepsCount),
+        ),
+      if (friend.workoutsCount != null)
+        _FriendMetricTile(
+          icon: Icons.fitness_center_rounded,
+          label: copy.workoutsTitle,
+          value: formatter.format(friend.workoutsCount),
+        ),
+      if (friend.score != null)
+        _FriendMetricTile(
+          icon: Icons.trending_up_rounded,
+          label: copy.progressTitle,
+          value: formatter.format(friend.score),
+        ),
+      if (friend.caloriesBurned != null)
+        _FriendMetricTile(
+          icon: Icons.local_fire_department_rounded,
+          label: copy.caloriesTitle,
+          value: formatter.format(friend.caloriesBurned!.round()),
+        ),
+      if (friend.visibleInLeaderboard)
+        _FriendMetricTile(
+          icon: Icons.leaderboard_rounded,
+          label: copy.leaderboardAccessTitle,
+          value: copy.leaderboardShared,
+        ),
+    ];
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 28,
+                child: Text(_avatarLabel(friend.displayName)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      friend.displayName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    if ((friend.city ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(friend.city!),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          if (metricTiles.isEmpty)
+            Text(copy.friendProfileNoSharedData)
+          else
+            for (final tile in metricTiles) ...[
+              tile,
+              if (tile != metricTiles.last) const Divider(height: 18),
+            ],
+        ],
+      ),
+    );
+  }
+}
+
+class _FriendMetricTile extends StatelessWidget {
+  const _FriendMetricTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon),
+      title: Text(label),
+      trailing: Text(
+        value,
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+      ),
+    );
+  }
+}
+
+class _OpenFriendLeaderboardCard extends StatelessWidget {
+  const _OpenFriendLeaderboardCard({
+    required this.copy,
+    required this.friendsCount,
+    required this.onOpen,
+  });
+
+  final _SocialCopy copy;
+  final int friendsCount;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GlassCard(
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: colorScheme.primary.withValues(alpha: 0.14),
+            child: Icon(Icons.leaderboard_rounded, color: colorScheme.primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  copy.friendLeaderboardTitle,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  copy.friendLeaderboardEntrySubtitle(friendsCount),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          FilledButton.icon(
+            onPressed: onOpen,
+            icon: const Icon(Icons.arrow_forward_rounded),
+            label: Text(copy.openLeaderboard),
+          ),
         ],
       ),
     );
@@ -1522,9 +2506,14 @@ class _SocialCopy {
   String get friendLeaderboardEmpty => isRu
       ? 'Пока никто из друзей не делится местом в рейтинге.'
       : 'No friends are sharing leaderboard placement yet.';
+  String get openLeaderboard => isRu ? 'Открыть' : 'Open';
+  String friendLeaderboardEntrySubtitle(int count) => isRu
+      ? 'Рейтинг будет считаться только среди ваших друзей: $count.'
+      : 'Ranking includes only your friends: $count.';
   String get friendsTitle => isRu ? 'Мои друзья' : 'My friends';
   String get friendsEmpty =>
       isRu ? 'Список друзей пока пуст.' : 'Your friend list is empty.';
+  String get messageFriend => isRu ? 'Написать' : 'Message';
   String get removeFriend => isRu ? 'Удалить из друзей' : 'Remove friend';
 
   String get hubTitle => isRu ? 'Друзья и тренеры' : 'Friends and coaches';
@@ -1575,6 +2564,13 @@ class _SocialCopy {
   String friendsCount(int value) => isRu ? '$value друзей' : '$value friends';
   String trainersCount(int value) =>
       isRu ? '$value тренеров' : '$value coaches';
+  String friendLeaderboardMeta({
+    required String score,
+    required String workouts,
+    required String steps,
+  }) => isRu
+      ? '$score очков • $workouts тренировок • $steps шагов'
+      : '$score pts • $workouts workouts • $steps steps';
   String workoutsCount(int value) =>
       isRu ? '$value комплексов' : '$value plans';
   String recipesCount(int value) => isRu ? '$value рецептов' : '$value recipes';

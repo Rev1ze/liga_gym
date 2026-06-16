@@ -33,7 +33,7 @@ class SqfliteWorkoutLocalDataSource implements WorkoutLocalDataSource {
     final databasePath = path.join(databasesPath, _databaseName);
     _database = await openDatabase(
       databasePath,
-      version: 2,
+      version: 4,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE $_tableName(
@@ -46,15 +46,20 @@ class SqfliteWorkoutLocalDataSource implements WorkoutLocalDataSource {
             calories REAL NOT NULL,
             distance_meters REAL NOT NULL,
             route_json TEXT NOT NULL,
-            is_synced INTEGER NOT NULL
+            is_synced INTEGER NOT NULL,
+            title TEXT,
+            note TEXT,
+            place TEXT,
+            exercise_entries_json TEXT NOT NULL DEFAULT '[]',
+            is_manual INTEGER NOT NULL DEFAULT 0
           )
         ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        await _ensureRouteColumn(db);
+        await _ensureColumns(db);
       },
       onOpen: (db) async {
-        await _ensureRouteColumn(db);
+        await _ensureColumns(db);
       },
     );
 
@@ -128,17 +133,36 @@ class SqfliteWorkoutLocalDataSource implements WorkoutLocalDataSource {
     );
   }
 
-  Future<void> _ensureRouteColumn(Database db) async {
+  Future<void> _ensureColumns(Database db) async {
     final columns = await db.rawQuery('PRAGMA table_info($_tableName)');
-    final hasRouteColumn = columns.any(
-      (column) => column['name'] == 'route_json',
-    );
-    if (hasRouteColumn) {
-      return;
-    }
+    final columnNames = columns
+        .map((column) => column['name'] as String?)
+        .whereType<String>()
+        .toSet();
 
-    await db.execute(
-      "ALTER TABLE $_tableName ADD COLUMN route_json TEXT NOT NULL DEFAULT '[]'",
-    );
+    if (!columnNames.contains('route_json')) {
+      await db.execute(
+        "ALTER TABLE $_tableName ADD COLUMN route_json TEXT NOT NULL DEFAULT '[]'",
+      );
+    }
+    if (!columnNames.contains('title')) {
+      await db.execute("ALTER TABLE $_tableName ADD COLUMN title TEXT");
+    }
+    if (!columnNames.contains('note')) {
+      await db.execute("ALTER TABLE $_tableName ADD COLUMN note TEXT");
+    }
+    if (!columnNames.contains('place')) {
+      await db.execute("ALTER TABLE $_tableName ADD COLUMN place TEXT");
+    }
+    if (!columnNames.contains('exercise_entries_json')) {
+      await db.execute(
+        "ALTER TABLE $_tableName ADD COLUMN exercise_entries_json TEXT NOT NULL DEFAULT '[]'",
+      );
+    }
+    if (!columnNames.contains('is_manual')) {
+      await db.execute(
+        'ALTER TABLE $_tableName ADD COLUMN is_manual INTEGER NOT NULL DEFAULT 0',
+      );
+    }
   }
 }

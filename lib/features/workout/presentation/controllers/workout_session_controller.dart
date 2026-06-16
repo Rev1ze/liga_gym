@@ -255,6 +255,7 @@ class WorkoutSessionController extends Notifier<WorkoutSessionState> {
       type: engine.type,
       duration: elapsed,
       distanceMeters: distanceMeters,
+      route: engine.route,
     );
 
     state = state.copyWith(

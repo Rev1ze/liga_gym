@@ -85,12 +85,16 @@ class FirestoreWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   @override
   Future<void> saveWorkout(WorkoutModel workout) async {
     final userReference = _firestore.collection('users').doc(workout.userId);
+    final leaderboardEntryReference = _firestore
+        .collection('leaderboard_entries')
+        .doc(workout.userId);
     final workoutReference = userReference
         .collection('workouts')
         .doc(workout.id);
 
     await _firestore.runTransaction((transaction) async {
       final workoutSnapshot = await transaction.get(workoutReference);
+      final userSnapshot = await transaction.get(userReference);
       if (workoutSnapshot.exists) {
         transaction.set(
           workoutReference,
@@ -101,12 +105,26 @@ class FirestoreWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
       }
 
       final scoreIncrement = _calculateSocialScore(workout);
+      final userData = userSnapshot.data() ?? <String, Object?>{};
 
       transaction.set(workoutReference, workout.toFirestore());
       transaction.set(userReference, <String, Object?>{
         'socialScore': FieldValue.increment(scoreIncrement),
         'socialWorkoutsCount': FieldValue.increment(1),
         'socialCaloriesBurned': FieldValue.increment(workout.calories),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      transaction.set(leaderboardEntryReference, <String, Object?>{
+        'displayName': (userData['name'] as String?)?.trim().isNotEmpty == true
+            ? (userData['name'] as String).trim()
+            : 'Athlete',
+        'city': (userData['city'] as String?)?.trim(),
+        'score': FieldValue.increment(scoreIncrement),
+        'workoutsCount': FieldValue.increment(1),
+        'caloriesBurned': FieldValue.increment(workout.calories),
+        'stepsCount': (userData['socialStepsCount'] as num?)?.toInt() ?? 0,
+        'visibleInFriendLeaderboard':
+            userData['visibleInFriendLeaderboard'] as bool? ?? true,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     });

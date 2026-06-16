@@ -20,13 +20,20 @@ import 'core/providers/shared_preferences_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/domain/entities/user_profile.dart';
 import 'features/auth/presentation/providers/auth_providers.dart';
+import 'features/coach/presentation/providers/coach_providers.dart';
 import 'features/dashboard/presentation/providers/dashboard_providers.dart';
+import 'features/exercises/presentation/providers/exercise_library_providers.dart';
+import 'features/notifications/presentation/providers/reminder_settings_providers.dart';
+import 'features/nutrition/presentation/providers/nutrition_providers.dart';
 import 'features/social/domain/entities/friend_request.dart';
 import 'features/social/presentation/providers/social_providers.dart';
 import 'features/steps/data/datasources/step_local_data_source.dart';
 import 'features/steps/data/models/daily_step_count_model.dart';
 import 'features/steps/data/services/step_tracking_service.dart';
 import 'features/steps/presentation/providers/step_providers.dart';
+import 'features/water_tracker/presentation/providers/water_tracker_providers.dart';
+import 'features/workout/presentation/providers/workout_providers.dart';
+import 'features/workout_completion/presentation/providers/workout_completion_providers.dart';
 import 'l10n/app_localizations.dart';
 
 class LigaGymApp extends ConsumerStatefulWidget {
@@ -61,6 +68,11 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
       duration: const Duration(seconds: 3),
     );
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(
+        ref.read(reminderSettingsControllerProvider.notifier).reschedule(),
+      );
+    });
 
     if (ref.read(firebaseBootstrapProvider).isConfigured) {
       _authSubscription = ref
@@ -71,24 +83,18 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
             _activeUserId = user?.uid;
             _knownIncomingFriendRequestIds = const <String>{};
             _hasLoadedIncomingFriendRequests = false;
+            _invalidateUserScopedState();
             await ref
                 .read(stepTrackingServiceProvider)
                 .resetUserSession(
                   previousUserId: previousUserId,
                   nextUserId: user?.uid,
                 );
-            ref.invalidate(currentAuthUserProvider);
-            ref.invalidate(currentUserProfileProvider);
-            ref.invalidate(dashboardAnalyticsProvider);
-            ref.invalidate(todayStepCountProvider);
-            ref.invalidate(stepGoalProvider);
-            ref.invalidate(stepGoalCelebrationPendingProvider);
-            ref.invalidate(stepTrackingStatusProvider);
-            ref.invalidate(incomingFriendRequestsProvider);
 
             if (user == null) {
               unawaited(ref.read(stepTrackingServiceProvider).stopTracking());
               unawaited(_stopForegroundStepSync());
+              unawaited(AppNotificationService.cancelDailyReminders());
               return;
             }
 
@@ -112,6 +118,11 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
               ref
                   .read(appOfflineSyncCoordinatorProvider)
                   .syncDataWithServer(userId: user.uid),
+            );
+            unawaited(
+              ref
+                  .read(reminderSettingsControllerProvider.notifier)
+                  .reschedule(),
             );
             unawaited(_refreshUserScopedState(userId: user.uid));
           });
@@ -424,21 +435,14 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
   }
 
   Future<void> _refreshUserScopedState({required String userId}) async {
-    ref.invalidate(currentAuthUserProvider);
-    ref.invalidate(currentUserProfileProvider);
-    ref.invalidate(dashboardAnalyticsProvider);
-    ref.invalidate(todayStepCountProvider);
-    ref.invalidate(stepGoalProvider);
-    ref.invalidate(stepGoalCelebrationPendingProvider);
-    ref.invalidate(stepTrackingStatusProvider);
-    ref.invalidate(incomingFriendRequestsProvider);
+    _invalidateUserScopedState();
 
     final profile = await ref.read(loadUserProfileUseCaseProvider).call(userId);
     await ref
         .read(stepTrackingServiceProvider)
         .saveDailyGoal(userId: profile.userId, goal: profile.dailyStepGoal);
 
-    final currentUser = ref.read(firebaseAuthProvider).currentUser;
+    final currentUser = ref.read(currentFirebaseUserProvider);
     if (currentUser != null) {
       final email = currentUser.email ?? '';
       await ref
@@ -449,5 +453,56 @@ class _LigaGymAppState extends ConsumerState<LigaGymApp>
             fallbackEmail: email,
           );
     }
+  }
+
+  void _invalidateUserScopedState() {
+    ref.invalidate(currentFirebaseUserProvider);
+    ref.invalidate(currentAuthUserProvider);
+    ref.invalidate(currentUserProfileProvider);
+
+    ref.invalidate(dashboardAnalyticsProvider);
+    ref.invalidate(dashboardRangeAnalyticsProvider);
+    ref.invalidate(dailyProfileMetricsProvider);
+
+    ref.invalidate(firebaseStepUserProvider);
+    ref.invalidate(todayStepCountProvider);
+    ref.invalidate(stepGoalProvider);
+    ref.invalidate(stepGoalCelebrationPendingProvider);
+    ref.invalidate(stepTrackingStatusProvider);
+
+    ref.invalidate(firebaseNutritionUserProvider);
+    ref.invalidate(todayNutritionDiaryProvider);
+    ref.invalidate(savedFoodProductsProvider);
+    ref.invalidate(foodDiaryControllerProvider);
+    ref.invalidate(addFoodControllerProvider);
+
+    ref.invalidate(firebaseWorkoutUserProvider);
+    ref.invalidate(workoutListControllerProvider);
+    ref.invalidate(workoutSessionControllerProvider);
+    ref.invalidate(reminderSettingsControllerProvider);
+    ref.invalidate(waterTrackerControllerProvider);
+    ref.invalidate(workoutCompletionControllerProvider);
+
+    ref.invalidate(exerciseLibraryProvider);
+
+    ref.invalidate(friendsProvider);
+    ref.invalidate(incomingFriendRequestsProvider);
+    ref.invalidate(socialPrivacySettingsProvider);
+    ref.invalidate(leaderboardProvider);
+    ref.invalidate(cityLeaderboardProvider);
+    ref.invalidate(currentChatParticipantProvider);
+    ref.invalidate(chatParticipantsProvider);
+    ref.invalidate(chatMessagesProvider);
+
+    ref.invalidate(coachStudentsProvider);
+    ref.invalidate(linkedCoachTrainersProvider);
+    ref.invalidate(incomingCoachRequestsProvider);
+    ref.invalidate(outgoingCoachRequestsProvider);
+    ref.invalidate(trainerExercisesProvider);
+    ref.invalidate(trainerRecipesProvider);
+    ref.invalidate(trainerWorkoutTemplatesProvider);
+    ref.invalidate(assignedTrainerRecipesProvider);
+    ref.invalidate(assignedTrainerWorkoutsProvider);
+    ref.invalidate(trainerSharedContentProvider);
   }
 }

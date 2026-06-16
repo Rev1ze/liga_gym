@@ -28,6 +28,26 @@ FirebaseAuth firebaseAuth(Ref ref) {
   return FirebaseAuth.instance;
 }
 
+final currentFirebaseUserProvider = Provider<User?>((ref) {
+  try {
+    final firebaseBootstrap = ref.watch(firebaseBootstrapProvider);
+    if (!firebaseBootstrap.isConfigured) {
+      return _readCurrentFirebaseUser(ref);
+    }
+  } on Object {
+    return _readCurrentFirebaseUser(ref);
+  }
+  return _readCurrentFirebaseUser(ref);
+});
+
+User? _readCurrentFirebaseUser(Ref ref) {
+  try {
+    return ref.watch(firebaseAuthProvider).currentUser;
+  } on Object {
+    return null;
+  }
+}
+
 @Riverpod(keepAlive: true)
 FirebaseFirestore firebaseFirestore(Ref ref) {
   return FirebaseFirestore.instance;

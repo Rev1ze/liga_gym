@@ -10,8 +10,14 @@ import '../../../coach/domain/entities/student_workout_assignment.dart';
 import '../../../coach/presentation/providers/coach_providers.dart';
 import '../../../dashboard/domain/entities/daily_profile_metrics.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
+import '../../../exercises/domain/entities/custom_exercise.dart';
+import '../../../exercises/presentation/providers/exercise_library_providers.dart';
+import '../../../water_tracker/presentation/providers/water_tracker_providers.dart';
+import '../../../workout_completion/presentation/providers/workout_completion_providers.dart';
+import '../../domain/entities/scheduled_exercise.dart';
 import '../../domain/entities/scheduled_workout.dart';
 import '../../domain/entities/workout.dart';
+import '../../domain/entities/workout_exercise_entry.dart';
 import '../../domain/entities/workout_type.dart';
 import '../providers/workout_providers.dart';
 import '../utils/workout_formatters.dart';
@@ -84,8 +90,64 @@ class _WorkoutListScreenState extends ConsumerState<WorkoutListScreen> {
               startedAt: draft.dateTime,
               duration: draft.duration,
               distanceMeters: draft.distanceMeters,
+              calories: draft.calories,
+              title: draft.title,
+              note: draft.note,
+              place: draft.place,
+              exercises: draft.exercises,
+              isManual: true,
             );
     }
+  }
+
+  Future<void> _showExercisePlanDialog([DateTime? initialDate]) async {
+    final exercises = ref.read(exerciseLibraryProvider);
+    final copy = _WorkoutPageCopy(AppLocalizations.of(context)!);
+    if (exercises.isEmpty) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(copy.noExercisesToPlan)));
+      return;
+    }
+
+    final draft = await showDialog<_ScheduledExerciseDraft>(
+      context: context,
+      builder: (context) => _ScheduledExerciseDialog(
+        exercises: exercises,
+        initialDate: initialDate,
+        copy: copy,
+      ),
+    );
+    if (draft == null || !mounted) {
+      return;
+    }
+
+    final scheduledExercise = await ref
+        .read(workoutListControllerProvider.notifier)
+        .scheduleExercise(
+          exerciseId: draft.exercise.id,
+          exerciseTitle: draft.exercise.title,
+          scheduledAt: draft.dateTime,
+          sets: draft.sets,
+          reps: draft.reps,
+          note: draft.note,
+          iconName: draft.exercise.iconName,
+          avatarDataUrl: draft.exercise.avatarDataUrl,
+        );
+    if (scheduledExercise == null || !mounted) {
+      return;
+    }
+
+    await AppNotificationService.scheduleWorkoutReminder(
+      workoutId: scheduledExercise.id,
+      scheduledAt: scheduledExercise.scheduledAt,
+      title: copy.exerciseReminderTitle,
+      body: copy.exerciseReminderBody(draft.exercise.title),
+    );
   }
 
   Future<void> _scheduleWorkoutReminders(
@@ -115,6 +177,11 @@ class _WorkoutListScreenState extends ConsumerState<WorkoutListScreen> {
           (workout) => DateUtils.isSameDay(workout.scheduledAt, selectedDate),
         )
         .toList(growable: false);
+    final scheduledExercises = state.scheduledExercises
+        .where(
+          (exercise) => DateUtils.isSameDay(exercise.scheduledAt, selectedDate),
+        )
+        .toList(growable: false);
 
     await showModalBottomSheet<void>(
       context: context,
@@ -123,6 +190,7 @@ class _WorkoutListScreenState extends ConsumerState<WorkoutListScreen> {
       builder: (context) => _DailySummarySheet(
         date: selectedDate,
         scheduledWorkouts: scheduledWorkouts,
+        scheduledExercises: scheduledExercises,
         copy: _WorkoutPageCopy(AppLocalizations.of(context)!),
         l10n: AppLocalizations.of(context)!,
       ),
@@ -142,6 +210,9 @@ class _WorkoutListScreenState extends ConsumerState<WorkoutListScreen> {
     final selectedPlans = state.scheduledWorkouts
         .where((plan) => DateUtils.isSameDay(plan.scheduledAt, selectedDate))
         .toList(growable: false);
+    final selectedExercisePlans = state.scheduledExercises
+        .where((plan) => DateUtils.isSameDay(plan.scheduledAt, selectedDate))
+        .toList(growable: false);
 
     return LigaPremiumScaffold(
       appBar: AppBar(title: Text(l10n.workoutListTitle)),
@@ -157,6 +228,8 @@ class _WorkoutListScreenState extends ConsumerState<WorkoutListScreen> {
                 onStartWorkout: () =>
                     Navigator.of(context).pushNamed(AppRoutes.startWorkout),
                 onPlanWorkout: () => _showWorkoutEntryDialog(selectedDate),
+                onOpenExercises: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.exerciseLibrary),
                 onOpenHistory: () =>
                     Navigator.of(context).pushNamed(AppRoutes.workoutHistory),
               ),
@@ -176,6 +249,7 @@ class _WorkoutListScreenState extends ConsumerState<WorkoutListScreen> {
                 visibleMonth: visibleMonth,
                 workouts: state.workouts,
                 scheduledWorkouts: state.scheduledWorkouts,
+                scheduledExercises: state.scheduledExercises,
                 onPreviousMonth: () => ref
                     .read(workoutListControllerProvider.notifier)
                     .showMonth(
@@ -198,13 +272,21 @@ class _WorkoutListScreenState extends ConsumerState<WorkoutListScreen> {
                 isLoading: state.isLoading,
                 selectedDate: selectedDate,
                 plans: selectedPlans,
+                exercisePlans: selectedExercisePlans,
                 onPlanWorkout: () => _showWorkoutEntryDialog(selectedDate),
+                onPlanExercise: () => _showExercisePlanDialog(selectedDate),
                 onOpenDaySummary: () => _showDaySummary(selectedDate),
                 onDelete: (id) async {
                   await AppNotificationService.cancelWorkoutReminder(id);
                   await ref
                       .read(workoutListControllerProvider.notifier)
                       .deleteScheduledWorkout(id);
+                },
+                onDeleteExercise: (id) async {
+                  await AppNotificationService.cancelWorkoutReminder(id);
+                  await ref
+                      .read(workoutListControllerProvider.notifier)
+                      .deleteScheduledExercise(id);
                 },
               ),
             ],
@@ -221,6 +303,7 @@ class _PrimaryActionsCard extends StatelessWidget {
     required this.selectedDate,
     required this.onStartWorkout,
     required this.onPlanWorkout,
+    required this.onOpenExercises,
     required this.onOpenHistory,
   });
 
@@ -228,6 +311,7 @@ class _PrimaryActionsCard extends StatelessWidget {
   final DateTime selectedDate;
   final VoidCallback onStartWorkout;
   final VoidCallback onPlanWorkout;
+  final VoidCallback onOpenExercises;
   final VoidCallback onOpenHistory;
 
   @override
@@ -254,6 +338,12 @@ class _PrimaryActionsCard extends StatelessWidget {
               onPressed: onPlanWorkout,
               icon: const Icon(Icons.add_task_rounded),
               label: Text(copy.workoutEntryButton(selectedDate)),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: onOpenExercises,
+              icon: const Icon(Icons.fitness_center_rounded),
+              label: Text(copy.exerciseLibraryButton),
             ),
             const SizedBox(height: 10),
             OutlinedButton.icon(
@@ -328,6 +418,7 @@ class _WorkoutCalendarCard extends StatelessWidget {
     required this.visibleMonth,
     required this.workouts,
     required this.scheduledWorkouts,
+    required this.scheduledExercises,
     required this.onPreviousMonth,
     required this.onNextMonth,
     required this.onSelectDate,
@@ -339,6 +430,7 @@ class _WorkoutCalendarCard extends StatelessWidget {
   final DateTime visibleMonth;
   final List<Workout> workouts;
   final List<ScheduledWorkout> scheduledWorkouts;
+  final List<ScheduledExercise> scheduledExercises;
   final VoidCallback onPreviousMonth;
   final VoidCallback onNextMonth;
   final ValueChanged<DateTime> onSelectDate;
@@ -414,6 +506,9 @@ class _WorkoutCalendarCard extends StatelessWidget {
                 final hasPlan = scheduledWorkouts.any(
                   (plan) => DateUtils.isSameDay(plan.scheduledAt, date),
                 );
+                final hasExercisePlan = scheduledExercises.any(
+                  (plan) => DateUtils.isSameDay(plan.scheduledAt, date),
+                );
 
                 return _CalendarDayButton(
                   date: date,
@@ -421,6 +516,7 @@ class _WorkoutCalendarCard extends StatelessWidget {
                   isSelected: isSelected,
                   hasWorkout: hasWorkout,
                   hasPlan: hasPlan,
+                  hasExercisePlan: hasExercisePlan,
                   colorScheme: colorScheme,
                   onTap: () => onSelectDate(date),
                   onDoubleTap: () => onOpenDaySummary(date),
@@ -439,6 +535,10 @@ class _WorkoutCalendarCard extends StatelessWidget {
                 _CalendarLegendDot(
                   color: colorScheme.tertiary,
                   label: copy.plannedLegend,
+                ),
+                _CalendarLegendDot(
+                  color: colorScheme.secondary,
+                  label: copy.exercisePlanLegend,
                 ),
               ],
             ),
@@ -462,6 +562,7 @@ class _CalendarDayButton extends StatelessWidget {
     required this.isSelected,
     required this.hasWorkout,
     required this.hasPlan,
+    required this.hasExercisePlan,
     required this.colorScheme,
     required this.onTap,
     required this.onDoubleTap,
@@ -472,6 +573,7 @@ class _CalendarDayButton extends StatelessWidget {
   final bool isSelected;
   final bool hasWorkout;
   final bool hasPlan;
+  final bool hasExercisePlan;
   final ColorScheme colorScheme;
   final VoidCallback onTap;
   final VoidCallback onDoubleTap;
@@ -520,12 +622,20 @@ class _CalendarDayButton extends StatelessWidget {
                           ? colorScheme.onPrimary
                           : colorScheme.primary,
                     ),
-                  if (hasWorkout && hasPlan) const SizedBox(width: 3),
+                  if (hasWorkout && (hasPlan || hasExercisePlan))
+                    const SizedBox(width: 3),
                   if (hasPlan)
                     _TinyDot(
                       color: isSelected
                           ? colorScheme.onPrimaryContainer
                           : colorScheme.tertiary,
+                    ),
+                  if (hasPlan && hasExercisePlan) const SizedBox(width: 3),
+                  if (hasExercisePlan)
+                    _TinyDot(
+                      color: isSelected
+                          ? colorScheme.onPrimary
+                          : colorScheme.secondary,
                     ),
                 ],
               ),
@@ -537,16 +647,19 @@ class _CalendarDayButton extends StatelessWidget {
   }
 }
 
-class _SelectedDayPlansCard extends StatelessWidget {
+class _SelectedDayPlansCard extends ConsumerWidget {
   const _SelectedDayPlansCard({
     required this.copy,
     required this.l10n,
     required this.isLoading,
     required this.selectedDate,
     required this.plans,
+    required this.exercisePlans,
     required this.onPlanWorkout,
+    required this.onPlanExercise,
     required this.onOpenDaySummary,
     required this.onDelete,
+    required this.onDeleteExercise,
   });
 
   final _WorkoutPageCopy copy;
@@ -554,12 +667,22 @@ class _SelectedDayPlansCard extends StatelessWidget {
   final bool isLoading;
   final DateTime selectedDate;
   final List<ScheduledWorkout> plans;
+  final List<ScheduledExercise> exercisePlans;
   final VoidCallback onPlanWorkout;
+  final VoidCallback onPlanExercise;
   final VoidCallback onOpenDaySummary;
   final ValueChanged<String> onDelete;
+  final ValueChanged<String> onDeleteExercise;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final completion = ref.watch(
+      workoutCompletionControllerProvider(selectedDate),
+    );
+    final completionController = ref.read(
+      workoutCompletionControllerProvider(selectedDate).notifier,
+    );
+
     return GlassCard(
       padding: const EdgeInsets.all(14),
       child: Padding(
@@ -578,41 +701,186 @@ class _SelectedDayPlansCard extends StatelessWidget {
               label: Text(copy.daySummaryButton),
             ),
             const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  onPressed: onPlanWorkout,
+                  icon: const Icon(Icons.add_task_rounded),
+                  label: Text(copy.workoutEntryButton(selectedDate)),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onPlanExercise,
+                  icon: const Icon(Icons.fitness_center_rounded),
+                  label: Text(copy.planExerciseButton),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
             if (isLoading)
               const Center(child: CircularProgressIndicator())
-            else if (plans.isEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(copy.noPlansForDate),
-                  const SizedBox(height: 10),
-                  OutlinedButton.icon(
-                    onPressed: onPlanWorkout,
-                    icon: const Icon(Icons.add_task_rounded),
-                    label: Text(copy.workoutEntryButton(selectedDate)),
-                  ),
-                ],
-              )
-            else
-              ...plans.map(
-                (plan) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.event_available_rounded),
-                  title: Text(localizeWorkoutType(l10n, plan.type)),
-                  subtitle: Text(
-                    [
-                      DateFormat('HH:mm').format(plan.scheduledAt),
-                      _formatShortDuration(plan.duration, copy),
-                      if ((plan.note ?? '').isNotEmpty) plan.note!,
-                    ].join(' · '),
-                  ),
-                  trailing: IconButton(
-                    tooltip: copy.deletePlanTooltip,
-                    onPressed: () => onDelete(plan.id),
-                    icon: const Icon(Icons.delete_outline_rounded),
-                  ),
-                ),
-              ),
+            else if (plans.isEmpty && exercisePlans.isEmpty)
+              Text(copy.noPlansForDate)
+            else ...[
+              ...plans.map((plan) {
+                final completionId = workoutCompletionId(plan.id);
+                final isCompleted = completion.isCompleted(completionId);
+                return _PlanCompletionTile(
+                  isCompleted: isCompleted,
+                  title: localizeWorkoutType(l10n, plan.type),
+                  subtitle: [
+                    DateFormat('HH:mm').format(plan.scheduledAt),
+                    _formatShortDuration(plan.duration, copy),
+                    if ((plan.note ?? '').isNotEmpty) plan.note!,
+                    if (isCompleted) copy.completedStatus,
+                  ].join(' • '),
+                  icon: Icons.event_available_rounded,
+                  deleteTooltip: copy.deletePlanTooltip,
+                  completedTooltip: copy.completedToggleTooltip,
+                  onToggle: () async {
+                    await completionController.toggle(completionId);
+                    if (!isCompleted) {
+                      await AppNotificationService.cancelWorkoutReminder(
+                        plan.id,
+                      );
+                    } else {
+                      await AppNotificationService.scheduleWorkoutReminder(
+                        workoutId: plan.id,
+                        scheduledAt: plan.scheduledAt,
+                        title: copy.workoutReminderTitle,
+                        body: copy.workoutReminderBody(
+                          localizeWorkoutType(l10n, plan.type),
+                        ),
+                      );
+                    }
+                  },
+                  onDelete: () => onDelete(plan.id),
+                );
+              }),
+              ...exercisePlans.map((plan) {
+                final completionId = exerciseCompletionId(plan.id);
+                final isCompleted = completion.isCompleted(completionId);
+                return _PlanCompletionTile(
+                  isCompleted: isCompleted,
+                  title: plan.exerciseTitle,
+                  subtitle: [
+                    DateFormat('HH:mm').format(plan.scheduledAt),
+                    if (plan.sets != null) '${plan.sets} sets',
+                    if (plan.reps != null) '${plan.reps} reps',
+                    if ((plan.note ?? '').isNotEmpty) plan.note!,
+                    if (isCompleted) copy.completedStatus,
+                  ].join(' • '),
+                  icon: _exerciseIconFromName(plan.iconName),
+                  deleteTooltip: copy.deletePlanTooltip,
+                  completedTooltip: copy.completedToggleTooltip,
+                  onToggle: () async {
+                    await completionController.toggle(completionId);
+                    if (!isCompleted) {
+                      await AppNotificationService.cancelWorkoutReminder(
+                        plan.id,
+                      );
+                    } else {
+                      await AppNotificationService.scheduleWorkoutReminder(
+                        workoutId: plan.id,
+                        scheduledAt: plan.scheduledAt,
+                        title: copy.exerciseReminderTitle,
+                        body: copy.exerciseReminderBody(plan.exerciseTitle),
+                      );
+                    }
+                  },
+                  onDelete: () => onDeleteExercise(plan.id),
+                );
+              }),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PlanCompletionTile extends StatelessWidget {
+  const _PlanCompletionTile({
+    required this.isCompleted,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.deleteTooltip,
+    required this.completedTooltip,
+    required this.onToggle,
+    required this.onDelete,
+  });
+
+  final bool isCompleted;
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final String deleteTooltip;
+  final String completedTooltip;
+  final VoidCallback onToggle;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+      margin: const EdgeInsets.only(top: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: isCompleted
+            ? colorScheme.primary.withValues(alpha: 0.10)
+            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.42),
+        border: Border.all(
+          color: isCompleted
+              ? colorScheme.primary.withValues(alpha: 0.38)
+              : colorScheme.outlineVariant.withValues(alpha: 0.48),
+        ),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.only(left: 6, right: 6),
+        leading: IconButton(
+          tooltip: completedTooltip,
+          onPressed: onToggle,
+          icon: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            transitionBuilder: (child, animation) => ScaleTransition(
+              scale: animation,
+              child: FadeTransition(opacity: animation, child: child),
+            ),
+            child: Icon(
+              isCompleted
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              key: ValueKey(isCompleted),
+              color: isCompleted
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        title: Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+            color: isCompleted
+                ? colorScheme.onSurface.withValues(alpha: 0.76)
+                : null,
+          ),
+        ),
+        subtitle: Text(subtitle),
+        trailing: Wrap(
+          spacing: 2,
+          children: [
+            Icon(icon, color: colorScheme.secondary),
+            IconButton(
+              tooltip: deleteTooltip,
+              onPressed: onDelete,
+              icon: const Icon(Icons.delete_outline_rounded),
+            ),
           ],
         ),
       ),
@@ -624,18 +892,24 @@ class _DailySummarySheet extends ConsumerWidget {
   const _DailySummarySheet({
     required this.date,
     required this.scheduledWorkouts,
+    required this.scheduledExercises,
     required this.copy,
     required this.l10n,
   });
 
   final DateTime date;
   final List<ScheduledWorkout> scheduledWorkouts;
+  final List<ScheduledExercise> scheduledExercises;
   final _WorkoutPageCopy copy;
   final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final metricsState = ref.watch(dailyProfileMetricsProvider(date));
+    final waterState = ref.watch(waterTrackerControllerProvider(date));
+    final completionState = ref.watch(
+      workoutCompletionControllerProvider(date),
+    );
 
     return SafeArea(
       child: Padding(
@@ -648,6 +922,9 @@ class _DailySummarySheet extends ConsumerWidget {
           data: (metrics) => _DailySummaryContent(
             metrics: metrics,
             scheduledWorkouts: scheduledWorkouts,
+            scheduledExercises: scheduledExercises,
+            waterState: waterState,
+            completionState: completionState,
             copy: copy,
             l10n: l10n,
           ),
@@ -669,18 +946,38 @@ class _DailySummaryContent extends StatelessWidget {
   const _DailySummaryContent({
     required this.metrics,
     required this.scheduledWorkouts,
+    required this.scheduledExercises,
+    required this.waterState,
+    required this.completionState,
     required this.copy,
     required this.l10n,
   });
 
   final DailyProfileMetrics metrics;
   final List<ScheduledWorkout> scheduledWorkouts;
+  final List<ScheduledExercise> scheduledExercises;
+  final DailyWaterState waterState;
+  final WorkoutCompletionState completionState;
   final _WorkoutPageCopy copy;
   final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final completionIds = <String>[
+      ...scheduledWorkouts.map((workout) => workoutCompletionId(workout.id)),
+      ...scheduledExercises.map(
+        (exercise) => exerciseCompletionId(exercise.id),
+      ),
+    ];
+    final plannedCount = completionIds.length;
+    final checkedCount = completionState.countCompleted(completionIds);
+    final completedCount = plannedCount == 0
+        ? metrics.workouts.length
+        : (checkedCount + metrics.workouts.length).clamp(0, plannedCount);
+    final workoutProgress = plannedCount == 0
+        ? (metrics.workouts.isEmpty ? 0 : 100)
+        : ((completedCount / plannedCount) * 100).round();
 
     return SingleChildScrollView(
       child: Column(
@@ -723,6 +1020,20 @@ class _DailySummaryContent extends StatelessWidget {
                     '${metrics.proteins.toStringAsFixed(0)}/${metrics.fats.toStringAsFixed(0)}/${metrics.carbs.toStringAsFixed(0)}',
                 subtitle: copy.gramsLabel,
               ),
+              _DailyMetricTile(
+                icon: Icons.fitness_center_rounded,
+                label: copy.completedWorkoutsTitle,
+                value: '$completedCount/$plannedCount',
+                subtitle: '$workoutProgress%',
+              ),
+              _DailyMetricTile(
+                icon: Icons.water_drop_rounded,
+                label: copy.waterLabel,
+                value: '${waterState.consumedMl}',
+                subtitle: waterState.isGoalReached
+                    ? copy.waterGoalDone
+                    : '${waterState.goalMl} ${copy.mlLabel}',
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -735,13 +1046,13 @@ class _DailySummaryContent extends StatelessWidget {
               (workout) => ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.fitness_center_rounded),
-                title: Text(localizeWorkoutType(l10n, workout.type)),
+                title: Text(workoutDisplayTitle(l10n, workout)),
                 subtitle: Text(
                   [
                     DateFormat('HH:mm').format(workout.startedAt),
                     _formatShortDuration(workout.duration, copy),
                     '${workout.calories.toStringAsFixed(0)} ${copy.kcalLabel}',
-                  ].join(' В· '),
+                  ].join(' Р’В· '),
                 ),
               ),
             ),
@@ -761,6 +1072,27 @@ class _DailySummaryContent extends StatelessWidget {
                     DateFormat('HH:mm').format(workout.scheduledAt),
                     _formatShortDuration(workout.duration, copy),
                     if ((workout.note ?? '').isNotEmpty) workout.note!,
+                  ].join(' Р’В· '),
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
+          Text(copy.plannedExercisesTitle, style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          if (scheduledExercises.isEmpty)
+            Text(copy.noExercisePlansForDate)
+          else
+            ...scheduledExercises.map(
+              (exercise) => ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(_exerciseIconFromName(exercise.iconName)),
+                title: Text(exercise.exerciseTitle),
+                subtitle: Text(
+                  [
+                    DateFormat('HH:mm').format(exercise.scheduledAt),
+                    if (exercise.sets != null) '${exercise.sets} sets',
+                    if (exercise.reps != null) '${exercise.reps} reps',
+                    if ((exercise.note ?? '').isNotEmpty) exercise.note!,
                   ].join(' В· '),
                 ),
               ),
@@ -878,23 +1210,34 @@ class _WorkoutEntryDialog extends StatefulWidget {
 }
 
 class _WorkoutEntryDialogState extends State<_WorkoutEntryDialog> {
+  late final TextEditingController _titleController;
   late final TextEditingController _noteController;
+  late final TextEditingController _placeController;
   WorkoutType _selectedType = WorkoutType.running;
   late DateTime _selectedDate;
   TimeOfDay _selectedTime = TimeOfDay.now();
   int _durationMinutes = 45;
   double _distanceKm = 0;
+  double _calories = 0;
+  final List<WorkoutExerciseEntry> _exercises = <WorkoutExerciseEntry>[];
 
   @override
   void initState() {
     super.initState();
+    _titleController = TextEditingController();
     _noteController = TextEditingController();
+    _placeController = TextEditingController();
     _selectedDate = DateUtils.dateOnly(widget.initialDate ?? DateTime.now());
+    if (_isCompletedMode) {
+      _selectedType = WorkoutType.strength;
+    }
   }
 
   @override
   void dispose() {
+    _titleController.dispose();
     _noteController.dispose();
+    _placeController.dispose();
     super.dispose();
   }
 
@@ -909,7 +1252,7 @@ class _WorkoutEntryDialogState extends State<_WorkoutEntryDialog> {
   bool get _isCompletedMode => widget.mode == _WorkoutEntryMode.completed;
 
   bool get _canSave {
-    if (_durationMinutes <= 0 || _distanceKm < 0) {
+    if (_durationMinutes <= 0 || _distanceKm < 0 || _calories < 0) {
       return false;
     }
 
@@ -957,10 +1300,26 @@ class _WorkoutEntryDialogState extends State<_WorkoutEntryDialog> {
         type: _selectedType,
         dateTime: _entryDateTime,
         duration: Duration(minutes: _durationMinutes),
+        title: _titleController.text,
         note: _noteController.text,
+        place: _placeController.text,
         distanceMeters: _distanceKm * 1000,
+        calories: _isCompletedMode ? _calories : null,
+        exercises: List.unmodifiable(_exercises),
       ),
     );
+  }
+
+  Future<void> _addExercise() async {
+    final exercise = await showDialog<WorkoutExerciseEntry>(
+      context: context,
+      builder: (context) => const _WorkoutExerciseEntryDialog(),
+    );
+    if (exercise == null || !mounted) {
+      return;
+    }
+
+    setState(() => _exercises.add(exercise));
   }
 
   @override
@@ -977,17 +1336,45 @@ class _WorkoutEntryDialogState extends State<_WorkoutEntryDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (_isCompletedMode) ...[
+              TextField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  labelText: copy.manualWorkoutTitleLabel,
+                  prefixIcon: const Icon(Icons.edit_note_rounded),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _noteController,
+                decoration: InputDecoration(
+                  labelText: copy.workoutDescriptionLabel,
+                  prefixIcon: const Icon(Icons.notes_rounded),
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _placeController,
+                decoration: InputDecoration(
+                  labelText: copy.workoutPlaceLabel,
+                  prefixIcon: const Icon(Icons.place_rounded),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             DropdownButtonFormField<WorkoutType>(
               initialValue: _selectedType,
               decoration: InputDecoration(labelText: l10n.workoutTypeLabel),
-              items: WorkoutType.values
-                  .map(
-                    (type) => DropdownMenuItem<WorkoutType>(
-                      value: type,
-                      child: Text(localizeWorkoutType(l10n, type)),
-                    ),
-                  )
-                  .toList(),
+              items:
+                  (_isCompletedMode ? WorkoutType.values : runningWorkoutTypes)
+                      .map(
+                        (type) => DropdownMenuItem<WorkoutType>(
+                          value: type,
+                          child: Text(localizeWorkoutType(l10n, type)),
+                        ),
+                      )
+                      .toList(),
               onChanged: (value) {
                 if (value != null) {
                   setState(() => _selectedType = value);
@@ -1021,6 +1408,21 @@ class _WorkoutEntryDialogState extends State<_WorkoutEntryDialog> {
             if (_isCompletedMode) ...[
               const SizedBox(height: 12),
               TextFormField(
+                initialValue: _calories.toStringAsFixed(0),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: copy.caloriesLabel,
+                  suffixText: 'kcal',
+                ),
+                onChanged: (value) {
+                  setState(
+                    () => _calories =
+                        double.tryParse(value.replaceAll(',', '.')) ?? -1,
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
                 initialValue: _distanceKm.toStringAsFixed(1),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
@@ -1036,6 +1438,29 @@ class _WorkoutEntryDialogState extends State<_WorkoutEntryDialog> {
                   );
                 },
               ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _addExercise,
+                icon: const Icon(Icons.add_rounded),
+                label: Text(copy.addExerciseButton),
+              ),
+              if (_exercises.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                for (var index = 0; index < _exercises.length; index++)
+                  ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.fitness_center_rounded),
+                    title: Text(_exercises[index].name),
+                    subtitle: Text(_formatWorkoutExercise(_exercises[index])),
+                    trailing: IconButton(
+                      tooltip: copy.deleteExerciseTooltip,
+                      onPressed: () =>
+                          setState(() => _exercises.removeAt(index)),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ),
+              ],
             ] else ...[
               const SizedBox(height: 12),
               TextField(
@@ -1077,16 +1502,345 @@ class _WorkoutEntryDraft {
     required this.type,
     required this.dateTime,
     required this.duration,
+    required this.title,
     required this.note,
+    required this.place,
     required this.distanceMeters,
+    required this.calories,
+    required this.exercises,
   });
 
   final _WorkoutEntryMode mode;
   final WorkoutType type;
   final DateTime dateTime;
   final Duration duration;
+  final String title;
   final String note;
+  final String place;
   final double distanceMeters;
+  final double? calories;
+  final List<WorkoutExerciseEntry> exercises;
+}
+
+class _ScheduledExerciseDialog extends StatefulWidget {
+  const _ScheduledExerciseDialog({
+    required this.exercises,
+    required this.initialDate,
+    required this.copy,
+  });
+
+  final List<CustomExercise> exercises;
+  final DateTime? initialDate;
+  final _WorkoutPageCopy copy;
+
+  @override
+  State<_ScheduledExerciseDialog> createState() =>
+      _ScheduledExerciseDialogState();
+}
+
+class _ScheduledExerciseDialogState extends State<_ScheduledExerciseDialog> {
+  late CustomExercise _selectedExercise;
+  late DateTime _selectedDate;
+  TimeOfDay _selectedTime = TimeOfDay.now();
+  final _setsController = TextEditingController();
+  final _repsController = TextEditingController();
+  final _noteController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedExercise = widget.exercises.first;
+    final today = DateUtils.dateOnly(DateTime.now());
+    final initial = DateUtils.dateOnly(widget.initialDate ?? today);
+    _selectedDate = initial.isBefore(today) ? today : initial;
+  }
+
+  @override
+  void dispose() {
+    _setsController.dispose();
+    _repsController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  DateTime get _dateTime => DateTime(
+    _selectedDate.year,
+    _selectedDate.month,
+    _selectedDate.day,
+    _selectedTime.hour,
+    _selectedTime.minute,
+  );
+
+  bool get _canSave =>
+      _dateTime.isAfter(DateTime.now().subtract(const Duration(minutes: 1)));
+
+  Future<void> _pickDate() async {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: today,
+      lastDate: today.add(const Duration(days: 365)),
+    );
+    if (pickedDate == null || !mounted) {
+      return;
+    }
+
+    setState(() => _selectedDate = DateUtils.dateOnly(pickedDate));
+  }
+
+  Future<void> _pickTime() async {
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime,
+    );
+    if (pickedTime == null || !mounted) {
+      return;
+    }
+
+    setState(() => _selectedTime = pickedTime);
+  }
+
+  void _submit() {
+    if (!_canSave) {
+      return;
+    }
+
+    Navigator.of(context).pop(
+      _ScheduledExerciseDraft(
+        exercise: _selectedExercise,
+        dateTime: _dateTime,
+        sets: int.tryParse(_setsController.text),
+        reps: int.tryParse(_repsController.text),
+        note: _noteController.text.trim(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final copy = widget.copy;
+    return AlertDialog(
+      title: Text(copy.planExerciseButton),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DropdownButtonFormField<CustomExercise>(
+              initialValue: _selectedExercise,
+              decoration: InputDecoration(labelText: copy.exerciseLabel),
+              items: widget.exercises
+                  .map(
+                    (exercise) => DropdownMenuItem<CustomExercise>(
+                      value: exercise,
+                      child: Text(exercise.title),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _selectedExercise = value);
+                }
+              },
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _pickDate,
+                    icon: const Icon(Icons.event_rounded),
+                    label: Text(_formatWorkoutDate(_selectedDate)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _pickTime,
+                    icon: const Icon(Icons.schedule_rounded),
+                    label: Text(_selectedTime.format(context)),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _setsController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(labelText: copy.setsLabel),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: _repsController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(labelText: copy.repsLabel),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _noteController,
+              decoration: InputDecoration(labelText: copy.planNoteLabel),
+              maxLines: 2,
+            ),
+            if (!_canSave) ...[
+              const SizedBox(height: 12),
+              Text(
+                copy.futureWorkoutHint,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(copy.cancelButton),
+        ),
+        FilledButton.icon(
+          onPressed: _canSave ? _submit : null,
+          icon: const Icon(Icons.check_rounded),
+          label: Text(copy.saveButton),
+        ),
+      ],
+    );
+  }
+}
+
+class _ScheduledExerciseDraft {
+  const _ScheduledExerciseDraft({
+    required this.exercise,
+    required this.dateTime,
+    required this.note,
+    this.sets,
+    this.reps,
+  });
+
+  final CustomExercise exercise;
+  final DateTime dateTime;
+  final int? sets;
+  final int? reps;
+  final String note;
+}
+
+class _WorkoutExerciseEntryDialog extends StatefulWidget {
+  const _WorkoutExerciseEntryDialog();
+
+  @override
+  State<_WorkoutExerciseEntryDialog> createState() =>
+      _WorkoutExerciseEntryDialogState();
+}
+
+class _WorkoutExerciseEntryDialogState
+    extends State<_WorkoutExerciseEntryDialog> {
+  final _nameController = TextEditingController();
+  final _setsController = TextEditingController();
+  final _repsController = TextEditingController();
+  final _weightController = TextEditingController();
+  final _noteController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _setsController.dispose();
+    _repsController.dispose();
+    _weightController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      return;
+    }
+
+    Navigator.of(context).pop(
+      WorkoutExerciseEntry(
+        name: name,
+        sets: int.tryParse(_setsController.text),
+        reps: int.tryParse(_repsController.text),
+        weightKg: double.tryParse(_weightController.text.replaceAll(',', '.')),
+        note: _noteController.text.trim().isEmpty
+            ? null
+            : _noteController.text.trim(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Exercise'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(labelText: 'Name'),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _setsController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Sets'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: _repsController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Reps'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _weightController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Weight',
+                suffixText: 'kg',
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _noteController,
+              decoration: const InputDecoration(labelText: 'Note'),
+              maxLines: 2,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton.icon(
+          onPressed: _submit,
+          icon: const Icon(Icons.check_rounded),
+          label: const Text('Add'),
+        ),
+      ],
+    );
+  }
 }
 
 class _CalendarLegendDot extends StatelessWidget {
@@ -1139,25 +1893,52 @@ class _WorkoutPageCopy {
   String get actionsTitle => _isRu ? 'Действия' : 'Actions';
   String get trainerAssignmentsTitle =>
       _isRu ? 'Тренировки от тренера' : 'Coach workouts';
-  String get planWorkoutButton =>
-      _isRu ? 'Запланировать тренировку' : 'Plan workout';
-  String get addPastWorkoutButton =>
-      _isRu ? 'Добавить прошедшую тренировку' : 'Add past workout';
+  String get planWorkoutButton => _isRu
+      ? 'Запланировать тренировку'
+      : 'Plan workout';
+  String get addPastWorkoutButton => _isRu
+      ? 'Добавить прошедшую тренировку'
+      : 'Add past workout';
   String workoutEntryButton(DateTime date) {
     return _isPastDate(date) ? addPastWorkoutButton : planWorkoutButton;
   }
 
-  String get historyButton => _isRu ? 'Все тренировки' : 'All workouts';
+  String get historyButton =>
+      _isRu ? 'Все тренировки' : 'All workouts';
+  String get exerciseLibraryButton =>
+      _isRu ? 'Мои упражнения' : 'My exercises';
+  String get planExerciseButton => _isRu
+      ? 'Запланировать упражнение'
+      : 'Plan exercise';
+  String get noExercisesToPlan => _isRu
+      ? 'Сначала добавьте упражнение в библиотеку.'
+      : 'Add an exercise to your library first.';
+  String get exerciseLabel => _isRu ? 'Упражнение' : 'Exercise';
+  String get setsLabel => _isRu ? 'Подходы' : 'Sets';
+  String get repsLabel => _isRu ? 'Повторы' : 'Reps';
   String get noPlansForDate => _isRu
       ? 'На выбранный день тренировок пока нет.'
       : 'No planned workouts for this day.';
   String get completedLegend => _isRu ? 'Прошло' : 'Completed';
   String get plannedLegend => _isRu ? 'План' : 'Planned';
+  String get exercisePlanLegend => _isRu ? 'Упражнения' : 'Exercises';
   String get previousMonthTooltip =>
       _isRu ? 'Предыдущий месяц' : 'Previous month';
-  String get nextMonthTooltip => _isRu ? 'Следующий месяц' : 'Next month';
+  String get nextMonthTooltip =>
+      _isRu ? 'Следующий месяц' : 'Next month';
   String get planNoteLabel => _isRu ? 'Заметка' : 'Note';
-  String get durationMinutesLabel => _isRu ? 'Длительность' : 'Duration';
+  String get durationMinutesLabel =>
+      _isRu ? 'Длительность' : 'Duration';
+  String get manualWorkoutTitleLabel =>
+      _isRu ? 'Вид тренировки' : 'Workout type';
+  String get workoutDescriptionLabel =>
+      _isRu ? 'Описание' : 'Description';
+  String get workoutPlaceLabel => _isRu ? 'Место' : 'Place';
+  String get caloriesLabel => _isRu ? 'Ккал' : 'Calories';
+  String get addExerciseButton =>
+      _isRu ? 'Добавить упражнение' : 'Add exercise';
+  String get deleteExerciseTooltip =>
+      _isRu ? 'Удалить упражнение' : 'Remove exercise';
   String get futureWorkoutHint => _isRu
       ? 'Выберите будущее время тренировки.'
       : 'Choose a future workout time.';
@@ -1167,17 +1948,32 @@ class _WorkoutPageCopy {
   String get cancelButton => _isRu ? 'Отмена' : 'Cancel';
   String get saveButton => _isRu ? 'Сохранить' : 'Save';
   String get addButton => _isRu ? 'Добавить' : 'Add';
-  String get deletePlanTooltip => _isRu ? 'Удалить план' : 'Delete plan';
+  String get deletePlanTooltip =>
+      _isRu ? 'Удалить план' : 'Delete plan';
+  String get completedStatus => _isRu ? 'Выполнено' : 'Done';
+  String get completedToggleTooltip =>
+      _isRu ? 'Отметить выполнение' : 'Toggle completion';
+  String get waterLabel => _isRu ? 'Вода' : 'Water';
+  String get waterGoalDone => _isRu ? 'цель выполнена' : 'goal done';
+  String get mlLabel => _isRu ? 'мл' : 'ml';
   String get minutesLabel => _isRu ? 'мин' : 'min';
   String get hoursLabel => _isRu ? 'ч' : 'h';
   String get distanceKmLabel => _isRu ? 'Дистанция' : 'Distance';
   String get workoutReminderTitle =>
       _isRu ? 'Скоро тренировка' : 'Workout soon';
+  String get exerciseReminderTitle =>
+      _isRu ? 'Скоро упражнение' : 'Exercise soon';
 
   String workoutReminderBody(String workoutType) {
     return _isRu
         ? '$workoutType начнётся примерно через час.'
         : '$workoutType starts in about an hour.';
+  }
+
+  String exerciseReminderBody(String exerciseTitle) {
+    return _isRu
+        ? '$exerciseTitle начнётся примерно через час.'
+        : '$exerciseTitle starts in about an hour.';
   }
 
   String plansForDate(String date) {
@@ -1196,18 +1992,27 @@ class _WorkoutPageCopy {
   String get macrosLabel => _isRu ? 'БЖУ' : 'PFC';
   String get gramsLabel => _isRu ? 'граммы' : 'grams';
   String get kcalLabel => _isRu ? 'ккал' : 'kcal';
-  String get completedWorkoutsTitle => _isRu ? 'Тренировки' : 'Workouts';
+  String get completedWorkoutsTitle =>
+      _isRu ? 'Тренировки' : 'Workouts';
   String get plannedWorkoutsTitle => _isRu ? 'План' : 'Plan';
+  String get plannedExercisesTitle => _isRu
+      ? 'Запланированные упражнения'
+      : 'Planned exercises';
   String get noCompletedWorkouts => _isRu
       ? 'Завершённых тренировок за этот день нет.'
       : 'No completed workouts for this day.';
+  String get noExercisePlansForDate => _isRu
+      ? 'Упражнений на этот день пока нет.'
+      : 'No exercises planned for this day.';
 
   String daySummaryTitle(String date) {
     return _isRu ? 'Сводка за $date' : 'Summary for $date';
   }
 
   String foodEntriesCount(int count) {
-    return _isRu ? 'Записей питания: $count' : 'Food entries: $count';
+    return _isRu
+        ? 'Записей питания: $count'
+        : 'Food entries: $count';
   }
 }
 
@@ -1227,4 +2032,29 @@ String _formatShortDuration(Duration duration, _WorkoutPageCopy copy) {
   }
 
   return '$hours ${copy.hoursLabel} $minutes ${copy.minutesLabel}';
+}
+
+String _formatWorkoutExercise(WorkoutExerciseEntry exercise) {
+  final parts = <String>[
+    if (exercise.sets != null) '${exercise.sets} sets',
+    if (exercise.reps != null) '${exercise.reps} reps',
+    if (exercise.weightKg != null)
+      '${exercise.weightKg!.toStringAsFixed(1)} kg',
+    if ((exercise.note ?? '').isNotEmpty) exercise.note!,
+  ];
+
+  return parts.isEmpty ? 'Done' : parts.join(' • ');
+}
+
+IconData _exerciseIconFromName(String? iconName) {
+  return switch (iconName) {
+    'dumbbell' => Icons.fitness_center_rounded,
+    'run' => Icons.directions_run_rounded,
+    'heart' => Icons.favorite_rounded,
+    'bolt' => Icons.bolt_rounded,
+    'mobility' => Icons.self_improvement_rounded,
+    'core' => Icons.accessibility_new_rounded,
+    'timer' => Icons.timer_rounded,
+    _ => Icons.fitness_center_rounded,
+  };
 }

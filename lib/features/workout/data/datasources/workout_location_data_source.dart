@@ -50,6 +50,16 @@ class GeolocatorWorkoutLocationDataSource implements WorkoutLocationDataSource {
             latitude: position.latitude,
             longitude: position.longitude,
             recordedAt: position.timestamp,
+            altitudeMeters: position.altitude.isFinite
+                ? position.altitude
+                : null,
+            accuracyMeters: position.accuracy.isFinite
+                ? position.accuracy
+                : null,
+            speedMetersPerSecond: position.speed.isFinite
+                ? position.speed
+                : null,
+            headingDegrees: position.heading.isFinite ? position.heading : null,
           ),
         )
         .where((point) => point.hasValidCoordinates);

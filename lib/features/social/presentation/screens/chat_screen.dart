@@ -30,7 +30,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _openFriendChat(FriendProfile friend) async {
-    final currentUser = ref.read(firebaseAuthProvider).currentUser;
+    final currentUser = ref.read(currentFirebaseUserProvider);
     final l10n = AppLocalizations.of(context)!;
     if (currentUser == null || _openingFriendId != null) {
       return;
