@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../../../../core/offline/offline_sync_record.dart';
 import '../../domain/entities/workout.dart';
+import '../../domain/entities/workout_exercise_entry.dart';
 import '../../domain/entities/workout_route_point.dart';
 import '../../domain/entities/workout_type.dart';
 
@@ -17,6 +18,11 @@ class WorkoutModel extends Workout implements OfflineSyncRecord {
     required super.distanceMeters,
     required super.route,
     required super.isSynced,
+    super.title,
+    super.note,
+    super.place,
+    super.exercises,
+    super.isManual,
   });
 
   factory WorkoutModel.fromEntity(Workout workout) {
@@ -31,6 +37,11 @@ class WorkoutModel extends Workout implements OfflineSyncRecord {
       distanceMeters: workout.distanceMeters,
       route: workout.route,
       isSynced: workout.isSynced,
+      title: workout.title,
+      note: workout.note,
+      place: workout.place,
+      exercises: workout.exercises,
+      isManual: workout.isManual,
     );
   }
 
@@ -48,6 +59,11 @@ class WorkoutModel extends Workout implements OfflineSyncRecord {
       distanceMeters: (map['distance_meters'] as num).toDouble(),
       route: decodedRoute,
       isSynced: (map['is_synced'] as int) == 1,
+      title: _readString(map['title']),
+      note: _readString(map['note']),
+      place: _readString(map['place']),
+      exercises: _decodeExercises(map['exercise_entries_json'] as String?),
+      isManual: (map['is_manual'] as int? ?? 0) == 1,
     );
   }
 
@@ -69,6 +85,11 @@ class WorkoutModel extends Workout implements OfflineSyncRecord {
       distanceMeters: (json['distanceMeters']! as num).toDouble(),
       route: decodedRoute,
       isSynced: true,
+      title: _readString(json['title']),
+      note: _readString(json['note']),
+      place: _readString(json['place']),
+      exercises: _decodeExercises(json['exerciseEntriesJson'] as String?),
+      isManual: json['isManual'] as bool? ?? false,
     );
   }
 
@@ -89,6 +110,13 @@ class WorkoutModel extends Workout implements OfflineSyncRecord {
         route.map((point) => point.toJson()).toList(growable: false),
       ),
       'is_synced': isSynced ? 1 : 0,
+      'title': title,
+      'note': note,
+      'place': place,
+      'exercise_entries_json': jsonEncode(
+        exercises.map((entry) => entry.toJson()).toList(growable: false),
+      ),
+      'is_manual': isManual ? 1 : 0,
     };
   }
 
@@ -106,6 +134,13 @@ class WorkoutModel extends Workout implements OfflineSyncRecord {
         route.map((point) => point.toJson()).toList(growable: false),
       ),
       'isSynced': true,
+      'title': title,
+      'note': note,
+      'place': place,
+      'exerciseEntriesJson': jsonEncode(
+        exercises.map((entry) => entry.toJson()).toList(growable: false),
+      ),
+      'isManual': isManual,
     };
   }
 
@@ -121,6 +156,11 @@ class WorkoutModel extends Workout implements OfflineSyncRecord {
       distanceMeters: distanceMeters,
       route: route,
       isSynced: isSynced,
+      title: title,
+      note: note,
+      place: place,
+      exercises: exercises,
+      isManual: isManual,
     );
   }
 
@@ -140,5 +180,33 @@ class WorkoutModel extends Workout implements OfflineSyncRecord {
     } catch (_) {
       return const <WorkoutRoutePoint>[];
     }
+  }
+
+  static List<WorkoutExerciseEntry> _decodeExercises(String? exercisesJson) {
+    if (exercisesJson == null || exercisesJson.isEmpty) {
+      return const <WorkoutExerciseEntry>[];
+    }
+
+    try {
+      return (jsonDecode(exercisesJson) as List<dynamic>)
+          .map(
+            (item) => WorkoutExerciseEntry.fromJson(
+              Map<String, Object?>.from(item as Map),
+            ),
+          )
+          .where((entry) => entry.name.trim().isNotEmpty)
+          .toList(growable: false);
+    } catch (_) {
+      return const <WorkoutExerciseEntry>[];
+    }
+  }
+
+  static String? _readString(Object? value) {
+    final text = value as String?;
+    if (text == null || text.trim().isEmpty) {
+      return null;
+    }
+
+    return text.trim();
   }
 }

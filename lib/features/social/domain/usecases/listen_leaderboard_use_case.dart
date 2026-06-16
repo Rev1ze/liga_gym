@@ -6,7 +6,7 @@ class ListenLeaderboardUseCase {
 
   final SocialRepository _repository;
 
-  Stream<List<LeaderboardUser>> call({int limit = 20}) {
-    return _repository.listenLeaderboard(limit: limit);
+  Stream<List<LeaderboardUser>> call({int limit = 20, String? city}) {
+    return _repository.listenLeaderboard(limit: limit, city: city);
   }
 }

@@ -6,9 +6,9 @@ import '../../../../core/errors/app_exception.dart';
 import '../../domain/entities/chat_member_role.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/chat_participant.dart';
+import '../../domain/entities/friend_chat_room.dart';
 import '../../domain/entities/friend_profile.dart';
 import '../../domain/entities/friend_request.dart';
-import '../../domain/entities/interest_chat_room.dart';
 import '../../domain/entities/leaderboard_user.dart';
 import '../../domain/entities/social_privacy.dart';
 
@@ -54,14 +54,6 @@ abstract interface class SocialRemoteDataSource {
     required SocialPrivacySettings settings,
   });
 
-  Future<String> createInterestChat({
-    required String userId,
-    required String fallbackName,
-    required String fallbackEmail,
-    required String title,
-    required String description,
-  });
-
   Future<String> openFriendChat({
     required String userId,
     required String friendId,
@@ -70,24 +62,13 @@ abstract interface class SocialRemoteDataSource {
     required String fallbackEmail,
   });
 
-  Future<void> joinInterestChat({
-    required String chatId,
-    required String userId,
-    required String fallbackName,
-    required String fallbackEmail,
-  });
-
-  Future<void> leaveInterestChat({
-    required String chatId,
-    required String userId,
-  });
-
   Future<void> sendMessage({
     required String chatId,
     required String userId,
     required String fallbackName,
     required String fallbackEmail,
     required String message,
+    Map<String, Object?>? metadata,
   });
 
   Future<void> deleteMessage({
@@ -109,9 +90,7 @@ abstract interface class SocialRemoteDataSource {
     required bool canRemoveUsers,
   });
 
-  Stream<List<InterestChatRoom>> listenInterestChats({int limit = 100});
-
-  Stream<InterestChatRoom?> watchInterestChat(String chatId);
+  Stream<FriendChatRoom?> watchFriendChat(String chatId);
 
   Stream<List<ChatParticipant>> listenParticipants(String chatId);
 
@@ -131,21 +110,14 @@ abstract interface class SocialRemoteDataSource {
 
   Stream<SocialPrivacySettings> watchPrivacySettings(String userId);
 
-  Stream<List<LeaderboardUser>> listenLeaderboard({int limit = 20});
+  Stream<List<LeaderboardUser>> listenLeaderboard({
+    int limit = 20,
+    String? city,
+  });
 }
 
 class UnavailableSocialRemoteDataSource implements SocialRemoteDataSource {
   const UnavailableSocialRemoteDataSource();
-
-  @override
-  Future<String> createInterestChat({
-    required String userId,
-    required String fallbackName,
-    required String fallbackEmail,
-    required String title,
-    required String description,
-  }) async =>
-      throw const SocialException(AppErrorCode.firebaseConfigurationMissing);
 
   @override
   Future<String> openFriendChat({
@@ -195,28 +167,6 @@ class UnavailableSocialRemoteDataSource implements SocialRemoteDataSource {
       throw const SocialException(AppErrorCode.firebaseConfigurationMissing);
 
   @override
-  Future<void> joinInterestChat({
-    required String chatId,
-    required String userId,
-    required String fallbackName,
-    required String fallbackEmail,
-  }) async =>
-      throw const SocialException(AppErrorCode.firebaseConfigurationMissing);
-
-  @override
-  Future<void> leaveInterestChat({
-    required String chatId,
-    required String userId,
-  }) async =>
-      throw const SocialException(AppErrorCode.firebaseConfigurationMissing);
-
-  @override
-  Stream<List<InterestChatRoom>> listenInterestChats({int limit = 100}) =>
-      Stream<List<InterestChatRoom>>.error(
-        const SocialException(AppErrorCode.firebaseConfigurationMissing),
-      );
-
-  @override
   Stream<List<FriendProfile>> listenFriends(String userId) =>
       Stream<List<FriendProfile>>.error(
         const SocialException(AppErrorCode.firebaseConfigurationMissing),
@@ -229,10 +179,12 @@ class UnavailableSocialRemoteDataSource implements SocialRemoteDataSource {
       );
 
   @override
-  Stream<List<LeaderboardUser>> listenLeaderboard({int limit = 20}) =>
-      Stream<List<LeaderboardUser>>.error(
-        const SocialException(AppErrorCode.firebaseConfigurationMissing),
-      );
+  Stream<List<LeaderboardUser>> listenLeaderboard({
+    int limit = 20,
+    String? city,
+  }) => Stream<List<LeaderboardUser>>.error(
+    const SocialException(AppErrorCode.firebaseConfigurationMissing),
+  );
 
   @override
   Stream<List<ChatMessage>> listenMessages({
@@ -286,6 +238,7 @@ class UnavailableSocialRemoteDataSource implements SocialRemoteDataSource {
     required String fallbackName,
     required String fallbackEmail,
     required String message,
+    Map<String, Object?>? metadata,
   }) async =>
       throw const SocialException(AppErrorCode.firebaseConfigurationMissing);
 
@@ -307,8 +260,8 @@ class UnavailableSocialRemoteDataSource implements SocialRemoteDataSource {
       throw const SocialException(AppErrorCode.firebaseConfigurationMissing);
 
   @override
-  Stream<InterestChatRoom?> watchInterestChat(String chatId) =>
-      Stream<InterestChatRoom?>.error(
+  Stream<FriendChatRoom?> watchFriendChat(String chatId) =>
+      Stream<FriendChatRoom?>.error(
         const SocialException(AppErrorCode.firebaseConfigurationMissing),
       );
 
@@ -337,7 +290,9 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
 
   CollectionReference<Map<String, dynamic>> get _users =>
       _firestore.collection('users');
-  CollectionReference<Map<String, dynamic>> get _interestChats =>
+  CollectionReference<Map<String, dynamic>> get _leaderboardEntries =>
+      _firestore.collection('leaderboard_entries');
+  CollectionReference<Map<String, dynamic>> get _friendChats =>
       _firestore.collection('interest_chats');
   CollectionReference<Map<String, dynamic>> get _friendRequests =>
       _firestore.collection('friend_requests');
@@ -363,17 +318,33 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
               fallbackEmail,
             );
 
+            final visibleInLeaderboard =
+                userData['visibleInFriendLeaderboard'] as bool? ?? true;
+            final socialScore = userData['socialScore'] ?? 0;
+            final workoutsCount = userData['socialWorkoutsCount'] ?? 0;
+            final caloriesBurned = userData['socialCaloriesBurned'] ?? 0;
+            final stepsCount = userData['socialStepsCount'] ?? 0;
+
             transaction.set(userReference, <String, Object?>{
               'name': displayName,
               'email': (userData['email'] as String?)?.trim().isNotEmpty == true
                   ? (userData['email'] as String).trim()
                   : fallbackEmail.trim(),
-              'socialScore': userData['socialScore'] ?? 0,
-              'socialWorkoutsCount': userData['socialWorkoutsCount'] ?? 0,
-              'socialCaloriesBurned': userData['socialCaloriesBurned'] ?? 0,
-              'socialStepsCount': userData['socialStepsCount'] ?? 0,
-              'visibleInFriendLeaderboard':
-                  userData['visibleInFriendLeaderboard'] ?? true,
+              'socialScore': socialScore,
+              'socialWorkoutsCount': workoutsCount,
+              'socialCaloriesBurned': caloriesBurned,
+              'socialStepsCount': stepsCount,
+              'visibleInFriendLeaderboard': visibleInLeaderboard,
+              'updatedAt': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+            transaction.set(_leaderboardEntries.doc(userId), <String, Object?>{
+              'displayName': displayName,
+              'city': (userData['city'] as String?)?.trim(),
+              'score': socialScore,
+              'workoutsCount': workoutsCount,
+              'caloriesBurned': caloriesBurned,
+              'stepsCount': stepsCount,
+              'visibleInFriendLeaderboard': visibleInLeaderboard,
               'updatedAt': FieldValue.serverTimestamp(),
             }, SetOptions(merge: true));
           })
@@ -395,6 +366,13 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
           .doc(userId)
           .set(<String, Object?>{
             'socialStepsCount': stepsCount,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true))
+          .timeout(_requestTimeout);
+      await _leaderboardEntries
+          .doc(userId)
+          .set(<String, Object?>{
+            'stepsCount': stepsCount,
             'updatedAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true))
           .timeout(_requestTimeout);
@@ -651,62 +629,14 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
             'updatedAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true))
           .timeout(_requestTimeout);
-      await _syncFriendSnapshot(userId, settings: settings);
-    } on FirebaseException catch (error) {
-      throw _mapException(error, AppErrorCode.chatSendFailed);
-    } on TimeoutException {
-      throw const SocialException(AppErrorCode.chatSendFailed);
-    }
-  }
-
-  @override
-  Future<String> createInterestChat({
-    required String userId,
-    required String fallbackName,
-    required String fallbackEmail,
-    required String title,
-    required String description,
-  }) async {
-    try {
-      final userSnapshot = await _users
+      await _leaderboardEntries
           .doc(userId)
-          .get()
+          .set(<String, Object?>{
+            'visibleInFriendLeaderboard': settings.visibleInFriendLeaderboard,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true))
           .timeout(_requestTimeout);
-      final userData = userSnapshot.data() ?? <String, Object?>{};
-      final displayName = _resolveSenderName(
-        userData['name'] as String?,
-        fallbackName,
-        fallbackEmail,
-      );
-      final roomReference = _interestChats.doc();
-      final memberReference = roomReference.collection('members').doc(userId);
-      final createdAt = FieldValue.serverTimestamp();
-
-      await _firestore
-          .runTransaction((transaction) async {
-            transaction.set(roomReference, <String, Object?>{
-              'title': title.trim(),
-              'description': description.trim(),
-              'createdBy': userId,
-              'createdByName': displayName,
-              'searchIndex': _buildSearchIndex(title, description),
-              'memberCount': 1,
-              'createdAt': createdAt,
-              'updatedAt': createdAt,
-              'lastMessageAt': null,
-            });
-            transaction.set(memberReference, <String, Object?>{
-              'displayName': displayName,
-              'city': (userData['city'] as String?)?.trim(),
-              'role': ChatMemberRole.admin.name,
-              'canRemoveMessages': true,
-              'canRemoveUsers': true,
-              'joinedAt': createdAt,
-            });
-          })
-          .timeout(_requestTimeout);
-
-      return roomReference.id;
+      await _syncFriendSnapshot(userId, settings: settings);
     } on FirebaseException catch (error) {
       throw _mapException(error, AppErrorCode.chatSendFailed);
     } on TimeoutException {
@@ -738,7 +668,7 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
           : friendName.trim();
       final ids = <String>[userId, friendId]..sort();
       final chatId = 'dm_${ids.join('_')}';
-      final roomReference = _interestChats.doc(chatId);
+      final roomReference = _friendChats.doc(chatId);
       final createdAt = FieldValue.serverTimestamp();
 
       await _firestore
@@ -802,97 +732,16 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
   }
 
   @override
-  Future<void> joinInterestChat({
-    required String chatId,
-    required String userId,
-    required String fallbackName,
-    required String fallbackEmail,
-  }) async {
-    try {
-      final roomReference = _interestChats.doc(chatId);
-      final memberReference = roomReference.collection('members').doc(userId);
-      final userSnapshot = await _users
-          .doc(userId)
-          .get()
-          .timeout(_requestTimeout);
-      final userData = userSnapshot.data() ?? <String, Object?>{};
-      final displayName = _resolveSenderName(
-        userData['name'] as String?,
-        fallbackName,
-        fallbackEmail,
-      );
-
-      await _firestore
-          .runTransaction((transaction) async {
-            final memberSnapshot = await transaction.get(memberReference);
-            if (memberSnapshot.exists) {
-              return;
-            }
-
-            transaction.set(memberReference, <String, Object?>{
-              'displayName': displayName,
-              'city': (userData['city'] as String?)?.trim(),
-              'role': ChatMemberRole.member.name,
-              'canRemoveMessages': false,
-              'canRemoveUsers': false,
-              'joinedAt': FieldValue.serverTimestamp(),
-            });
-            transaction.set(roomReference, <String, Object?>{
-              'memberCount': FieldValue.increment(1),
-              'updatedAt': FieldValue.serverTimestamp(),
-            }, SetOptions(merge: true));
-          })
-          .timeout(_requestTimeout);
-    } on FirebaseException catch (error) {
-      throw _mapException(error, AppErrorCode.chatSendFailed);
-    } on TimeoutException {
-      throw const SocialException(AppErrorCode.chatSendFailed);
-    }
-  }
-
-  @override
-  Future<void> leaveInterestChat({
-    required String chatId,
-    required String userId,
-  }) async {
-    try {
-      final roomReference = _interestChats.doc(chatId);
-      final memberReference = roomReference.collection('members').doc(userId);
-      await _firestore
-          .runTransaction((transaction) async {
-            final memberSnapshot = await transaction.get(memberReference);
-            if (!memberSnapshot.exists) {
-              return;
-            }
-
-            final data = memberSnapshot.data() ?? <String, dynamic>{};
-            if (data['role'] == ChatMemberRole.admin.name) {
-              return;
-            }
-            transaction.delete(memberReference);
-            transaction.set(roomReference, <String, Object?>{
-              'memberCount': FieldValue.increment(-1),
-              'updatedAt': FieldValue.serverTimestamp(),
-            }, SetOptions(merge: true));
-          })
-          .timeout(_requestTimeout);
-    } on FirebaseException catch (error) {
-      throw _mapException(error, AppErrorCode.chatSendFailed);
-    } on TimeoutException {
-      throw const SocialException(AppErrorCode.chatSendFailed);
-    }
-  }
-
-  @override
   Future<void> sendMessage({
     required String chatId,
     required String userId,
     required String fallbackName,
     required String fallbackEmail,
     required String message,
+    Map<String, Object?>? metadata,
   }) async {
     try {
-      final roomReference = _interestChats.doc(chatId);
+      final roomReference = _friendChats.doc(chatId);
       final messagesReference = roomReference.collection('messages');
       final userSnapshot = await _users
           .doc(userId)
@@ -915,6 +764,7 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
             'senderCity': (userData['city'] as String?)?.trim(),
             'message': message.trim(),
             'sentAt': FieldValue.serverTimestamp(),
+            if (metadata != null) ...metadata,
           })
           .timeout(_requestTimeout);
 
@@ -937,7 +787,7 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
     required String messageId,
   }) async {
     try {
-      await _interestChats
+      await _friendChats
           .doc(chatId)
           .collection('messages')
           .doc(messageId)
@@ -957,7 +807,7 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
     String? reason,
   }) async {
     try {
-      final roomReference = _interestChats.doc(chatId);
+      final roomReference = _friendChats.doc(chatId);
       final memberReference = roomReference
           .collection('members')
           .doc(targetUserId);
@@ -1001,7 +851,7 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
     required bool canRemoveUsers,
   }) async {
     try {
-      await _interestChats
+      await _friendChats
           .doc(chatId)
           .collection('members')
           .doc(targetUserId)
@@ -1019,29 +869,13 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
   }
 
   @override
-  Stream<List<InterestChatRoom>> listenInterestChats({int limit = 100}) {
-    return _interestChats
-        .orderBy('lastMessageAt', descending: true)
-        .limit(limit)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map(InterestChatRoom.fromFirestore)
-              .toList(growable: false),
-        )
-        .handleError((Object error) {
-          throw _mapException(error, AppErrorCode.chatLoadFailed);
-        });
-  }
-
-  @override
-  Stream<InterestChatRoom?> watchInterestChat(String chatId) {
-    return _interestChats
+  Stream<FriendChatRoom?> watchFriendChat(String chatId) {
+    return _friendChats
         .doc(chatId)
         .snapshots()
         .map(
           (snapshot) =>
-              snapshot.exists ? InterestChatRoom.fromSnapshot(snapshot) : null,
+              snapshot.exists ? FriendChatRoom.fromSnapshot(snapshot) : null,
         )
         .handleError((Object error) {
           throw _mapException(error, AppErrorCode.chatLoadFailed);
@@ -1050,7 +884,7 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
 
   @override
   Stream<List<ChatParticipant>> listenParticipants(String chatId) {
-    return _interestChats
+    return _friendChats
         .doc(chatId)
         .collection('members')
         .orderBy('joinedAt')
@@ -1070,7 +904,7 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
     required String chatId,
     required String userId,
   }) {
-    return _interestChats
+    return _friendChats
         .doc(chatId)
         .collection('members')
         .doc(userId)
@@ -1089,7 +923,7 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
     required String chatId,
     int limit = 50,
   }) {
-    return _interestChats
+    return _friendChats
         .doc(chatId)
         .collection('messages')
         .orderBy('sentAt')
@@ -1176,8 +1010,32 @@ class FirestoreSocialRemoteDataSource implements SocialRemoteDataSource {
   }
 
   @override
-  Stream<List<LeaderboardUser>> listenLeaderboard({int limit = 20}) {
-    return Stream<List<LeaderboardUser>>.value(const <LeaderboardUser>[]);
+  Stream<List<LeaderboardUser>> listenLeaderboard({
+    int limit = 20,
+    String? city,
+  }) {
+    final trimmedCity = city?.trim();
+    Query<Map<String, dynamic>> query = _leaderboardEntries
+        .where('visibleInFriendLeaderboard', isEqualTo: true)
+        .orderBy('score', descending: true);
+    if (trimmedCity != null && trimmedCity.isNotEmpty) {
+      query = _leaderboardEntries
+          .where('visibleInFriendLeaderboard', isEqualTo: true)
+          .where('city', isEqualTo: trimmedCity)
+          .orderBy('score', descending: true);
+    }
+
+    return query
+        .limit(limit)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map(LeaderboardUser.fromFirestore)
+              .toList(growable: false),
+        )
+        .handleError((Object error) {
+          throw _mapException(error, AppErrorCode.leaderboardLoadFailed);
+        });
   }
 
   Future<Map<String, Object?>> _loadUserData(String userId) async {

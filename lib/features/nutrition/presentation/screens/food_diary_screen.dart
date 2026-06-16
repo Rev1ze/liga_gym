@@ -13,6 +13,8 @@ import '../../../auth/domain/entities/user_profile.dart';
 import '../../../auth/domain/entities/user_profile_update_data.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../dashboard/presentation/providers/dashboard_providers.dart';
+import '../../../dashboard/presentation/widgets/daily_habits_widgets.dart';
+import '../../../water_tracker/presentation/providers/water_tracker_providers.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../domain/entities/food_entry.dart';
 import '../../domain/entities/food_macros.dart';
@@ -93,8 +95,12 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(foodDiaryControllerProvider);
     final profileState = ref.watch(currentUserProfileProvider);
+    final waterState = ref.watch(
+      waterTrackerControllerProvider(state.selectedDate),
+    );
     final totalMacros = state.diary.totalMacros();
     final isToday = DateUtils.isSameDay(state.selectedDate, DateTime.now());
+    final isRu = Localizations.localeOf(context).languageCode == 'ru';
 
     return LigaPremiumScaffold(
       appBar: AppBar(
@@ -140,6 +146,25 @@ class _FoodDiaryScreenState extends ConsumerState<FoodDiaryScreen> {
                 ),
                 const SizedBox(height: 12),
               ],
+              WaterTrackerCard(
+                water: waterState,
+                isRu: isRu,
+                onAdd: (amount) => ref
+                    .read(
+                      waterTrackerControllerProvider(
+                        state.selectedDate,
+                      ).notifier,
+                    )
+                    .addWater(amount),
+                onRemove: (amount) => ref
+                    .read(
+                      waterTrackerControllerProvider(
+                        state.selectedDate,
+                      ).notifier,
+                    )
+                    .removeWater(amount),
+              ).premiumEntrance(delayMs: 80),
+              const SizedBox(height: 12),
               GlassCard(
                 tint: Theme.of(
                   context,

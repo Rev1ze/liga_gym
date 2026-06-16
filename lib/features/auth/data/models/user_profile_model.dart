@@ -70,6 +70,7 @@ class UserProfileModel extends UserProfile {
       'socialScore': FieldValue.increment(0),
       'socialWorkoutsCount': FieldValue.increment(0),
       'socialCaloriesBurned': FieldValue.increment(0),
+      'socialStepsCount': FieldValue.increment(0),
       'updatedAt': FieldValue.serverTimestamp(),
       'createdAt': FieldValue.serverTimestamp(),
     };

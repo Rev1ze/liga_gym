@@ -13,7 +13,7 @@ import '../controllers/workout_list_controller.dart';
 import '../controllers/workout_session_controller.dart';
 
 final firebaseWorkoutUserProvider = Provider(
-  (ref) => ref.watch(firebaseAuthProvider).currentUser,
+  (ref) => ref.watch(currentFirebaseUserProvider),
 );
 
 final workoutLocalDataSourceProvider = Provider<WorkoutLocalDataSource>(

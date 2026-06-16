@@ -59,9 +59,13 @@ class FriendProfile {
 }
 
 Set<SocialPrivacyCategory> _parseAllowedCategories(Object? raw) {
-  final names = (raw as List<dynamic>?)?.whereType<String>().toSet();
-  if (names == null || names.isEmpty) {
-    return SocialPrivacyCategory.values.toSet();
+  if (raw is! List<dynamic>) {
+    return const <SocialPrivacyCategory>{};
+  }
+
+  final names = raw.whereType<String>().toSet();
+  if (names.isEmpty) {
+    return const <SocialPrivacyCategory>{};
   }
 
   return SocialPrivacyCategory.values

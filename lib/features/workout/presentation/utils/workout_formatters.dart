@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../domain/entities/workout.dart';
 import '../../domain/entities/workout_type.dart';
 
 String formatWorkoutDuration(Duration duration) {
@@ -27,9 +28,24 @@ String formatWorkoutTimestamp(DateTime dateTime) {
 String localizeWorkoutType(AppLocalizations l10n, WorkoutType type) {
   return switch (type) {
     WorkoutType.running => l10n.workoutTypeRunning,
+    WorkoutType.treadmillRunning =>
+      l10n.localeName.startsWith('ru') ? 'Беговая дорожка' : 'Treadmill run',
+    WorkoutType.trailRunning =>
+      l10n.localeName.startsWith('ru') ? 'Трейл-бег' : 'Trail run',
+    WorkoutType.intervalRunning =>
+      l10n.localeName.startsWith('ru') ? 'Интервальный бег' : 'Interval run',
     WorkoutType.cycling => l10n.workoutTypeCycling,
     WorkoutType.walking => l10n.workoutTypeWalking,
     WorkoutType.strength => l10n.workoutTypeStrength,
     WorkoutType.cardio => l10n.workoutTypeCardio,
   };
+}
+
+String workoutDisplayTitle(AppLocalizations l10n, Workout workout) {
+  final title = workout.title?.trim();
+  if (title != null && title.isNotEmpty) {
+    return title;
+  }
+
+  return localizeWorkoutType(l10n, workout.type);
 }

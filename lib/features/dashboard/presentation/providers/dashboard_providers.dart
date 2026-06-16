@@ -4,8 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/firebase/firebase_bootstrap.dart';
 import '../../../auth/domain/entities/user_profile.dart';
+import '../../../auth/domain/usecases/load_user_profile_use_case.dart';
 import '../../../auth/domain/entities/weight_history_entry.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../nutrition/domain/entities/daily_food_diary.dart';
@@ -64,14 +66,14 @@ final dashboardAnalyticsProvider = FutureProvider<DashboardAnalytics>((
     from: dates.first,
     to: today,
   );
-  final profileFuture = loadUserProfile.call(user.uid);
+  final profileFuture = _loadOptionalUserProfile(loadUserProfile, user.uid);
   final weightHistoryFuture = loadWeightHistory.call(
     userId: user.uid,
     from: dates.first,
     to: today,
   );
   final results =
-      await Future.wait<Object>([
+      await Future.wait<Object?>([
         workoutsFuture,
         diariesFuture,
         stepCountsFuture,
@@ -85,7 +87,7 @@ final dashboardAnalyticsProvider = FutureProvider<DashboardAnalytics>((
   final workouts = results.first as List<Workout>;
   final diaries = results[1] as List<DailyFoodDiary>;
   final stepCounts = results[2] as List<DailyStepCount>;
-  final profile = results[3] as UserProfile;
+  final profile = results[3] as UserProfile?;
   final weightHistory = results[4] as List<WeightHistoryEntry>;
 
   return ref
@@ -149,14 +151,14 @@ final dashboardRangeAnalyticsProvider =
         from: normalizedQuery.from,
         to: normalizedQuery.to,
       );
-      final profileFuture = loadUserProfile.call(user.uid);
+      final profileFuture = _loadOptionalUserProfile(loadUserProfile, user.uid);
       final weightHistoryFuture = loadWeightHistory.call(
         userId: user.uid,
         from: normalizedQuery.from,
         to: normalizedQuery.to,
       );
       final results =
-          await Future.wait<Object>([
+          await Future.wait<Object?>([
             workoutsFuture,
             diariesFuture,
             stepCountsFuture,
@@ -170,7 +172,7 @@ final dashboardRangeAnalyticsProvider =
       final workouts = results.first as List<Workout>;
       final diaries = results[1] as List<DailyFoodDiary>;
       final stepCounts = results[2] as List<DailyStepCount>;
-      final profile = results[3] as UserProfile;
+      final profile = results[3] as UserProfile?;
       final weightHistory = results[4] as List<WeightHistoryEntry>;
 
       return ref
@@ -228,7 +230,7 @@ final dailyProfileMetricsProvider =
           ? ref.watch(firebaseFirestoreProvider)
           : null;
 
-      final results = await Future.wait<Object>([
+      final results = await Future.wait<Object?>([
         loadUserWorkouts.call(user.uid),
         loadDailyFoodEntries.call(userId: user.uid, date: normalizedDate),
         loadStepCounts.call(
@@ -236,12 +238,12 @@ final dailyProfileMetricsProvider =
           from: normalizedDate,
           to: normalizedDate,
         ),
-        loadUserProfile.call(user.uid),
+        _loadOptionalUserProfile(loadUserProfile, user.uid),
       ]);
       final allWorkouts = results[0] as List<Workout>;
       final diary = results[1] as DailyFoodDiary;
       final stepCounts = results[2] as List<DailyStepCount>;
-      final profile = results[3] as UserProfile;
+      final profile = results[3] as UserProfile?;
       final dayWorkouts = allWorkouts
           .where(
             (workout) => DateUtils.isSameDay(workout.startedAt, normalizedDate),
@@ -257,8 +259,9 @@ final dailyProfileMetricsProvider =
       final progress = calculator.calculateProgress(
         steps: steps,
         calories: macros.calories,
-        stepGoal: profile.dailyStepGoal,
-        calorieGoal: profile.dailyCalorieGoal,
+        stepGoal: profile?.dailyStepGoal ?? calculator.defaultDailyStepGoal,
+        calorieGoal:
+            profile?.dailyCalorieGoal ?? calculator.defaultDailyCalorieGoal,
       );
       final metrics = DailyProfileMetrics(
         date: normalizedDate,
@@ -271,8 +274,9 @@ final dailyProfileMetricsProvider =
         carbs: macros.carbs,
         foodEntriesCount: diary.entries.length,
         workouts: dayWorkouts,
-        stepGoal: profile.dailyStepGoal,
-        calorieGoal: profile.dailyCalorieGoal,
+        stepGoal: profile?.dailyStepGoal ?? calculator.defaultDailyStepGoal,
+        calorieGoal:
+            profile?.dailyCalorieGoal ?? calculator.defaultDailyCalorieGoal,
         progress: progress,
       );
 
@@ -288,6 +292,20 @@ final dailyProfileMetricsProvider =
 
       return metrics;
     });
+
+Future<UserProfile?> _loadOptionalUserProfile(
+  LoadUserProfileUseCase loadUserProfile,
+  String userId,
+) async {
+  try {
+    return await loadUserProfile.call(userId);
+  } on AppException catch (error) {
+    if (error.code == AppErrorCode.profileSaveFailed) {
+      return null;
+    }
+    rethrow;
+  }
+}
 
 int _estimateSteps(List<Workout> workouts) {
   return workouts.fold<int>(0, (total, workout) {

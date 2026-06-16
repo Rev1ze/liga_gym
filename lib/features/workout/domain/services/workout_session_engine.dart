@@ -70,6 +70,7 @@ class WorkoutSessionEngine {
       type: type,
       duration: duration,
       distanceMeters: _distanceMeters,
+      route: _route,
     );
 
     return Workout(

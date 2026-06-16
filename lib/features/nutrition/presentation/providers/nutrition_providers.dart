@@ -23,7 +23,7 @@ import '../controllers/food_diary_controller.dart';
 part 'nutrition_providers.g.dart';
 
 final firebaseNutritionUserProvider = Provider(
-  (ref) => ref.watch(firebaseAuthProvider).currentUser,
+  (ref) => ref.watch(currentFirebaseUserProvider),
 );
 
 @Riverpod(keepAlive: true)

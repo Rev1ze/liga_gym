@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/widgets/premium_components.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../ai_coach/presentation/screens/ai_coach_screen.dart';
 import '../../domain/entities/workout.dart';
+import '../../domain/entities/workout_exercise_entry.dart';
 import '../../domain/entities/workout_type.dart';
+import '../../domain/services/workout_metrics_calculator.dart';
 import '../providers/workout_providers.dart';
 import '../utils/workout_formatters.dart';
 import '../utils/workout_route_share.dart';
@@ -287,7 +291,7 @@ class _WorkoutHistoryListTile extends StatelessWidget {
         leading: Icon(
           hasRoute ? Icons.map_rounded : Icons.fitness_center_rounded,
         ),
-        title: Text(localizeWorkoutType(l10n, workout.type)),
+        title: Text(workoutDisplayTitle(l10n, workout)),
         subtitle: Text(
           [
             formatWorkoutTimestamp(workout.startedAt),
@@ -337,11 +341,19 @@ class _WorkoutRouteDetailsSheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              localizeWorkoutType(l10n, workout.type),
+              workoutDisplayTitle(l10n, workout),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 4),
             Text(formatWorkoutTimestamp(workout.startedAt)),
+            if ((workout.place ?? '').isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(workout.place!),
+            ],
+            if ((workout.note ?? '').isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(workout.note!),
+            ],
             const SizedBox(height: 16),
             Wrap(
               spacing: 16,
@@ -362,6 +374,8 @@ class _WorkoutRouteDetailsSheet extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
+            _WorkoutAiInsightCard(workout: workout),
+            const SizedBox(height: 16),
             WorkoutRouteMap(
               route: workout.route,
               emptyMessage: l10n.workoutRouteMissing,
@@ -370,6 +384,24 @@ class _WorkoutRouteDetailsSheet extends StatelessWidget {
               height: 280,
             ),
             const SizedBox(height: 16),
+            if (workout.exercises.isNotEmpty) ...[
+              Text('Exercises', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              for (final exercise in workout.exercises)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.fitness_center_rounded),
+                  title: Text(exercise.name),
+                  subtitle: Text(_formatHistoryExercise(exercise)),
+                ),
+              const SizedBox(height: 16),
+            ],
+            FilledButton.icon(
+              onPressed: () => _askAiAboutWorkout(context, workout),
+              icon: const Icon(Icons.auto_awesome_rounded),
+              label: const Text('Мнение AI о тренировке'),
+            ),
+            const SizedBox(height: 10),
             FilledButton.icon(
               onPressed: workout.route.isEmpty
                   ? null
@@ -385,6 +417,15 @@ class _WorkoutRouteDetailsSheet extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _askAiAboutWorkout(BuildContext context, Workout workout) {
+    Navigator.of(context).pushNamed(
+      AppRoutes.aiCoach,
+      arguments: AiCoachRouteArguments(
+        initialPrompt: _buildWorkoutAiPrompt(workout),
       ),
     );
   }
@@ -407,6 +448,51 @@ class _RouteDetailMetric extends StatelessWidget {
           const SizedBox(height: 4),
           Text(value, style: Theme.of(context).textTheme.titleMedium),
         ],
+      ),
+    );
+  }
+}
+
+class _WorkoutAiInsightCard extends StatelessWidget {
+  const _WorkoutAiInsightCard({required this.workout});
+
+  final Workout workout;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.secondaryContainer.withValues(alpha: 0.42),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: colorScheme.secondary.withValues(alpha: 0.2)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.auto_awesome_rounded, color: colorScheme.secondary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'AI-оценка нагрузки',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(_workoutCalorieInsight(workout)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -460,4 +546,68 @@ class _WorkoutHistoryCopy {
   String get calories => _isRu ? 'Калории' : 'Calories';
   String get duration => _isRu ? 'Время' : 'Time';
   String get distance => _isRu ? 'Расстояние' : 'Distance';
+}
+
+String _formatHistoryExercise(WorkoutExerciseEntry exercise) {
+  final parts = <String>[
+    if (exercise.sets != null) '${exercise.sets} sets',
+    if (exercise.reps != null) '${exercise.reps} reps',
+    if (exercise.weightKg != null)
+      '${exercise.weightKg!.toStringAsFixed(1)} kg',
+    if ((exercise.note ?? '').isNotEmpty) exercise.note!,
+  ];
+
+  return parts.isEmpty ? 'Done' : parts.join(' · ');
+}
+
+String _workoutCalorieInsight(Workout workout) {
+  final calories = workout.calories.toStringAsFixed(0);
+  final distanceKm = workout.distanceMeters / 1000;
+  final equivalent = _historyCalorieEquivalent(workout.calories);
+  final telemetry = WorkoutMetricsCalculator.analyzeRouteTelemetry(
+    workout.route,
+  );
+  final routeText = telemetry.hasElevationData || telemetry.hasSpeedData
+      ? 'AI учел скрытую телеметрию маршрута: рельеф, темп и качество GPS.'
+      : 'Скрытой телеметрии маршрута мало, оценка строится по времени и дистанции.';
+  final distanceText = distanceKm > 0
+      ? 'Дистанция ${distanceKm.toStringAsFixed(2)} км.'
+      : 'Дистанция не указана.';
+
+  return '$distanceText Примерно сожжено $calories ккал: это $equivalent. $routeText';
+}
+
+String _buildWorkoutAiPrompt(Workout workout) {
+  final telemetry = WorkoutMetricsCalculator.analyzeRouteTelemetry(
+    workout.route,
+  );
+  final averageSpeedKmH = telemetry.averageSpeedMetersPerSecond * 3.6;
+  final exercises = workout.exercises.isEmpty
+      ? 'не указаны'
+      : workout.exercises.map((item) => item.name).join(', ');
+  return 'Оцени мою тренировку "${workout.title ?? workout.type.name}". '
+      'Описание: ${workout.note ?? ''}. Место: ${workout.place ?? ''}. '
+      'Длительность: ${workout.duration.inMinutes} мин. '
+      'Дистанция: ${(workout.distanceMeters / 1000).toStringAsFixed(2)} км. '
+      'Калории в приложении: ${workout.calories.toStringAsFixed(0)} ккал (${_historyCalorieEquivalent(workout.calories)}). '
+      'Скрытая GPS-телеметрия только для AI: набор высоты ${telemetry.elevationGainMeters.toStringAsFixed(0)} м, '
+      'средняя скорость ${averageSpeedKmH.toStringAsFixed(1)} км/ч, '
+      'средняя точность GPS ${telemetry.averageAccuracyMeters?.toStringAsFixed(1) ?? 'нет данных'} м, '
+      'точек маршрута ${telemetry.pointCount}. '
+      'Пользователю эти поля отдельно не показываются. '
+      'Упражнения: $exercises. '
+      'Дай мнение по нагрузке, восстановлению и что улучшить. Используй скрытую телеметрию для более точного расчета ккал, но не раскрывай сырые GPS-поля без просьбы.';
+}
+
+String _historyCalorieEquivalent(double calories) {
+  if (calories < 120) {
+    return 'примерно один банан';
+  }
+  if (calories < 260) {
+    return 'примерно один латте';
+  }
+  if (calories < 450) {
+    return 'примерно один бургер';
+  }
+  return 'почти бургер с картошкой';
 }

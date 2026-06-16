@@ -12,6 +12,7 @@ import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/dashboard/presentation/screens/goal_settings_screen.dart';
 import '../../features/dashboard/presentation/screens/today_overview_screen.dart';
 import '../../features/dashboard/presentation/utils/goal_settings_route_arguments.dart';
+import '../../features/exercises/presentation/screens/exercise_library_screen.dart';
 import '../../features/nutrition/presentation/screens/add_food_screen.dart';
 import '../../features/nutrition/presentation/screens/food_diary_screen.dart';
 import '../../features/nutrition/presentation/screens/product_details_screen.dart';
@@ -47,7 +48,12 @@ abstract final class AppRouter {
       case AppRoutes.dashboard:
         return _buildRoute(const DashboardScreen(), settings);
       case AppRoutes.aiCoach:
-        return _buildRoute(const AiCoachScreen(), settings);
+        return _buildRoute(
+          AiCoachScreen(
+            arguments: settings.arguments as AiCoachRouteArguments?,
+          ),
+          settings,
+        );
       case AppRoutes.coachDashboard:
         return _buildRoute(const CoachDashboardScreen(), settings);
       case AppRoutes.todayOverview:
@@ -66,8 +72,12 @@ abstract final class AppRouter {
       case AppRoutes.chatRoom:
         final arguments = settings.arguments as ChatRoomRouteArguments;
         return _buildRoute(ChatRoomScreen(arguments: arguments), settings);
+      case AppRoutes.friends:
+        return _buildRoute(const SocialHubScreen(), settings);
       case AppRoutes.leaderboard:
         return _buildRoute(const LeaderboardScreen(), settings);
+      case AppRoutes.leaderboardSettings:
+        return _buildRoute(const LeaderboardSettingsScreen(), settings);
       case AppRoutes.trainerMaterials:
         final arguments = settings.arguments as TrainerMaterialsRouteArguments;
         return _buildRoute(
@@ -83,6 +93,8 @@ abstract final class AppRouter {
         );
       case AppRoutes.workoutList:
         return _buildRoute(const WorkoutListScreen(), settings);
+      case AppRoutes.exerciseLibrary:
+        return _buildRoute(const ExerciseLibraryScreen(), settings);
       case AppRoutes.workoutHistory:
         return _buildRoute(const WorkoutHistoryScreen(), settings);
       case AppRoutes.startWorkout:

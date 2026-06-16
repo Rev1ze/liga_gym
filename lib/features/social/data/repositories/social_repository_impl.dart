@@ -1,9 +1,9 @@
 import '../../domain/entities/chat_member_role.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/chat_participant.dart';
+import '../../domain/entities/friend_chat_room.dart';
 import '../../domain/entities/friend_profile.dart';
 import '../../domain/entities/friend_request.dart';
-import '../../domain/entities/interest_chat_room.dart';
 import '../../domain/entities/leaderboard_user.dart';
 import '../../domain/entities/social_privacy.dart';
 import '../../domain/repositories/social_repository.dart';
@@ -14,23 +14,6 @@ class SocialRepositoryImpl implements SocialRepository {
     : _remoteDataSource = remoteDataSource;
 
   final SocialRemoteDataSource _remoteDataSource;
-
-  @override
-  Future<String> createInterestChat({
-    required String userId,
-    required String fallbackName,
-    required String fallbackEmail,
-    required String title,
-    required String description,
-  }) {
-    return _remoteDataSource.createInterestChat(
-      userId: userId,
-      fallbackName: fallbackName,
-      fallbackEmail: fallbackEmail,
-      title: title,
-      description: description,
-    );
-  }
 
   @override
   Future<String> openFriendChat({
@@ -109,34 +92,6 @@ class SocialRepositoryImpl implements SocialRepository {
   }
 
   @override
-  Future<void> joinInterestChat({
-    required String chatId,
-    required String userId,
-    required String fallbackName,
-    required String fallbackEmail,
-  }) {
-    return _remoteDataSource.joinInterestChat(
-      chatId: chatId,
-      userId: userId,
-      fallbackName: fallbackName,
-      fallbackEmail: fallbackEmail,
-    );
-  }
-
-  @override
-  Future<void> leaveInterestChat({
-    required String chatId,
-    required String userId,
-  }) {
-    return _remoteDataSource.leaveInterestChat(chatId: chatId, userId: userId);
-  }
-
-  @override
-  Stream<List<InterestChatRoom>> listenInterestChats({int limit = 100}) {
-    return _remoteDataSource.listenInterestChats(limit: limit);
-  }
-
-  @override
   Stream<List<FriendProfile>> listenFriends(String userId) {
     return _remoteDataSource.listenFriends(userId);
   }
@@ -147,8 +102,11 @@ class SocialRepositoryImpl implements SocialRepository {
   }
 
   @override
-  Stream<List<LeaderboardUser>> listenLeaderboard({int limit = 20}) {
-    return _remoteDataSource.listenLeaderboard(limit: limit);
+  Stream<List<LeaderboardUser>> listenLeaderboard({
+    int limit = 20,
+    String? city,
+  }) {
+    return _remoteDataSource.listenLeaderboard(limit: limit, city: city);
   }
 
   @override
@@ -218,6 +176,7 @@ class SocialRepositoryImpl implements SocialRepository {
     required String fallbackName,
     required String fallbackEmail,
     required String message,
+    Map<String, Object?>? metadata,
   }) {
     return _remoteDataSource.sendMessage(
       chatId: chatId,
@@ -225,6 +184,7 @@ class SocialRepositoryImpl implements SocialRepository {
       fallbackName: fallbackName,
       fallbackEmail: fallbackEmail,
       message: message,
+      metadata: metadata,
     );
   }
 
@@ -257,8 +217,8 @@ class SocialRepositoryImpl implements SocialRepository {
   }
 
   @override
-  Stream<InterestChatRoom?> watchInterestChat(String chatId) {
-    return _remoteDataSource.watchInterestChat(chatId);
+  Stream<FriendChatRoom?> watchFriendChat(String chatId) {
+    return _remoteDataSource.watchFriendChat(chatId);
   }
 
   @override

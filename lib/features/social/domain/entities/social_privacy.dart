@@ -87,10 +87,10 @@ class SocialPrivacySettings {
   });
 
   factory SocialPrivacySettings.defaults() {
-    return SocialPrivacySettings(
-      visibleInFriendLeaderboard: true,
-      defaultAllowedCategories: SocialPrivacyCategory.values.toSet(),
-      groups: const <FriendAccessGroup>[],
+    return const SocialPrivacySettings(
+      visibleInFriendLeaderboard: false,
+      defaultAllowedCategories: <SocialPrivacyCategory>{},
+      groups: <FriendAccessGroup>[],
     );
   }
 
@@ -143,9 +143,13 @@ class SocialPrivacySettings {
 }
 
 Set<SocialPrivacyCategory> _parseCategories(Object? raw) {
-  final names = (raw as List<dynamic>?)?.whereType<String>().toSet();
-  if (names == null || names.isEmpty) {
-    return SocialPrivacyCategory.values.toSet();
+  if (raw is! List<dynamic>) {
+    return const <SocialPrivacyCategory>{};
+  }
+
+  final names = raw.whereType<String>().toSet();
+  if (names.isEmpty) {
+    return const <SocialPrivacyCategory>{};
   }
 
   return names

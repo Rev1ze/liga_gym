@@ -17,9 +17,13 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../coach/domain/entities/coach_request.dart';
 import '../../../coach/domain/entities/coach_trainer.dart';
 import '../../../coach/presentation/providers/coach_providers.dart';
+import '../../../water_tracker/presentation/providers/water_tracker_providers.dart';
+import '../../../workout/presentation/providers/workout_providers.dart';
+import '../../../workout_completion/presentation/providers/workout_completion_providers.dart';
 import '../../domain/entities/dashboard_analytics.dart';
 import '../providers/dashboard_providers.dart';
 import '../utils/goal_settings_route_arguments.dart';
+import '../widgets/daily_habits_widgets.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -130,6 +134,10 @@ class DashboardScreen extends ConsumerWidget {
                         l10n: l10n,
                         onOpenToday: () => _openTodayOverview(context, ref),
                       ).premiumEntrance(),
+                      const SizedBox(height: 12),
+                      const _DashboardDaySummarySection().premiumEntrance(
+                        delayMs: 60,
+                      ),
                       const SizedBox(height: 12),
                       _SmartQuickActions(
                         l10n: l10n,
@@ -384,6 +392,44 @@ class _CoachTrainerTile extends StatelessWidget {
   }
 }
 
+class _DashboardDaySummarySection extends ConsumerStatefulWidget {
+  const _DashboardDaySummarySection();
+
+  @override
+  ConsumerState<_DashboardDaySummarySection> createState() =>
+      _DashboardDaySummarySectionState();
+}
+
+class _DashboardDaySummarySectionState
+    extends ConsumerState<_DashboardDaySummarySection> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(workoutListControllerProvider.notifier).loadUserWorkouts();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final isRu = Localizations.localeOf(context).languageCode == 'ru';
+    final waterState = ref.watch(waterTrackerControllerProvider(today));
+    final workoutState = ref.watch(workoutListControllerProvider);
+    final completionState = ref.watch(
+      workoutCompletionControllerProvider(today),
+    );
+
+    return DailyHabitsSummaryCard(
+      isRu: isRu,
+      water: waterState,
+      workoutState: workoutState,
+      completionState: completionState,
+      date: today,
+    );
+  }
+}
+
 class _HeroStatsCard extends StatelessWidget {
   const _HeroStatsCard({
     required this.email,
@@ -618,12 +664,6 @@ class _QuickActionTile extends StatelessWidget {
   }
 }
 
-String _friendsLabel(BuildContext context) {
-  return Localizations.localeOf(context).languageCode == 'ru'
-      ? 'Друзья'
-      : 'Friends';
-}
-
 String _dashboardErrorMessage(BuildContext context, Object error) {
   final languageCode = Localizations.localeOf(context).languageCode;
   if (error is TimeoutException) {
@@ -717,7 +757,9 @@ class _DashboardBottomBar extends StatelessWidget {
                 key: AppKeys.dashboardLeaderboardButton,
                 onTap: onOpenFriends,
                 icon: Icons.group_rounded,
-                label: _friendsLabel(context),
+                label: Localizations.localeOf(context).languageCode == 'ru'
+                    ? 'Друзья'
+                    : 'Friends',
                 isCompact: isCompact,
               ),
               _BottomBarAction(

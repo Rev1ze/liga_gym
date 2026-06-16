@@ -12,7 +12,7 @@ import '../../domain/repositories/step_repository.dart';
 import '../../domain/usecases/load_step_counts_use_case.dart';
 
 final firebaseStepUserProvider = Provider(
-  (ref) => ref.watch(firebaseAuthProvider).currentUser,
+  (ref) => ref.watch(currentFirebaseUserProvider),
 );
 
 final stepLocalDataSourceProvider = Provider<StepLocalDataSource>(

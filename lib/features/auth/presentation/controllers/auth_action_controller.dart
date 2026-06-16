@@ -27,6 +27,7 @@ class AuthActionController extends _$AuthActionController {
           .read(loginWithEmailUseCaseProvider)
           .call(email: email, password: password);
 
+      _invalidateAuthUserState();
       state = const AsyncData(null);
       return _mapAuthStatusToRoleAwareRoute(authStatus);
     } on AppException catch (error, stackTrace) {
@@ -41,6 +42,7 @@ class AuthActionController extends _$AuthActionController {
     try {
       final authStatus = await ref.read(signInWithGoogleUseCaseProvider).call();
 
+      _invalidateAuthUserState();
       state = const AsyncData(null);
       return _mapAuthStatusToRoleAwareRoute(authStatus);
     } on AppException catch (error, stackTrace) {
@@ -60,6 +62,7 @@ class AuthActionController extends _$AuthActionController {
           .read(registerUserUseCaseProvider)
           .call(email: email, password: password);
 
+      _invalidateAuthUserState();
       state = const AsyncData(null);
       return mapAuthStatusToRoute(authStatus);
     } on AppException catch (error, stackTrace) {
@@ -80,6 +83,7 @@ class AuthActionController extends _$AuthActionController {
           .read(saveUserProfileUseCaseProvider)
           .call(name: name, gender: gender, birthDate: birthDate);
 
+      _invalidateAuthUserState();
       state = const AsyncData(null);
       return _mapAuthStatusToRoleAwareRoute(authStatus);
     } on AppException catch (error, stackTrace) {
@@ -93,6 +97,7 @@ class AuthActionController extends _$AuthActionController {
 
     try {
       await ref.read(authRepositoryProvider).signOut();
+      _invalidateAuthUserState();
       state = const AsyncData(null);
     } on AppException catch (error, stackTrace) {
       state = AsyncError(error, stackTrace);
@@ -115,5 +120,12 @@ class AuthActionController extends _$AuthActionController {
         .read(loadUserProfileUseCaseProvider)
         .call(currentUser.id);
     return profile.isTrainer ? AppRoutes.coachDashboard : route;
+  }
+
+  void _invalidateAuthUserState() {
+    ref.invalidate(currentFirebaseUserProvider);
+    ref.invalidate(currentAuthUserProvider);
+    ref.invalidate(currentUserProfileProvider);
+    ref.invalidate(authStateChangesProvider);
   }
 }

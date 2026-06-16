@@ -12,6 +12,7 @@ class SendMessageUseCase {
     required String fallbackName,
     required String fallbackEmail,
     required String message,
+    Map<String, Object?>? metadata,
   }) {
     final trimmedMessage = message.trim();
     if (trimmedMessage.isEmpty) {
@@ -24,6 +25,7 @@ class SendMessageUseCase {
       fallbackName: fallbackName,
       fallbackEmail: fallbackEmail,
       message: trimmedMessage,
+      metadata: metadata,
     );
   }
 }

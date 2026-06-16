@@ -185,10 +185,8 @@ class FirebaseAuthRemoteDataSource implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
-      await Future.wait<void>([
-        _firebaseAuth.signOut(),
-        _signOutGoogleSafely(),
-      ]).timeout(_requestTimeout);
+      await _firebaseAuth.signOut().timeout(_requestTimeout);
+      unawaited(_signOutGoogleSafely());
     } on FirebaseAuthException catch (error) {
       throw AuthException(_mapFirebaseAuthError(error.code));
     } on FirebaseException catch (error) {

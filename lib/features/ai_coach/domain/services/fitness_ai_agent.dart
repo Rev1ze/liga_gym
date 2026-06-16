@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -73,13 +74,9 @@ class FitnessAiAgent {
         ),
       );
     } on AiProviderException catch (error) {
-      return isRu
-          ? 'Не удалось получить ответ AI: ${error.message}'
-          : 'Could not get an AI response: ${error.message}';
+      return _providerUnavailableMessage(error.message, isRu);
     } on Object {
-      return isRu
-          ? 'Не удалось связаться с бесплатной AI-моделью. Проверьте интернет и попробуйте ещё раз.'
-          : 'Could not reach the free AI model. Check your internet connection and try again.';
+      return _providerUnavailableMessage('network error', isRu);
     }
   }
 
@@ -218,6 +215,13 @@ class FitnessAiAgent {
         ? 'Я не знаю: это не входит в мои знания. Я могу помогать только с питанием и тренировками.'
         : 'I do not know: this is outside my knowledge. I can only help with nutrition and training.';
   }
+
+  String _providerUnavailableMessage(String message, bool isRu) {
+    final detail = message.trim().isEmpty ? 'unknown error' : message.trim();
+    return isRu
+        ? 'Нейросеть сейчас не ответила: $detail. Бесплатный провайдер может быть занят. Для стабильной работы можно запустить приложение с OPENAI_API_KEY.'
+        : 'The neural model did not respond: $detail. The free provider may be busy. For stable AI, run the app with OPENAI_API_KEY.';
+  }
 }
 
 class AiApiMessage {
@@ -245,15 +249,24 @@ class PollinationsAiClient implements AiChatClient {
   }) : _httpClient = httpClient ?? http.Client();
 
   factory PollinationsAiClient.fromEnvironment() {
+    const openAiApiKey = String.fromEnvironment('OPENAI_API_KEY');
+    const pollinationsApiKey = String.fromEnvironment('POLLINATIONS_API_KEY');
+    const configuredChatUrl = String.fromEnvironment('AI_CHAT_URL');
+    const configuredModel = String.fromEnvironment('AI_MODEL');
+    final apiKey = openAiApiKey.isNotEmpty ? openAiApiKey : pollinationsApiKey;
+    final defaultChatUrl = openAiApiKey.isNotEmpty
+        ? 'https://api.openai.com/v1/chat/completions'
+        : pollinationsApiKey.isNotEmpty
+        ? 'https://gen.pollinations.ai/v1/chat/completions'
+        : 'https://text.pollinations.ai/openai';
+    final defaultModel = openAiApiKey.isNotEmpty ? 'gpt-4.1-mini' : 'openai';
+
     return PollinationsAiClient(
       chatUrl: Uri.parse(
-        const String.fromEnvironment(
-          'AI_CHAT_URL',
-          defaultValue: 'https://text.pollinations.ai/openai',
-        ),
+        configuredChatUrl.isEmpty ? defaultChatUrl : configuredChatUrl,
       ),
-      model: const String.fromEnvironment('AI_MODEL', defaultValue: 'openai'),
-      apiKey: const String.fromEnvironment('POLLINATIONS_API_KEY'),
+      model: configuredModel.isEmpty ? defaultModel : configuredModel,
+      apiKey: apiKey,
     );
   }
 
@@ -261,6 +274,11 @@ class PollinationsAiClient implements AiChatClient {
   final String model;
   final String apiKey;
   final http.Client _httpClient;
+  static const int _maxTextFallbackUrlLength = 7600;
+
+  bool get _supportsTextFallback =>
+      chatUrl.host == 'text.pollinations.ai' ||
+      chatUrl.host == 'gen.pollinations.ai';
 
   @override
   Future<String> complete({required List<AiApiMessage> messages}) async {
@@ -281,13 +299,15 @@ class PollinationsAiClient implements AiChatClient {
       }
     }
 
-    try {
-      return await _completeWithTextEndpoint(messages: messages);
-    } on AiProviderException catch (error) {
-      lastError = error;
+    if (_supportsTextFallback) {
+      try {
+        return await _completeWithTextEndpoint(messages: messages);
+      } on AiProviderException catch (error) {
+        lastError = error;
+      }
     }
 
-    throw lastError;
+    throw lastError ?? const AiProviderException('AI model is not configured');
   }
 
   Future<String> _completeWithModel({
@@ -302,50 +322,66 @@ class PollinationsAiClient implements AiChatClient {
       headers['Authorization'] = 'Bearer $apiKey';
     }
 
-    final response = await _httpClient
-        .post(
-          chatUrl,
-          headers: headers,
-          body: jsonEncode(<String, Object?>{
-            'model': candidateModel,
-            'messages': messages.map((message) => message.toJson()).toList(),
-            'temperature': 0.35,
-            'top_p': 0.8,
-            'max_tokens': 700,
-          }),
-        )
-        .timeout(const Duration(seconds: 45));
+    final http.Response response;
+    try {
+      response = await _httpClient
+          .post(
+            chatUrl,
+            headers: headers,
+            body: jsonEncode(<String, Object?>{
+              'model': candidateModel,
+              'messages': messages.map((message) => message.toJson()).toList(),
+              'temperature': 0.35,
+              'top_p': 0.8,
+              'max_tokens': 700,
+            }),
+          )
+          .timeout(const Duration(seconds: 45));
+    } on TimeoutException {
+      throw const AiProviderException('timeout');
+    }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw AiProviderException(_errorMessage(response));
     }
 
-    final content = _extractContent(utf8.decode(response.bodyBytes));
+    final content = _extractContent(utf8.decode(response.bodyBytes)).trim();
 
-    if (content.trim().isEmpty) {
+    if (content.isEmpty) {
       throw const AiProviderException('empty completion response');
     }
+    if (_isProviderQueueMessage(content)) {
+      throw AiProviderException(content);
+    }
 
-    return content.trim();
+    return content;
   }
 
   Future<String> _completeWithTextEndpoint({
     required List<AiApiMessage> messages,
   }) async {
-    final prompt = _plainPrompt(messages);
     final query = <String, String>{'model': 'openai', 'json': 'false'};
-    if (apiKey.isNotEmpty) {
+    final usesGenApi = chatUrl.host == 'gen.pollinations.ai';
+    if (apiKey.isNotEmpty && !usesGenApi) {
       query['token'] = apiKey;
     }
-    final fallbackUrl = Uri.parse(
-      'https://text.pollinations.ai/${Uri.encodeComponent(prompt)}',
-    ).replace(queryParameters: query);
-    final response = await _httpClient
-        .get(
-          fallbackUrl,
-          headers: const <String, String>{'Accept': 'text/plain'},
-        )
-        .timeout(const Duration(seconds: 45));
+    final fallbackUrl = _buildTextFallbackUrl(
+      messages: messages,
+      usesGenApi: usesGenApi,
+      query: query,
+    );
+    final headers = <String, String>{'Accept': 'text/plain'};
+    if (apiKey.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $apiKey';
+    }
+    final http.Response response;
+    try {
+      response = await _httpClient
+          .get(fallbackUrl, headers: headers)
+          .timeout(const Duration(seconds: 45));
+    } on TimeoutException {
+      throw const AiProviderException('timeout');
+    }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw AiProviderException(_errorMessage(response));
@@ -355,8 +391,55 @@ class PollinationsAiClient implements AiChatClient {
     if (content.isEmpty) {
       throw const AiProviderException('empty text response');
     }
+    if (_isProviderQueueMessage(content)) {
+      throw AiProviderException(content);
+    }
 
     return content;
+  }
+
+  Uri _buildTextFallbackUrl({
+    required List<AiApiMessage> messages,
+    required bool usesGenApi,
+    required Map<String, String> query,
+  }) {
+    final compactPrompt = _textFallbackPrompt(messages);
+    final compactUrl = _textFallbackUrl(
+      prompt: compactPrompt,
+      usesGenApi: usesGenApi,
+      query: query,
+    );
+    if (compactUrl.toString().length <= _maxTextFallbackUrlLength) {
+      return compactUrl;
+    }
+
+    final shortestPrompt = _textFallbackPrompt(
+      messages,
+      includeContext: false,
+      maxUserChars: 360,
+      maxAssistantChars: 0,
+    );
+    final shortestUrl = _textFallbackUrl(
+      prompt: shortestPrompt,
+      usesGenApi: usesGenApi,
+      query: query,
+    );
+    if (shortestUrl.toString().length <= _maxTextFallbackUrlLength) {
+      return shortestUrl;
+    }
+
+    throw const AiProviderException('text fallback prompt too long');
+  }
+
+  Uri _textFallbackUrl({
+    required String prompt,
+    required bool usesGenApi,
+    required Map<String, String> query,
+  }) {
+    final fallbackBaseUrl = usesGenApi
+        ? 'https://gen.pollinations.ai/text/${Uri.encodeComponent(prompt)}'
+        : 'https://text.pollinations.ai/${Uri.encodeComponent(prompt)}';
+    return Uri.parse(fallbackBaseUrl).replace(queryParameters: query);
   }
 
   String _extractContent(String responseBody) {
@@ -433,22 +516,70 @@ class PollinationsAiClient implements AiChatClient {
     return value.toString();
   }
 
-  String _plainPrompt(List<AiApiMessage> messages) {
-    final buffer = StringBuffer();
-    for (final message in messages) {
-      final label = switch (message.role) {
-        'system' => 'Инструкция',
-        'assistant' => 'Ассистент',
-        _ => 'Пользователь',
-      };
-      buffer.writeln('$label: ${message.content}');
+  String _textFallbackPrompt(
+    List<AiApiMessage> messages, {
+    bool includeContext = true,
+    int maxUserChars = 900,
+    int maxAssistantChars = 360,
+  }) {
+    final lastUser = messages.lastWhere(
+      (message) => message.role == 'user',
+      orElse: () => messages.last,
+    );
+    final contextMessages = messages
+        .where((message) => message.role == 'system')
+        .skip(1)
+        .map((message) => message.content)
+        .where((content) => content.trim().isNotEmpty)
+        .toList(growable: false);
+    final previousAnswers = messages
+        .where((message) => message.role == 'assistant')
+        .map((message) => message.content)
+        .where((content) => content.trim().isNotEmpty)
+        .toList(growable: false);
+    final previousAssistant = previousAnswers.isEmpty
+        ? null
+        : previousAnswers.last;
+
+    final buffer = StringBuffer()
+      ..writeln(
+        'You are Liga Gym AI. Answer only about nutrition, workouts, recovery, and fitness goals. Be brief and practical. Match the user language.',
+      );
+    if (includeContext && contextMessages.isNotEmpty) {
+      buffer.writeln('Context: ${_ellipsize(contextMessages.last, 520)}');
     }
-    buffer.writeln('Ассистент:');
+    if (maxAssistantChars > 0 && previousAssistant != null) {
+      buffer.writeln(
+        'Previous answer: ${_ellipsize(previousAssistant, maxAssistantChars)}',
+      );
+    }
+    buffer
+      ..writeln('User: ${_ellipsize(lastUser.content, maxUserChars)}')
+      ..write('Assistant:');
+
     return buffer.toString();
+  }
+
+  String _ellipsize(String value, int maxChars) {
+    final normalized = value.replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (normalized.length <= maxChars) {
+      return normalized;
+    }
+
+    return '${normalized.substring(0, maxChars).trimRight()}...';
   }
 
   List<String> _modelsToTry(String configuredModel) {
     final normalizedModel = _normalizeModel(configuredModel);
+    final isPollinations =
+        chatUrl.host == 'text.pollinations.ai' ||
+        chatUrl.host == 'gen.pollinations.ai';
+    if (!isPollinations) {
+      return normalizedModel.isEmpty
+          ? const <String>[]
+          : <String>[normalizedModel];
+    }
+
     return <String>{
       normalizedModel,
       'openai',
@@ -474,8 +605,29 @@ class PollinationsAiClient implements AiChatClient {
         normalized.contains('empty completion') ||
         normalized.contains('empty text') ||
         normalized.contains('429') ||
+        normalized.contains('500') ||
+        normalized.contains('502') ||
+        normalized.contains('503') ||
+        normalized.contains('504') ||
+        normalized.contains('414') ||
+        normalized.contains('already queued') ||
+        normalized.contains('already in queue') ||
+        normalized.contains('queue') ||
+        normalized.contains('queued') ||
+        normalized.contains('uri too long') ||
+        normalized.contains('prompt too long') ||
+        normalized.contains('rate limit') ||
         normalized.contains('too many requests') ||
         normalized.contains('timeout');
+  }
+
+  bool _isProviderQueueMessage(String value) {
+    final normalized = value.trim().toLowerCase();
+    return normalized.contains('already queued') ||
+        normalized.contains('already in queue') ||
+        normalized.contains('queue is full') ||
+        normalized.contains('too many requests') ||
+        normalized.contains('rate limit');
   }
 
   String _errorMessage(http.Response response) {
